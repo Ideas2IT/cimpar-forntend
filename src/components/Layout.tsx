@@ -1,5 +1,5 @@
-import Sidebar from "./Sidebar";
 import Main from "./Main";
+import Sidebar from "./Sidebar";
 
 const Layout = () => {
     return (

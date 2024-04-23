@@ -8,6 +8,7 @@ import { useState } from "react";
 interface Tab {
   key: string;
   icon: string;
+  routerLink: string;
 }
 
 const Sidebar = () => {
@@ -15,14 +16,17 @@ const Sidebar = () => {
     {
       key: "home",
       icon: Home,
+      routerLink: "/"
     },
     {
       key: "labTestResults",
       icon: AddRecord,
+      routerLink: "/health-records"
     },
     {
       key: "profile",
       icon: Profile,
+      routerLink: "/profile"
     },
   ];
   const [selectedTab, setSelectedTab] = useState(tabs[0]);
@@ -38,13 +42,13 @@ const Sidebar = () => {
       </div>
       <div className="flex-grow m-auto">
         {tabs.map((tab) => (
-          <button
+             <button
             key={tab.key}
-            className={`flex justify-center items-center h-12 rounded-lg w-14 mb-4 text-sm ${selectedTab.key === tab.key ? "bg-purple-800" : ""}`}
-            onClick={() => handleOnTabClick(tab)}
-          >
-            <img src={tab.icon} />
-          </button>
+              className={`flex justify-center items-center h-12 rounded-lg w-14 mb-4 text-sm ${selectedTab.key === tab.key ? "bg-purple-800" : ""}`}
+              onClick={() => handleOnTabClick(tab)}
+            >
+              <img src={tab.icon} />
+            </button> 
         ))}
       </div>
       <div className="h-14 m-auto">
