@@ -9,6 +9,7 @@ import Calendar from "../assets/icons/calendar.svg";
 import AddRecord from "../assets/icons/addrecord.svg";
 import SlideBack from "../assets/icons/slideback.svg";
 import { dateFormatter } from "../utils/Date";
+import { Link } from "react-router-dom";
 
 const LabTestResults = () => {
   type LabTestResult = {
@@ -203,7 +204,7 @@ const LabTestResults = () => {
           <SearchInput />
           <Button className="ml-3" variant="primary" style="outline">
             <img src={Calendar} className="fill-purple-700 mr-2" />
-            Make appointment
+            <Link to="appointment">Make appointment</Link>
           </Button>
           <Button className="ml-3" variant="primary" style="outline">
             <img src={AddRecord} className="fill-purple-700 mr-2" />
