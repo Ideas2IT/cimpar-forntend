@@ -7,8 +7,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import ArrowRight from "../assets/icons/arrowright.svg";
-import ArrowLeft from "../assets/icons/arrowleft.svg";
+import ArrowRight from "../assets/icons/arrowright.svg?react";
+import ArrowLeft from "../assets/icons/arrowleft.svg?react";
 
 interface TableProps {
   columns: ColumnDef<any, any>[];
@@ -73,7 +73,7 @@ const Table: React.FC<TableProps> = ({ rowData, columns }) => {
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          <img src={ArrowLeft} />
+          <ArrowLeft className="stroke-gray-500" />
         </button>
         <span className="flex items-center gap-1">
           {table.getState().pagination.pageIndex + 1}{" "}
@@ -86,7 +86,7 @@ const Table: React.FC<TableProps> = ({ rowData, columns }) => {
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          <img src={ArrowRight} />
+          <ArrowRight className="stroke-gray-700" />
         </button>
       </div>
     </div>
