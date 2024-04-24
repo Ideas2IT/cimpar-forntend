@@ -1,0 +1,16 @@
+.rowHoverable tr:hover {
+  @apply bg-purple-100;
+  cursor: pointer;
+}
+
+.p-sidebar-header {
+  @apply font-primary border-b text-xl;
+}
+
+.p-component-overlay-enter {
+  animation: none;
+}
+
+.p-sidebar {
+  box-shadow: 0 0 20px 0;
+}

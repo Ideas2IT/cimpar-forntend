@@ -5,7 +5,7 @@ import Table from "./Table";
 import VerticalTabView from "./VerticalTabView";
 import { useMemo, useState } from "react";
 import SearchInput from "./SearchInput";
-import calendar from "../assets/icons/calendar.svg";
+import Calendar from "../assets/icons/calendar.svg?react";
 import AddRecord from "../assets/icons/addrecord.svg?react";
 import SlideBack from "../assets/icons/slideback.svg?react";
 import Eye from "../assets/icons/eye.svg?react";
@@ -235,7 +235,7 @@ const LabTestResults = () => {
           <SearchInput />
           <Link to="appointment">
             <Button className="ml-3" variant="primary" style="outline">
-              <img src={calendar} className="fill-purple-700 mr-2" />
+              <img src={Calendar} className="fill-purple-700 mr-2" />
               Make appointment
             </Button>
           </Link>
