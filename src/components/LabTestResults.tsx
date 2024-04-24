@@ -5,9 +5,12 @@ import Table from "./Table";
 import VerticalTabView from "./VerticalTabView";
 import { useMemo, useState } from "react";
 import SearchInput from "./SearchInput";
-import Calendar from "../assets/icons/calendar.svg";
-import AddRecord from "../assets/icons/addrecord.svg";
-import SlideBack from "../assets/icons/slideback.svg";
+import Calendar from "../assets/icons/calendar.svg?react";
+import AddRecord from "../assets/icons/addrecord.svg?react";
+import SlideBack from "../assets/icons/slideback.svg?react";
+import Eye from "../assets/icons/eye.svg?react";
+import Download from "../assets/icons/download.svg?react";
+import Share from "../assets/icons/share.svg?react";
 import { dateFormatter } from "../utils/Date";
 import { Link } from "react-router-dom";
 
@@ -17,6 +20,7 @@ const LabTestResults = () => {
     testedAt: string;
     status: string;
     dateOfTest: string;
+    data: {};
   };
 
   const defaultData: LabTestResult[] = [
@@ -25,84 +29,98 @@ const LabTestResults = () => {
       testedAt: "Ames Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
     {
       testName: "Thyroid test",
       testedAt: "Ames Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
     {
       testName: "MRI",
       testedAt: "State Hygiene Labarotory",
       dateOfTest: dateFormatter(new Date()),
       status: "Available",
+      data: {},
     },
     {
       testName: "Urine Analysis",
       testedAt: "Lakeside Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
     {
       testName: "MRI",
       testedAt: "State Hygiene Labarotory",
       dateOfTest: dateFormatter(new Date()),
       status: "Available",
+      data: {},
     },
     {
       testName: "MRI",
       testedAt: "State Hygiene Labarotory",
       dateOfTest: dateFormatter(new Date()),
       status: "Available",
+      data: {},
     },
     {
       testName: "USG Scan",
       testedAt: "Lakeside Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Manually Added",
+      data: {},
     },
     {
       testName: "Urine Analysis",
       testedAt: "Lakeside Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Manually Added",
+      data: {},
     },
     {
       testName: "Urine Analysis",
       testedAt: "Lakeside Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Manually Added",
+      data: {},
     },
     {
       testName: "MRI",
       testedAt: "Ames Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
     {
       testName: "Blood count",
       testedAt: "State Hygiene Labarotory",
       dateOfTest: dateFormatter(new Date()),
       status: "Available",
+      data: {},
     },
     {
       testName: "Blood count",
       testedAt: "Ames Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
     {
       testName: "Blood count",
       testedAt: "Ames Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
     {
       testName: "Blood count",
       testedAt: "Ames Laboratory",
       dateOfTest: dateFormatter(new Date()),
       status: "Under Processing",
+      data: {},
     },
   ];
 
@@ -150,6 +168,17 @@ const LabTestResults = () => {
         },
         header: () => <p className="font-medium text-sm">Status</p>,
       },
+      {
+        accessorKey: "data",
+        cell: () => (
+          <div className="flex items-center">
+            <button><Eye className="stroke-purple-700" /></button>
+            <button><Download className="stroke-purple-700 mx-3" /></button>
+            <button><Share className="stroke-purple-700" /></button>
+          </div>
+        ),
+        header: "",
+      },
     ],
     []
   );
@@ -194,7 +223,9 @@ const LabTestResults = () => {
             className={`p-2 rounded-lg mr-3 ${hideTabs ? "bg-white" : "bg-cyan-700"}`}
             onClick={() => setHideTabs((hideTabs) => !hideTabs)}
           >
-            <img src={SlideBack} />
+            <SlideBack
+              className={`${hideTabs ? "fill-cyan-700" : "fill-white"}`}
+            />
           </button>
           <span className="font-bold text-lg text-cyan-800">
             Lab Test Results
@@ -203,11 +234,11 @@ const LabTestResults = () => {
         <div className="flex items-center">
           <SearchInput />
           <Button className="ml-3" variant="primary" style="outline">
-            <img src={Calendar} className="fill-purple-700 mr-2" />
+            <Calendar className="stroke-purple-700 mr-2" />
             <Link to="appointment">Make appointment</Link>
           </Button>
           <Button className="ml-3" variant="primary" style="outline">
-            <img src={AddRecord} className="fill-purple-700 mr-2" />
+            <AddRecord className="stroke-purple-700 mr-2" />
             Add record
           </Button>
         </div>
