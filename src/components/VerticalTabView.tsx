@@ -3,14 +3,20 @@ import Tab from "../interfaces/Tab";
 
 interface VerticalTabProps {
   tabs: Tab[];
-  hideTabs: boolean
+  hideTabs: boolean;
+  changeTab: (value: string) => void;
 }
 
-const VerticalTabView: React.FC<VerticalTabProps> = ({ tabs, hideTabs }) => {
+const VerticalTabView: React.FC<VerticalTabProps> = ({
+  tabs,
+  hideTabs,
+  changeTab,
+}) => {
   const [selectedTab, setSelectedTab] = useState(tabs[0]);
 
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);
+    changeTab(tab.value);
   };
 
   return (

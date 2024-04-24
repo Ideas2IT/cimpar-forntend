@@ -5,7 +5,7 @@ import Table from "./Table";
 import VerticalTabView from "./VerticalTabView";
 import { useMemo, useState } from "react";
 import SearchInput from "./SearchInput";
-import Calendar from "../assets/icons/calendar.svg?react";
+import calendar from "../assets/icons/calendar.svg";
 import AddRecord from "../assets/icons/addrecord.svg?react";
 import SlideBack from "../assets/icons/slideback.svg?react";
 import Eye from "../assets/icons/eye.svg?react";
@@ -13,6 +13,7 @@ import Download from "../assets/icons/download.svg?react";
 import Share from "../assets/icons/share.svg?react";
 import { dateFormatter } from "../utils/Date";
 import { Link } from "react-router-dom";
+import Immunization from "./testResult/Immunization";
 
 const LabTestResults = () => {
   type LabTestResult = {
@@ -198,7 +199,7 @@ const LabTestResults = () => {
       value: "Immunization",
       content: (
         <div className="px-6 py-1 h-full">
-          <Table rowData={defaultData} columns={columns} />
+          <Immunization />
         </div>
       ),
     },
@@ -214,6 +215,7 @@ const LabTestResults = () => {
   ];
 
   const [hideTabs, setHideTabs] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Lab Test Results");
 
   return (
     <div className="flex flex-col flex-grow">
@@ -227,16 +229,16 @@ const LabTestResults = () => {
               className={`${hideTabs ? "fill-cyan-700" : "fill-white"}`}
             />
           </button>
-          <span className="font-bold text-lg text-cyan-800">
-            Lab Test Results
-          </span>
+          <span className="font-bold text-lg text-cyan-800">{selectedTab}</span>
         </div>
         <div className="flex items-center">
           <SearchInput />
-          <Button className="ml-3" variant="primary" style="outline">
-            <Calendar className="stroke-purple-700 mr-2" />
-            <Link to="appointment">Make appointment</Link>
-          </Button>
+          <Link to="appointment">
+            <Button className="ml-3" variant="primary" style="outline">
+              <img src={calendar} className="fill-purple-700 mr-2" />
+              Make appointment
+            </Button>
+          </Link>
           <Button className="ml-3" variant="primary" style="outline">
             <AddRecord className="stroke-purple-700 mr-2" />
             Add record
@@ -244,7 +246,11 @@ const LabTestResults = () => {
         </div>
       </div>
       <div className="flex flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">
-        <VerticalTabView tabs={tabs} hideTabs={hideTabs} />
+        <VerticalTabView
+          tabs={tabs}
+          hideTabs={hideTabs}
+          changeTab={setSelectedTab}
+        />
       </div>
     </div>
   );

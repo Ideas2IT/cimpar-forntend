@@ -19,17 +19,19 @@
 
 @font-face {
   font-family: "FuturaMdBt";
-  src: url("./assets/fonts/FuturaMediumBT.ttf") format("truetype");
+  src: url("./assets/fonts/FutuMd.ttf") format("truetype");
 }
+
 @font-face {
-  font-family: "FuturaBold";
-  src: url("./assets/fonts/FuturaBoldBT.ttf") format("truetype");
+  font-family: "Futurahvbt";
+  src: url("./assets/fonts/FutuHv.ttf") format("truetype");
 }
 
 @layer utilities {
   .font-primary {
-    font-family: "FuturaBold";
+    font-family: "Futurahvbt";
   }
+
   .font-secondary {
     font-family: "FuturaMdBt";
   }
@@ -55,7 +57,7 @@ body {
 }
 
 .p-autocomplete-multiple-container .p-autocomplete-token {
-  margin: 0.5rem 0;
+  margin: 0.2rem 0;
   background-color: #2d6d80;
   height: 2rem;
   color: #fff;
@@ -76,6 +78,7 @@ body {
 .cimpar-input {
   @apply min-h-[2.5rem] w-full border border-gray-300 rounded-md px-2;
 }
+
 .p-radiobutton-box {
   border: 1px solid gray;
 }
@@ -87,6 +90,28 @@ body {
 .react-time-picker__clock-button__icon {
   stroke: gray !important;
 }
+
 .react-datepicker__view-calendar-icon input {
   padding: 0 5px !important;
+}
+
+.color-primary {
+  color: #2d6d80;
+}
+
+.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
+  padding: 0 10px;
+  margin: 10px 0;
+}
+
+.p-toast,
+.p-toast-message-content {
+  padding: 0;
+  background: white;
+  @apply rounded-md;
+  margin: 0 !important;
+}
+
+.p-toast-message {
+  margin: 0;
 }
