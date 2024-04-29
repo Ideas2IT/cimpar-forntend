@@ -8,6 +8,7 @@ import SearchInput from "./SearchInput";
 import Calendar from "../assets/icons/calendar.svg?react";
 import AddRecord from "../assets/icons/addrecord.svg?react";
 import SlideBack from "../assets/icons/slideback.svg?react";
+import SlideOpen from "../assets/icons/slideOpen.svg?react";
 import Eye from "../assets/icons/eye.svg?react";
 import Download from "../assets/icons/download.svg?react";
 import Share from "../assets/icons/share.svg?react";
@@ -173,9 +174,15 @@ const LabTestResults = () => {
         accessorKey: "data",
         cell: () => (
           <div className="flex items-center">
-            <button><Eye className="stroke-purple-700" /></button>
-            <button><Download className="stroke-purple-700 mx-3" /></button>
-            <button><Share className="stroke-purple-700" /></button>
+            <button>
+              <Eye className="stroke-purple-700" />
+            </button>
+            <button>
+              <Download className="stroke-purple-700 mx-3" />
+            </button>
+            <button>
+              <Share className="stroke-purple-700" />
+            </button>
           </div>
         ),
         header: "",
@@ -225,9 +232,7 @@ const LabTestResults = () => {
             className={`p-2 rounded-lg mr-3 ${hideTabs ? "bg-white" : "bg-cyan-700"}`}
             onClick={() => setHideTabs((hideTabs) => !hideTabs)}
           >
-            <SlideBack
-              className={`${hideTabs ? "fill-cyan-700" : "fill-white"}`}
-            />
+            {hideTabs ? <SlideOpen fill="clear"/> : <SlideBack fill="white"/>}
           </button>
           <span className="font-bold text-lg text-cyan-800">{selectedTab}</span>
         </div>
@@ -235,7 +240,7 @@ const LabTestResults = () => {
           <SearchInput />
           <Link to="appointment">
             <Button className="ml-3" variant="primary" style="outline">
-              <img src={Calendar} className="fill-purple-700 mr-2" />
+              <Calendar className="stroke-purple-700 mr-2" />
               Make appointment
             </Button>
           </Link>
