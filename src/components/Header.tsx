@@ -64,7 +64,7 @@ export const LogoutPopover = () => {
         Change password
       </li>
       <li
-        className="flex nowrap cursor-pointer px-6 hover:bg-pink-50"
+        className="flex nowrap cursor-pointer px-6 justify-center hover:bg-pink-50"
         onClick={() => handleLogout}
       >
         <img src={logoutImage} className="pe-3 py-3" />
