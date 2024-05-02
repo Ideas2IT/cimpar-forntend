@@ -1,6 +1,5 @@
 .rowHoverable tr:hover {
-  @apply bg-purple-100;
-  cursor: pointer;
+  @apply bg-purple-100 cursor-pointer;
 }
 
 .p-sidebar-header {
@@ -13,4 +12,11 @@
 
 .p-sidebar {
   box-shadow: 0 0 20px 0;
+}
+.detailed-view .p-sidebar-header {
+  @apply mx-4 px-0;
+}
+
+.p-datatable .p-datatable-tbody > tr.p-highlight {
+  @apply bg-purple-100;
 }

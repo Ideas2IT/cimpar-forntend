@@ -29,7 +29,7 @@ const CustomPaginator = ({
       prevPageLinkIcon={<i className="pi pi-arrow-left" />}
       nextPageLinkIcon={<i className="pi pi-arrow-right" />}
       template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
-      currentPageReportTemplate={`${page} of ${Math.round(totalRecords / (rowLimit ? rowLimit : 20))} pages`}
+      currentPageReportTemplate={`${page} of ${Math.ceil(totalRecords / (rowLimit ? rowLimit : 10))} pages`}
     />
   );
 };

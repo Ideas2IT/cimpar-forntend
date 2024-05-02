@@ -89,12 +89,13 @@ const TestResult = () => {
   ];
 
   const tableProps = {
+    selection:selectedPatient,
     value: values,
     selectionMode: "single" as const,
     dataKey: "id",
     tableStyle: { minWidth: "50rem" },
     className: "mt-2 max-h-[50%] rowHoverable",
-    rowClassName: "h-10 border",
+    rowClassName: "h-10 border-b",
     scrollHeight: "30rem",
   };
 
@@ -172,8 +173,8 @@ const TestResult = () => {
         )
       }
       <Sidebar
-        className="w-[28rem]"
-        header="immunization details"
+        className="detailed-view w-[28rem]"
+        header={"immunization details"}
         visible={isSidebarOpen}
         position="right"
         onHide={() => setIsSidebarOpen(false)}
@@ -204,7 +205,7 @@ const ImmunizationDetailView = ({ data }: { data: RowData }) => {
     "ROUTE",
     "SITE",
   ];
-  
+
   const getValue = (title: string) => {
     switch (title) {
       case "ADMINISTRATOR":
@@ -281,7 +282,8 @@ const ViewColumn = ({
     </div>
   );
 };
+
 const ColumnData = ({ content }: { content: string }) => {
-  return <div className="text-sm">{content}</div>;
+  return <div className="text-sm">{content ? content : "-"}</div>;
 };
 export default TestResult;

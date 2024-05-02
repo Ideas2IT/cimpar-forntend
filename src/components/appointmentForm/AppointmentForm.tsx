@@ -18,16 +18,34 @@ import Button from "../Button";
 import { Link } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
-import { DEFAULT_DATE_FORMAT } from "../../utils/Date";
+import { Controller, useForm } from "react-hook-form";
 
 interface IItem {
   id: number;
   name: string;
 }
 
+export interface IFormData {
+  testToTake: string;
+  dateOfAppointment: Date;
+  scheduledTime: string;
+  reasonForTest: string;
+  otherReasonForTest: string;
+  medicalConditions: IItem[];
+  otherMedicalConditon: string;
+  allergies: IItem[];
+}
+
 const AppointmentForm = () => {
-  const [startDate, setStartDate] = useState(new Date());
-  const [time, setTime] = useState("");
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {} as IFormData,
+  });
 
   const diseases = [
     "Bubonic Plague",
@@ -55,17 +73,29 @@ const AppointmentForm = () => {
   const [selectedAllergies, setSelectedAllergies] = useState<IItem[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const datePickerRef = useRef<ReactDatePicker<never, undefined>>(null);
-  const handleFormSubmit = () => {
-    console.log(selectedAllergies, testReason);
+
+  //TODO: need to write the logic to handle formSubmit
+  const handleFormSubmit = (data: IFormData) => {
+    console.log(data);
+  };
+
+  const handleSelectMedicalConditons = (values: IItem[]) => {
+    setSelectedMedicalConditons(values);
+    setValue("medicalConditions", values);
+  };
+
+  const handleSelectedAllergies = (values: IItem[]) => {
+    setSelectedAllergies(values);
+    setValue("allergies", values);
   };
 
   return (
     <>
-      <form>
-        <div className="flex mx-6 justify-between items-center bg-gray-100">
+      <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
+        <div className="flex mx-4 justify-between items-center bg-gray-100">
           <div className="flex justify-between items-center">
             <Link to="/">
-              <PrimeButton className="p-2 bg-white" text raised>
+              <PrimeButton className="p-2 bg-white shadow-none" text raised>
                 <i
                   className="pi pi-arrow-left color-primary"
                   color="danger"
@@ -90,16 +120,16 @@ const AppointmentForm = () => {
               <i className="pi pi-times me-2"></i>Cancel
             </Button>
             <Button
-              onClick={() => handleFormSubmit()}
               className="ml-3 font-primary"
               variant="primary"
               style="outline"
+              type="submit"
             >
               <i className="pi pi-check me-2"></i>Confirm
             </Button>
           </div>
         </div>
-        <div className="p-6 mx-6 bg-white rounded-md max-h-[100%]">
+        <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%]">
           <div className="font-primary text-xl">Appointment Details</div>
           <div className="flex flex-wrap mt-1">
             <div className="w-full md:w-1/2 sm:w-1 pe-4">
@@ -110,30 +140,53 @@ const AppointmentForm = () => {
                 Choose test to be taken*
               </label>
               <select
+                {...register("testToTake")}
+                name={"testToTak"}
+                required
+                onChange={(event) => setValue("testToTake", event.target.value)}
                 id="testToTake"
-                className="mt-1 border focus:ring-gray-500 border-2 focus:border-gray-500 block w-full border-gray-300 rounded-md h-[2.5rem] border-gray px-1 outline-gray-300"
+                className="mt-1 border focus:ring-gray-500 border-2 focus:outline-none block w-full border-gray-300 rounded-md h-[2.5rem] border-gray px-1 outline-gray-300"
               >
+                <option value="" disabled selected hidden>
+                  Select an option
+                </option>
                 {diseases.map((disease) => {
-                  return <option key={disease}>{disease}</option>;
+                  return (
+                    <option key={disease} value={disease}>
+                      {disease}
+                    </option>
+                  );
                 })}
               </select>
             </div>
-            <div className="lg:w-1/4 md:w-1/2 sm:w-1 lg:px-4 d-flex relative">
+            <div className="lg:w-1/4 md:w-1/2 sm:w-1 d-flex relative">
               <label htmlFor="appointmentDate" className="block input-label">
-                Date of appointment for test *
+                Date of appointment for test*
               </label>
               <div className="absolute left-0 right-0">
-                <ReactDatePicker
-                  ref={datePickerRef}
-                  minDate={new Date()}
-                  wrapperClassName="w-full"
-                  calendarIconClassname="right-0 mt-2"
-                  id="appointmentDate"
-                  dateFormat={DEFAULT_DATE_FORMAT}
-                  onChange={(date) => date && setStartDate(date)}
-                  selected={startDate}
-                  className="h-[2.5rem] ps-2 border-2 border-gray-300 px-1 block w-[100%] mt-1 md:text-sm rounded-md right-0 left-0"
-                ></ReactDatePicker>
+                <Controller
+                  name="dateOfAppointment"
+                  control={control}
+                  defaultValue={new Date()}
+                  rules={{
+                    required: "Date of appointment is required",
+                  }}
+                  render={({ field }) => (
+                    <ReactDatePicker
+                      placeholderText="Please pick the date of appointment"
+                      required={true}
+                      ref={datePickerRef}
+                      minDate={new Date()}
+                      wrapperClassName="w-full"
+                      calendarIconClassname="right-0 mt-2"
+                      id="appointmentDate"
+                      dateFormat={"dd MMMM, yyyy"}
+                      onChange={(date) => setValue("dateOfAppointment", date)}
+                      selected={field.value}
+                      className="h-[2.5rem] ps-2 border-2 border-gray-300 px-1 block w-[100%] mt-1 md:text-sm rounded-md right-0 left-0 focus:outline-none"
+                    />
+                  )}
+                />
                 <span
                   className="absolute top-[1rem] right-[1rem]"
                   onClick={() => datePickerRef?.current?.setOpen(true)}
@@ -146,31 +199,46 @@ const AppointmentForm = () => {
               <label htmlFor="scheduleTime" className="block input-label">
                 Scheduled Time*
               </label>
-              <TimePicker
-                minutePlaceholder="MM"
-                hourPlaceholder="HH"
-                value={time}
-                id="scheduleTime"
-                className={`${styles.timePicker} w-full h-[2.5rem] mt-1 rounded-md border-2 border-gray-300`}
-                format="hh:mm a"
-                clearIcon=""
-                closeClock={true}
-                onChange={(time) => time && setTime(time)}
+              <Controller
+                name="scheduledTime"
+                control={control}
+                defaultValue={""}
+                rules={{
+                  required: "Date of appointment is required",
+                }}
+                render={({ field }) => (
+                  <TimePicker
+                    minutePlaceholder="MM"
+                    hourPlaceholder="HH"
+                    value={field.value}
+                    id="scheduleTime"
+                    className={`${styles.timePicker} w-full h-[2.5rem] mt-1 rounded-md border-2 border-gray-300`}
+                    format="hh:mm a"
+                    clearIcon=""
+                    closeClock={true}
+                    onChange={(time) =>
+                      time && setValue("scheduledTime", time?.toString())
+                    }
+                  />
+                )}
               />
             </div>
           </div>
-          <div className="flex flex-wrap py-2">
+          <div className="flex flex-wrap py-3 mt-2">
             <div className="lg:w-1/2 pe-4">
               <label htmlFor="testReason" className="input-label">
                 Reason for test
               </label>
               <div className="flex flex-row rounded-md pe-2 py-2">
                 <RadioButton
-                  name="testReason"
+                  name="reasonForTest"
                   inputId="usualCheckup"
                   className="me-3"
                   value="usualCheckup"
-                  onChange={(e) => setTestReason(e.value)}
+                  onChange={() => {
+                    setValue("reasonForTest", "usualCheckup");
+                    setTestReason("usualCheckup");
+                  }}
                   checked={testReason === "usualCheckup"}
                 />
                 <label
@@ -180,11 +248,14 @@ const AppointmentForm = () => {
                   Usual checkup
                 </label>
                 <RadioButton
-                  name="testReason"
+                  name="reasonForTest"
                   inputId="doctorsAdvice"
                   className="mx-3"
                   value="doctorsAdvice"
-                  onChange={(e) => setTestReason(e.value)}
+                  onChange={() => {
+                    setValue("reasonForTest", "doctorsAdvice");
+                    setTestReason("doctorsAdvice");
+                  }}
                   checked={testReason === "doctorsAdvice"}
                 />
                 <label
@@ -194,11 +265,14 @@ const AppointmentForm = () => {
                   Advised by doctor
                 </label>
                 <RadioButton
-                  name="testReason"
+                  name="ReasonForTest"
                   inputId="otherReason"
                   className="mx-3"
                   value="otherReason"
-                  onChange={(e) => setTestReason(e.value)}
+                  onChange={() => {
+                    setValue("reasonForTest", "otherReason");
+                    setTestReason("otherReason");
+                  }}
                   checked={testReason === "otherReason"}
                 />
                 <label
@@ -214,22 +288,23 @@ const AppointmentForm = () => {
                 Other reason
               </label>
               <input
+                {...register("otherReasonForTest")}
+                name={`otherReasonForTest`}
+                onChange={(e) => setValue("otherReasonForTest", e.target.value)}
                 type="text"
-                className="cimpar-input py-[.6rem]"
+                className="cimpar-input py-[.6rem] focus:outline-none"
                 placeholder="Type the reason here (optional)"
               />
             </div>
           </div>
-          <div className="font-primary text-xl pt-4 pb-2">
-            Medical Condition
-          </div>
+          <div className="font-primary text-xl py-2">Medical Condition</div>
           <div>
             <label htmlFor="medicalConditions" className="block input-label">
               Please select the medical conditions you currently have.
             </label>
             <CustomAutoComplete
-              placeholder="Select or Add"
-              handleSelection={setSelectedMedicalConditons}
+              placeholder="Add one or more medical conditions"
+              handleSelection={handleSelectMedicalConditons}
               items={medicalConditons}
               selectedItems={selectedMedicalConditions}
             />
@@ -242,7 +317,12 @@ const AppointmentForm = () => {
               Other medical conditions.
             </label>
             <input
-              className="cimpar-input"
+              {...register("otherMedicalConditon")}
+              name={`otherMedicalConditon`}
+              onChange={(event) =>
+                setValue("otherMedicalConditon", event?.target?.value || "")
+              }
+              className="cimpar-input focus:outline-none"
               type="text"
               id="otherMedicalConditions"
               placeholder="Mild concussion."
@@ -254,9 +334,10 @@ const AppointmentForm = () => {
               Please select the allergies you currently have.
             </label>
             <CustomAutoComplete
+              placeholder="Add one or more allergies"
               items={medicalConditons}
               selectedItems={selectedAllergies}
-              handleSelection={setSelectedAllergies}
+              handleSelection={handleSelectedAllergies}
             />
           </div>
           <div className="font-primary text-xl pt-4 pb-2">
@@ -281,7 +362,7 @@ const AppointmentForm = () => {
           styleClass="w-[30rem] h-[15rem]"
           handleClose={() => setShowDialog(false)}
         >
-          <AppoinementStatus />
+          <AppointmentStatus />
         </CustomModal>
       )}
     </>
@@ -389,11 +470,11 @@ const ItemTemplate = ({ item }: { item: IItem }) => {
   );
 };
 
-const AppoinementStatus = () => {
+const AppointmentStatus = () => {
   return (
     <div className="flex justify-center flex-col">
       <div className="flex justify-center">
-        <img src={checkmark} alt="Appoinement status" />
+        <img src={checkmark} alt="Appointment status" />
       </div>
       <label className="font-primary py-4 text-center">
         Your Appointment has been Successfully fixed.

@@ -27,6 +27,11 @@
   src: url("./assets/fonts/FutuHv.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "FuturaBkBt";
+  src: url("./assets/fonts/FuturaBkBook.ttf") format("truetype");
+}
+
 @layer utilities {
   .font-primary {
     font-family: "Futurahvbt";
@@ -34,6 +39,10 @@
 
   .font-secondary {
     font-family: "FuturaMdBt";
+  }
+
+  .font-ternary {
+    font-family: "FuturaBkBt";
   }
 }
 
@@ -54,6 +63,7 @@ body {
 
 .input-label {
   @apply text-[#545F71] !font-normal !text-sm;
+  font-family: FuturaBkBt;
 }
 
 .p-autocomplete-multiple-container .p-autocomplete-token {
@@ -71,8 +81,8 @@ body {
 }
 
 .p-autocomplete-panel {
-  min-width: 300px !important;
-  left: 10rem !important;
+  min-width: 25rem !important;
+  /* left: 10rem !important; */
 }
 
 .cimpar-input {
@@ -114,4 +124,7 @@ body {
 
 .p-toast-message {
   margin: 0;
+}
+.p-autocomplete-multiple-container {
+  width: 100%;
 }
