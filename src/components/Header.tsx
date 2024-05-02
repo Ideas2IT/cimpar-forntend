@@ -16,7 +16,7 @@ const Header = () => {
       <p className="font-bold text-2xl text-gray-700">Health Records</p>
       <Button
         label={loggedInUser.email}
-        className="py-2 px-3 rounded-full border border-gray-400"
+        className="py-2 px-3 rounded-full border border-gray-300 shadow-none"
         severity="info"
         onClick={(event) => {
           op?.current?.toggle(event);
@@ -27,9 +27,9 @@ const Header = () => {
         outlined={false}
       >
         {toggleButton ? (
-          <i className="px-1 pi pi-sort-up-fill" />
+          <i className="px-1 pi pi-sort-up-fill px-3" />
         ) : (
-          <i className="px-1 pi pi-sort-down-fill" />
+          <i className="px-1 pi pi-sort-down-fill px-3" />
         )}
       </Button>
       <OverlayPanel
