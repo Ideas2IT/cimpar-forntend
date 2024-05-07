@@ -1,0 +1,12 @@
+.active {
+  color: #2d6d80;
+}
+
+.in-active {
+  @apply text-gray-200;
+}
+
+.p-inputwrapper,
+.p-chips-multiple-container {
+  width: 100%;
+}

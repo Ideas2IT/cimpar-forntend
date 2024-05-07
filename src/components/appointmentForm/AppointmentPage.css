@@ -1,0 +1,27 @@
+.selectedOption {
+  padding: 0.375rem 0.5rem;
+  background: #0e749f !important;
+  color: #fff;
+  border-radius: 16px;
+}
+
+.activeLabel {
+  color: #2D6D80;
+}
+
+.test .p-multiselect .p-multiselect-label {
+  @apply py-[.5rem];
+}
+
+.p-multiselect-panel .p-multiselect-header {
+  @apply bg-gray-100;
+}
+
+/* .p-autocomplete-panel {
+  min-width: 25rem !important;
+  left: 10rem !important;
+} */
+
+.custom-autocomplete-panel {
+ @apply !min-w-[25rem] !left-[10rem];
+}

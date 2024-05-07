@@ -5,14 +5,20 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
     {
       label: "NAME",
       value:
-        patient.firstName + " " + patient.middleName + " " + patient.lastName,
+        patient.firstName + " " + patient.middleName ||
+        "" + " " + patient.lastName ||
+        "",
     },
     { label: "DOB", value: patient.dob },
     { label: "GENDER", value: patient.gender },
     { label: "RACE", value: patient.race },
-    { label: "HEIGHT", value: patient.height },
-    { label: "WEIGHT", value: patient.weight },
-    { label: "ETHINICITY", value: patient.ethinicity },
+    {
+      label: "HEIGHT",
+      value:
+        patient.height.feet + " feet " + patient.height.inches + " inches ",
+    },
+    { label: "WEIGHT", value: patient.weight + "Lbs" },
+    { label: "ETHNICITY", value: patient.ethnicity },
   ];
 
   const contactDetails = [
@@ -62,7 +68,7 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
   );
 };
 
-const PatientDetails = ({
+export const PatientDetails = ({
   label,
   value,
 }: {

@@ -1,9 +1,11 @@
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import logoutImage from "../assets/icons/logout.svg";
+import HeaderContext from "../context/HeaderContext";
 const Header = () => {
-  
+  const { value } = useContext(HeaderContext);
+
   const loggedInUser = {
     name: "Bharani Balamurgan",
     email: "bharaniu@ideas2it.com",
@@ -13,7 +15,7 @@ const Header = () => {
   const [toggleButton, setToggleButton] = useState(false);
   return (
     <div className="flex justify-between items-center mb-7 mx-6">
-      <p className="font-bold text-2xl text-gray-700">Health Records</p>
+      <p className="font-bold text-2xl text-gray-700">{value}</p>
       <Button
         label={loggedInUser.email}
         className="py-2 px-3 rounded-full border border-gray-300 shadow-none"

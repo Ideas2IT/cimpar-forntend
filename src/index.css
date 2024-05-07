@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; */
   line-height: 1.5;
   font-weight: 400;
 
@@ -78,11 +78,6 @@ body {
 .p-inputtext {
   box-shadow: none !important;
   @apply border-gray-300 ps-2;
-}
-
-.p-autocomplete-panel {
-  min-width: 25rem !important;
-  /* left: 10rem !important; */
 }
 
 .cimpar-input {

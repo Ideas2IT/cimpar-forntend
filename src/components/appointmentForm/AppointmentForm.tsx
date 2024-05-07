@@ -10,7 +10,7 @@ import {
   AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
 import plus from "../../assets/icons/plus.svg";
-import styles from "./AppointmentPage.module.scss";
+import "./AppointmentPage.css";
 import { RadioButton } from "primereact/radiobutton";
 import { FaRegCalendarMinus } from "react-icons/fa";
 import { Button as PrimeButton } from "primereact/button";
@@ -18,15 +18,19 @@ import Button from "../Button";
 import { Link } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { ITest, medicalConditons, tests } from "../../assets/MockData";
+import { MultiSelect } from "primereact/multiselect";
+import { user } from "../userProfilePage/UserProfilePage";
+import moment from "moment";
 
-interface IItem {
+export interface IItem {
   id: number;
   name: string;
 }
 
 export interface IFormData {
-  testToTake: string;
+  testToTake: ITest[];
   dateOfAppointment: Date;
   scheduledTime: string;
   reasonForTest: string;
@@ -46,25 +50,6 @@ const AppointmentForm = () => {
   } = useForm({
     defaultValues: {} as IFormData,
   });
-
-  const diseases = [
-    "Bubonic Plague",
-    "Spanish flu or Influenza",
-    "Smallpox",
-    "Cholera",
-    "HIV/AIDS",
-    "Ebola",
-    "Coronavirus",
-  ];
-
-  const medicalConditons: IItem[] = [
-    { id: 1, name: "dfdfbc" },
-    { id: 4, name: "panish flu or Influenza" },
-    { id: 2, name: "Bubonic Plague" },
-    { id: 3, name: "Coronavirus" },
-    { id: 5, name: "hIV/AIDS" },
-    { id: 6, name: "Cholera" },
-  ];
 
   const [testReason, setTestReason] = useState("");
   const [selectedMedicalConditions, setSelectedMedicalConditons] = useState<
@@ -89,6 +74,14 @@ const AppointmentForm = () => {
     setValue("allergies", values);
   };
 
+  const getDobAndAge = (dob: string) => {
+    const dateOfBirth = moment(user.dob, "DD-MM-YYYY").format("DD MMMM, YYYY");
+    const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
+    return dateOfBirth + " (" + age + ")";
+  };
+
+  const selectedReasonForTest = useWatch({ control, name: "reasonForTest" });
+
   return (
     <>
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
@@ -110,16 +103,19 @@ const AppointmentForm = () => {
             </label>
           </div>
           <div className="flex py-2 justify-between items-center">
+            <Link to="/">
+              <Button
+                className="ml-3 font-primary"
+                variant="primary"
+                type="reset"
+                style="link"
+              >
+                <i className="p" />
+                <i className="pi pi-times me-2"></i>Cancel
+              </Button>
+            </Link>
             <Button
-              className="ml-3 font-primary"
-              variant="primary"
-              type="reset"
-              style="link"
-            >
-              <i className="p" />
-              <i className="pi pi-times me-2"></i>Cancel
-            </Button>
-            <Button
+              onClick={() => setShowDialog(true)}
               className="ml-3 font-primary"
               variant="primary"
               style="outline"
@@ -132,32 +128,32 @@ const AppointmentForm = () => {
         <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%]">
           <div className="font-primary text-xl">Appointment Details</div>
           <div className="flex flex-wrap mt-1">
-            <div className="w-full md:w-1/2 sm:w-1 pe-4">
+            <div className="test w-full lg:w-1/2 md:w-full sm:w-full pe-4">
               <label
                 htmlFor="testToTake"
                 className="block text-sm font-medium input-label"
               >
                 Choose test to be taken*
               </label>
-              <select
-                {...register("testToTake")}
-                name={"testToTak"}
-                required
-                onChange={(event) => setValue("testToTake", event.target.value)}
-                id="testToTake"
-                className="mt-1 border focus:ring-gray-500 border-2 focus:outline-none block w-full border-gray-300 rounded-md h-[2.5rem] border-gray px-1 outline-gray-300"
-              >
-                <option value="" disabled selected hidden>
-                  Select an option
-                </option>
-                {diseases.map((disease) => {
-                  return (
-                    <option key={disease} value={disease}>
-                      {disease}
-                    </option>
-                  );
-                })}
-              </select>
+              <Controller
+                name="testToTake"
+                control={control}
+                rules={{
+                  required: "Test list cann't be empty",
+                }}
+                render={({ field }) => (
+                  <MultiSelect
+                    id="testToTake"
+                    onChange={(e) => e.value && setValue("testToTake", e.value)}
+                    options={tests}
+                    filter
+                    optionLabel="name"
+                    placeholder="Select Tests"
+                    value={field.value}
+                    className="w-full md:w-full border border-gray-300 mt-1 h-[2.5rem]"
+                  />
+                )}
+              />
             </div>
             <div className="lg:w-1/4 md:w-1/2 sm:w-1 d-flex relative">
               <label htmlFor="appointmentDate" className="block input-label">
@@ -183,7 +179,7 @@ const AppointmentForm = () => {
                       dateFormat={"dd MMMM, yyyy"}
                       onChange={(date) => setValue("dateOfAppointment", date)}
                       selected={field.value}
-                      className="h-[2.5rem] ps-2 border-2 border-gray-300 px-1 block w-[100%] mt-1 md:text-sm rounded-md right-0 left-0 focus:outline-none"
+                      className="h-[2.5rem] ps-2 border border-gray-300 px-1 block w-[100%] mt-1 md:text-sm rounded-md right-0 left-0 focus:outline-none"
                     />
                   )}
                 />
@@ -212,7 +208,7 @@ const AppointmentForm = () => {
                     hourPlaceholder="HH"
                     value={field.value}
                     id="scheduleTime"
-                    className={`${styles.timePicker} w-full h-[2.5rem] mt-1 rounded-md border-2 border-gray-300`}
+                    className="timePicker w-full h-[2.5rem] mt-1 rounded-md border border-gray-300"
                     format="hh:mm a"
                     clearIcon=""
                     closeClock={true}
@@ -243,7 +239,7 @@ const AppointmentForm = () => {
                 />
                 <label
                   htmlFor="usualCheckup"
-                  className={`${testReason === "usualCheckup" && styles.activeLabel} font-semibold`}
+                  className={`${testReason === "usualCheckup" && "activeLabel"} font-semibold`}
                 >
                   Usual checkup
                 </label>
@@ -260,7 +256,7 @@ const AppointmentForm = () => {
                 />
                 <label
                   htmlFor="doctorsAdvice"
-                  className={`${testReason === "doctorsAdvice" && styles.activeLabel} font-semibold`}
+                  className={`${testReason === "doctorsAdvice" && "activeLabel"} font-semibold`}
                 >
                   Advised by doctor
                 </label>
@@ -277,7 +273,7 @@ const AppointmentForm = () => {
                 />
                 <label
                   htmlFor="otherReason"
-                  className={`${testReason === "otherReason" && styles.activeLabel} font-semibold`}
+                  className={`${testReason === "otherReason" && "activeLabel"} font-semibold`}
                 >
                   Other
                 </label>
@@ -288,6 +284,7 @@ const AppointmentForm = () => {
                 Other reason
               </label>
               <input
+                disabled={selectedReasonForTest !== "otherReason"}
                 {...register("otherReasonForTest")}
                 name={`otherReasonForTest`}
                 onChange={(e) => setValue("otherReasonForTest", e.target.value)}
@@ -342,17 +339,24 @@ const AppointmentForm = () => {
           </div>
           <div className="font-primary text-xl pt-4 pb-2">
             Basic Details
-            <Button style="link" className="ps-3  text-[#61277F]">
-              <i className="pi pi-pencil px-2" /> Edit
-            </Button>
+            <Link to="/editprofile">
+              <Button style="link" className="ps-3  text-[#61277F]">
+                <i className="pi pi-pencil px-2" /> Edit
+              </Button>
+            </Link>
           </div>
           <div className="flex flex-wrap">
-            <DetailColumn label="Name (Gender)" content="John Doe (Male)" />
-            <DetailColumn label="DOB (Age)" content="01 January, 2001 (23)" />
+            <DetailColumn
+              label="Name (Gender)"
+              content={
+                user.firstName + " " + user.middleName + "(" + user.gender + ")"
+              }
+            />
+            <DetailColumn label="DOB (Age)" content={getDobAndAge(user.dob)} />
             <DetailColumn
               styleClass="md:w-1/2"
               label="insurance provider & number"
-              content="American Family Insurance - 10*******982"
+              content={user.insuranceName + " - " + user.insuranceNumber}
             />
           </div>
         </div>
@@ -440,10 +444,13 @@ export const CustomAutoComplete = ({
         emptyMessage="No result found"
         showEmptyMessage={true}
         itemProp="py-0"
+        removeTokenIcon={"pi pi-times"}
+        panelClassName="custom-autocomplete-panel"
+        panelStyle={{ left: "500px" }}
       />
       {Boolean(selectedItems.length) && (
         <span
-          className="px-2 text-red-500 cursor-pointer min-w-[5rem]"
+          className="px-2 text-red-500 text-sm font-ternary cursor-pointer min-w-[5rem]"
           onClick={() =>
             handleValueSelect({ value: [] } as AutoCompleteChangeEvent)
           }

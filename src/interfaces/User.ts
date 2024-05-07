@@ -2,8 +2,8 @@ export interface IUserBasicDetails {}
 export interface IUserContactDetails {}
 
 export interface IUser {
-  phoneNumber: string;
-  alternativeNumber: string;
+  phoneNumber: number;
+  alternativeNumber: number;
   fullAddress: string;
   zipCode: string;
   city: string;
@@ -15,7 +15,38 @@ export interface IUser {
   dob: string;
   gender: string;
   race: string;
-  height: number;
+  height: IHeight;
   weight: number;
-  ethinicity: string;
+  ethnicity: string;
+  countryCode: country;
+  alternateNumberCode: country;
+  insuranceName: string;
+  insuranceNumber: string;
+  medicationTakenBefore: IMedication[];
+  currentMedication: IMedication[];
+  insurance?: IInsurance;
+  isOnMedicine: boolean;
+  medicationalHistory: boolean;
+}
+interface IHeight {
+  feet: number;
+  inches: number;
+}
+
+interface country {
+  name: string;
+  value: string;
+}
+
+export interface IMedication {
+  id: number;
+  name: string;
+}
+
+export interface IInsurance {
+  insuranceType: string;
+  insuranceNumber: string;
+  policyNumber: string;
+  groupNumber: string;
+  insuranceCompany: string;
 }
