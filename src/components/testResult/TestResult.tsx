@@ -8,6 +8,7 @@ import Share from "../../assets/icons/share.svg?react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { Sidebar } from "primereact/sidebar";
 import { getStatusColors } from "../../services/commonFunctions";
+import Button from "../Button";
 
 const TestResult = ({ results }: { results: LabTestResult[] }) => {
   const [selectedTest, setSelectedTest] = useState({} as LabTestResult);
@@ -22,7 +23,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
     rowClassName: "h-10 border-b",
     scrollHeight: "40rem",
   };
-  const columnHeaderStyle = "text-sm font-secondary py-1 bg-white";
+  const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
 
   const handlePageChange = (event: any) => {
     //TODO: Write logic to call api
@@ -42,7 +43,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
         <span
           className={`${getStatusColors(selectedTest.status)} py-1 px-3 rounded-full text-sm font-ternary`}
         >
-          {selectedTest.status}
+          {selectedTest.status ? selectedTest.status : "-"}
         </span>
       </div>
     );
@@ -98,11 +99,11 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
           totalRecords={results.length}
         />
       )}
-      {Object.keys(selectedTest).length && (
+      {!!Object.keys(selectedTest).length && (
         <Sidebar
           className="detailed-view w-[30rem]"
           header={<SidebarHeader />}
-          visible={!!Object.keys(selectedTest).length}
+          visible={!!Object.keys(selectedTest).length && isOpenSidebar}
           position="right"
           onHide={() => {
             setSelectedTest({} as LabTestResult);
@@ -129,7 +130,7 @@ const TestStatus = ({ status }: { status: string }) => {
   return (
     <div>
       <span
-        className={`${getStatusColors(status)} rounded-full py-2 px-3 text-center`}
+        className={`${getStatusColors(status)} rounded-full py-2 px-4 text-sm text-center`}
       >
         {status ? status : "-"}
       </span>
@@ -146,7 +147,7 @@ const ReportColumn = ({
 }) => {
   return (
     <div className="flex flex-row items-center  stroke-purple-800 justify-center">
-      <Eye className="me-1" onClick={() => handleReports("view", data)} />
+      <Eye className="me-2" onClick={() => handleReports("view", data)} />
       {(data.status.toLowerCase() === "under porcesses" ||
         data.status.toLowerCase() === "available") && (
         <Download onClick={() => handleReports("download", data)} />
@@ -154,7 +155,7 @@ const ReportColumn = ({
 
       {(data.status.toLowerCase() === "available" ||
         data.status.toLowerCase() === "under processing") && (
-        <Share className="ms-1" onClick={() => handleReports("share", data)} />
+        <Share className="ms-2" onClick={() => handleReports("share", data)} />
       )}
     </div>
   );
@@ -164,26 +165,44 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
   const TableCell = ({
     label,
     value,
+    highlight,
   }: {
     label: string | undefined;
     value: string | undefined;
+    highlight?: boolean;
   }) => (
     <div className="border-b pb-1">
       <div className="text-gray-500 font-secondary text-sm pt-4">
         {label ? label : "-"}
       </div>
-      <label className="font-primary">{value ? value : "-"}</label>
+      <label className={`${highlight && "text-red-600"} font-primary`}>
+        {value ? value : "-"}
+      </label>
     </div>
   );
 
-  const columnKeys = [
-    "ORDER ID",
-    "DATE OF TEST",
-    "SPECIMEN USED",
-    "TESTED AT",
-    "DATE/TIME COLLECTED",
-    "DATE/TIME REPORTED",
-  ];
+  const Result = () => {
+    return (
+      <div className="flex grid lg:grid-cols-2">
+        <TableCell label="RESULT" value="16" highlight={true} />
+        <TableCell label="REFERENCE RANGE" value="10-13" />
+        <TableCell label="UNITS" value="G/dL" />
+        <TableCell label="FALG" value="HIGH" highlight={true} />
+      </div>
+    );
+  };
+
+  const columnKeys =
+    test.status.toLowerCase() !== "upcoming appointment"
+      ? [
+          "ORDER ID",
+          "DATE OF TEST",
+          "SPECIMEN USED",
+          "TESTED AT",
+          "DATE/TIME COLLECTED",
+          "DATE/TIME REPORTED",
+        ]
+      : ["ORDER ID", "DATE OF TEST"];
 
   const getValue = (title: string | undefined) => {
     if (title) {
@@ -222,19 +241,41 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
             return <TableCell label={column} value={getValue(column)} />;
           })}
       </div>
-      <div className="font-primary text-primary py-6 mt-6 text-xl">
-        Test Results
-      </div>
-      <label className="text:sm py-6">
-        Results will be displayed here once physician uploaded it.
-      </label>
-      <div className="font-primary text-primary py-6 text-xl">
-        Ordering Physician details
-      </div>
-      <div className="grid md:grid-cols-2 sm:grid-cols-1 gap">
-        <TableCell label="PHYSICIAN NAME" value={getValue("PHYSICIAN NAME")} />
-        <TableCell label="CONTACT INFO" value={getValue("PHYSICAN PHONE")} />
-      </div>
+      {test.status.toLowerCase() !== "upcoming appointment" && (
+        <>
+          <div className="font-primary text-primary flex justify-between py-6 mt-6 text-xl">
+            Test Results
+            {test.status === "Available" && (
+              <div
+                className="flex flex-row items-center justify-center text-purple-800 cursor-pointer"
+                onClick={() => {}}
+              >
+                <Eye className="stroke-purple-800 me-2" /> Preview
+              </div>
+            )}
+          </div>
+          {test.status.toLowerCase() === "available" ? (
+            <Result />
+          ) : (
+            <label className="text:sm py-6">
+              Results will be displayed here once physician uploaded it.
+            </label>
+          )}
+          <div className="font-primary text-primary py-6 text-xl">
+            Ordering Physician details
+          </div>
+          <div className="grid md:grid-cols-2 sm:grid-cols-1 gap">
+            <TableCell
+              label="PHYSICIAN NAME"
+              value={getValue("PHYSICIAN NAME")}
+            />
+            <TableCell
+              label="CONTACT INFO"
+              value={getValue("PHYSICAN PHONE")}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

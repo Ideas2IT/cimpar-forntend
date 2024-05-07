@@ -1,13 +1,27 @@
-const SearchInput = () => {
+import { InputText } from "primereact/inputtext";
+import { useRef } from "react";
+
+const SearchInput = ({
+  handleSearch,
+}: {
+  handleSearch?: (value: string) => void;
+}) => {
+  const searchRef = useRef<HTMLInputElement>(null);
   return (
     <span>
-      <input
-        type="search"
-        id="search"
-        className="px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-full bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        placeholder="Search"
-        required
-      />
+      <div className="relative h-[2.5rem] w-[15rem]">
+        <InputText
+          onChange={(event) => handleSearch && handleSearch(event.target.value)}
+          ref={searchRef}
+          placeholder="Search"
+          style={{paddingInlineStart:'1rem'}}
+          className="h-full w-full rounded-full border border-gray-300 font-ternary"
+        />
+        <i
+          className="pi pi-search absolute right-[1rem] top-[.8rem] cursor-pointer h-[1rem] text-purple-900"
+          onClick={() => searchRef?.current && searchRef?.current.focus()}
+        />
+      </div>
     </span>
   );
 };

@@ -6,26 +6,47 @@ import SlideBack from "../../assets/icons/slideback.svg?react";
 import Button from "../Button";
 import UserDetails from "../userDetails/UserDetails";
 import { IUser } from "../../interfaces/User";
-
+import { useNavigate } from "react-router-dom";
+import Medication from "../medication/Medication";
+export const user: IUser = {
+  dob: "11-11-1993",
+  ethnicity: "Chinese",
+  gender: "male",
+  height: { inches: 2, feet: 5 },
+  firstName: "Balaji",
+  middleName: "Balamurgun",
+  race: "white",
+  weight: 120,
+  alternativeNumber: 9906915912,
+  city: "Arkansas",
+  country: "USA",
+  fullAddress: "Guindy, Chennai, tamil nadu india 6000032",
+  phoneNumber: 9906461523,
+  state: "Colorado",
+  zipCode: "zy-1232",
+  countryCode: { name: "+55-BR", value: "+55-BR" },
+  alternateNumberCode: { name: "+55-BR", value: "+55-BR" },
+  insuranceName: "American Family Insurance",
+  insuranceNumber: "10*******982",
+  medicationTakenBefore: [
+    { id: 1, name: "Celexa" },
+    { id: 2, name: "Lexapro" },
+    { id: 3, name: "Prozacfluvoxamine" },
+    { id: 4, name: "Paroxetine HCL and Zoloft" },
+  ],
+  currentMedication: [],
+  insurance: {
+    insuranceType: "Primary",
+    insuranceNumber: "df-1231-tr",
+    policyNumber: "lic-sdfsd-323-c4",
+    groupNumber: "Bijaj",
+    insuranceCompany: "",
+  },
+  isOnMedicine: true,
+  medicationalHistory: true,
+};
 const UserProfilePage = () => {
-  const user: IUser = {
-    dob: "12-12-2023",
-    ethinicity: "white",
-    gender: "male",
-    height: 110,
-    firstName: "Balaji",
-    middleName: "Balamurgun",
-    race: "white",
-    weight: 120,
-    alternativeNumber: "+91-9906915912",
-    city: "chennai",
-    country: "india",
-    fullAddress: "Guindy, Chennai, tamil nadu india 6000032",
-    phoneNumber: "+91-9906461523",
-    state: "tamil nadu",
-    zipCode: "zy-1232",
-  };
-
+  const navigate = useNavigate();
   const tabs: Tab[] = [
     {
       key: "personal",
@@ -39,7 +60,11 @@ const UserProfilePage = () => {
     {
       key: "medications",
       value: "Medications",
-      content: <div className="px-6 py-1 h-full">{/* <Immunization /> */}</div>,
+      content: (
+        <div className="px-6 py-1 h-full">
+          <Medication />
+        </div>
+      ),
     },
     {
       key: "MedicalConditions",
@@ -63,7 +88,19 @@ const UserProfilePage = () => {
 
   const [selectedTab, setSelectedTab] = useState("personal");
   const [hideTabs, setHideTabs] = useState(false);
-  const [isEditable, setIsEditable] = useState(false);
+
+  const handleEdit = () => {
+    switch (selectedTab.toLowerCase()) {
+      case "personal":
+        navigate("/editprofile");
+        break;
+      case "medications":
+        navigate("/editMedications");
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="flex flex-col flex-grow">
@@ -82,7 +119,7 @@ const UserProfilePage = () => {
             className="ml-3"
             variant="primary"
             style="outline"
-            onClick={() => setIsEditable(true)}
+            onClick={() => handleEdit()}
           >
             <i className=" pi pi-pencil stroke-purple-700 mr-2" />
             Edit Details

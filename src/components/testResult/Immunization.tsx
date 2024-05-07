@@ -141,7 +141,7 @@ const TestResult = () => {
                 key={column.header}
                 field={column.field}
                 header={column.header}
-                headerClassName="text-sm font-secondary py-1"
+                headerClassName="text-sm font-secondary py-1 border-b bg-white"
                 bodyClassName="py-0"
                 body={(rowData) => (
                   <ColumnData content={rowData[column.field]} />
@@ -152,7 +152,7 @@ const TestResult = () => {
         <Column
           field="view"
           header=""
-          headerClassName="text-sm font-secondary py-1"
+          headerClassName="text-sm font-secondary py-1 border-b bg-white"
           bodyClassName="py-0"
           body={(rowData) => (
             <ViewColumn
