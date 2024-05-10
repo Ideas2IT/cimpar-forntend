@@ -1,0 +1,14 @@
+.p-toast .p-toast-message {
+  margin: 0;
+}
+
+.p-toast,
+/* .p-toast-container, */
+/* .p-toast-item, */
+/* .p-toast-image, */
+/* .p-toast-title { */
+.p-toast-message {
+  background: white;
+  opacity: 100;
+  border-radius: 16px;
+}

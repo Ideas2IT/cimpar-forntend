@@ -1,0 +1,8 @@
+.calander .p-inputtext {
+  @apply rounded-lg;
+}
+
+.large-input {
+  @apply h-[5rem] rounded-lg border border-gray-300 w-full;
+  resize: none;
+}

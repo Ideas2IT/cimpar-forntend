@@ -32,6 +32,11 @@
   src: url("./assets/fonts/FuturaBkBook.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "FuturaLtBt";
+  src: url("./assets/fonts/FuturaLtBT.ttf") format("truetype");
+}
+
 @layer utilities {
   .font-primary {
     font-family: "Futurahvbt";
@@ -41,7 +46,7 @@
     font-family: "FuturaMdBt";
   }
 
-  .font-ternary {
+  .font-tertiary {
     font-family: "FuturaBkBt";
   }
 }
@@ -61,9 +66,22 @@ body {
   }
 }
 
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 16px;
+}
+
 .input-label {
   @apply text-[#545F71] !font-normal !text-sm;
   font-family: FuturaBkBt;
+}
+
+.font-light {
+  font-family: FuturaLtBt;
 }
 
 .p-autocomplete-multiple-container .p-autocomplete-token {
@@ -88,6 +106,14 @@ body {
   border: 1px solid gray;
 }
 
+.p-radiobutton.p-highlight .p-radiobutton-box {
+  border: 1px solid #2d6d80;
+}
+
+.p-radiobutton .p-radiobutton-box .p-radiobutton-icon {
+  background-color: #2d6d80;
+}
+
 .react-time-picker__wrapper {
   border: none !important;
 }
@@ -108,18 +134,6 @@ body {
   padding: 0 10px;
   margin: 10px 0;
 }
-
-.p-toast,
-.p-toast-message-content {
-  padding: 0;
-  background: white;
-  @apply rounded-md;
-  margin: 0 !important;
-}
-
-.p-toast-message {
-  margin: 0;
-}
-.p-autocomplete-multiple-container {
-  width: 100%;
+.input-field {
+  @apply h-[2.5rem] border border-gray-300 rounded-lg;
 }

@@ -26,7 +26,7 @@ const VerticalTabView: React.FC<VerticalTabProps> = ({
           {tabs.map((tab) => (
             <li
               key={tab.key}
-              className={`cursor-pointer px-6 py-4 text-sm font-medium border-b ${selectedTab.key === tab.key ? "bg-cyan-700 text-white" : "text-gray-600"}`}
+              className={`cursor-pointer px-6 py-4 text-md font-secondary border-b ${selectedTab.key === tab.key ? "bg-cyan-700 text-white" : "text-gray-600"}`}
               onClick={() => handleOnTabClick(tab)}
             >
               {tab.value}

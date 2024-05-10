@@ -4,93 +4,14 @@ import "./Immunization.css";
 import { Sidebar } from "primereact/sidebar";
 import { useState } from "react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
-interface RowData {
-  id: number;
-  vaccineName: string;
-  adminDate: string;
-  doseNumber: string;
-  administrator: string;
-  site: string;
-  view: string;
-  dosageForm: string;
-  lotNumber: string;
-  route: string;
-  administeredCode: string;
-}
+import { IImmunization, immunizations } from "../../assets/MockData";
+
 const TestResult = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedPatient, setSelectedpatient] = useState({} as RowData);
-  const values: RowData[] = [
-    {
-      id: 1,
-      vaccineName: "Covix",
-      adminDate: "12 May,2006",
-      doseNumber: "1st dose",
-      administrator: "Nithin",
-      site: "Upper Left arm ",
-      dosageForm: "3.0 ML",
-      view: "",
-      lotNumber: "EH9899",
-      route: "Intramuscular injection",
-      administeredCode: "JO7BN01",
-    },
-    {
-      id: 2,
-      vaccineName: "Cholera(Liquid)",
-      adminDate: "12 May,2006",
-      doseNumber: "2nd dose",
-      administrator: "Nithin",
-      site: "Upper Left arm ",
-      view: "",
-      dosageForm: "3.0 ML",
-      lotNumber: "EH9899",
-      route: "Intramuscular injection",
-      administeredCode: "JO7BN01",
-    },
-    {
-      id: 3,
-      vaccineName: "Cholera(Liquid)",
-      adminDate: "12 May,2006",
-      doseNumber: "2nd dose",
-      administrator: "Nithin",
-      site: "Upper Left arm ",
-      view: "",
-      dosageForm: "3.0 ML",
-      lotNumber: "EH9899",
-      route: "Intramuscular injection",
-      administeredCode: "JO7BN01",
-    },
-    {
-      id: 4,
-      vaccineName: "Cholera(Liquid)",
-      adminDate: "12 May,2006",
-      doseNumber: "2nd dose",
-      administrator: "Nithin",
-      site: "Upper Left arm ",
-      view: "",
-      dosageForm: "3.0 ML",
-      lotNumber: "EH9899",
-      route: "Intramuscular injection",
-      administeredCode: "JO7BN01",
-    },
-    {
-      id: 5,
-      vaccineName: "Cholera(Liquid)",
-      adminDate: "12 May,2006",
-      doseNumber: "2nd dose",
-      administrator: "Nithin",
-      site: "Right Shoulder Muscle",
-      view: "",
-      dosageForm: "3.0 ML",
-      lotNumber: "EH9899",
-      route: "Intramuscular injection",
-      administeredCode: "JO7BN01",
-    },
-  ];
-
+  const [selectedPatient, setSelectedpatient] = useState({} as IImmunization);
   const tableProps = {
-    selection:selectedPatient,
-    value: values,
+    selection: selectedPatient,
+    value: immunizations,
     selectionMode: "single" as const,
     dataKey: "id",
     tableStyle: { minWidth: "50rem" },
@@ -122,7 +43,7 @@ const TestResult = () => {
     },
   ];
 
-  const handleViewRecord = (data: RowData) => {
+  const handleViewRecord = (data: IImmunization) => {
     setSelectedpatient(data);
     setIsSidebarOpen(true);
   };
@@ -141,8 +62,8 @@ const TestResult = () => {
                 key={column.header}
                 field={column.field}
                 header={column.header}
+                bodyClassName="py-5"
                 headerClassName="text-sm font-secondary py-1 border-b bg-white"
-                bodyClassName="py-0"
                 body={(rowData) => (
                   <ColumnData content={rowData[column.field]} />
                 )}
@@ -152,8 +73,8 @@ const TestResult = () => {
         <Column
           field="view"
           header=""
+          bodyClassName="py-5"
           headerClassName="text-sm font-secondary py-1 border-b bg-white"
-          bodyClassName="py-0"
           body={(rowData) => (
             <ViewColumn
               data={rowData}
@@ -164,10 +85,10 @@ const TestResult = () => {
       </DataTable>
       {
         //TODO: show the pagenator only if total records are more than page limit
-        values.length > 20 && (
+        immunizations.length > 20 && (
           <CustomPaginator
             handlePageChange={handlePageChange}
-            totalRecords={values.length}
+            totalRecords={immunizations.length}
             rowLimit={20}
           />
         )
@@ -177,7 +98,10 @@ const TestResult = () => {
         header={"immunization details"}
         visible={isSidebarOpen}
         position="right"
-        onHide={() => setIsSidebarOpen(false)}
+        onHide={() => {
+          setIsSidebarOpen(false);
+          setSelectedpatient({} as IImmunization);
+        }}
       >
         <ImmunizationDetailView data={selectedPatient} />
       </Sidebar>
@@ -185,7 +109,7 @@ const TestResult = () => {
   );
 };
 
-const ImmunizationDetailView = ({ data }: { data: RowData }) => {
+export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
   const DetailRow = ({ label, value }: { label: string; value: string }) => (
     <div className="border-b">
       <div className="input-label text-gray-900 font-secondary pt-4">
@@ -264,21 +188,21 @@ const ViewColumn = ({
   data,
   handleViewRecord,
 }: {
-  data: RowData;
-  handleViewRecord: (value: RowData) => void;
+  data: IImmunization;
+  handleViewRecord: (value: IImmunization) => void;
 }) => {
-  const handleView = (data: RowData) => {
+  const handleView = (data: IImmunization) => {
     handleViewRecord(data);
   };
 
-  const handleShare = (data: RowData) => {
+  const handleShare = (data: IImmunization) => {
     console.log("share", data);
   };
 
   return (
     <div className="flex flex-row gap-2 text-purple-800">
       <i className="pi pi-eye" onClick={() => handleView(data)} />
-      <i className="pi pi-share-alt" onClick={() => handleShare(data)} />
+      {/* <i className="pi pi-share-alt" onClick={() => handleShare(data)} /> */}
     </div>
   );
 };

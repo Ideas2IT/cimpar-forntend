@@ -6,7 +6,7 @@
 }
 
 .activeLabel {
-  color: #2D6D80;
+  color: #2d6d80;
 }
 
 .test .p-multiselect .p-multiselect-label {
@@ -23,5 +23,14 @@
 } */
 
 .custom-autocomplete-panel {
- @apply !min-w-[25rem] !left-[10rem];
+  @apply !min-w-[25rem] !left-[10rem];
+}
+
+.p-autocomplete-multiple-container {
+  @apply rounded-lg;
+}
+
+.p-checkbox .p-checkbox-box {
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
 }

@@ -77,7 +77,7 @@ export const PatientDetails = ({
 }) => {
   return (
     <div className="border-b border-gray-100">
-      <div className="font-secondary text-sm text-gray-500 py-2">
+      <div className="font-secondary text-sm text-gray-500 py-2 max-w-[100%] text-ellipsis overflow-hidden">
         {label ? label : "-"}
       </div>
       <div

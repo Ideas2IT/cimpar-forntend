@@ -3,6 +3,8 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { useContext, useRef, useState } from "react";
 import logoutImage from "../assets/icons/logout.svg";
 import HeaderContext from "../context/HeaderContext";
+import { useNavigate } from "react-router-dom";
+import localStorageService from "../services/localStorageService";
 const Header = () => {
   const { value } = useContext(HeaderContext);
 
@@ -14,8 +16,8 @@ const Header = () => {
   const op = useRef<OverlayPanel>(null);
   const [toggleButton, setToggleButton] = useState(false);
   return (
-    <div className="flex justify-between items-center mb-7 mx-6">
-      <p className="font-bold text-2xl text-gray-700">{value}</p>
+    <div className="flex justify-between items-center mb-6 mx-6">
+      <p className="font-bold text-2xl font-primary text-gray-700">{value}</p>
       <Button
         label={loggedInUser.email}
         className="py-2 px-3 rounded-full border border-gray-300 shadow-none"
@@ -36,7 +38,7 @@ const Header = () => {
       </Button>
       <OverlayPanel
         unstyled
-        className="bg-white py-2 shadow-md"
+        className="bg-white py-2 mt-5 shadow-md rounded-lg"
         onHide={() => setToggleButton(false)}
         ref={op}
       >
@@ -47,16 +49,19 @@ const Header = () => {
 };
 
 //TODO: Need to write the password change logic
-const handleChangePassword = () => {
-  console.log("Hanlde change password");
-};
-
-//TODO: Need to write the logic to delete all the credentials from storage
-const handleLogout = () => {
-  console.log("handle logout");
-};
 
 export const LogoutPopover = () => {
+  const navigate = useNavigate();
+
+  const handleChangePassword = () => {
+    console.log("Hanlde change password");
+  };
+
+  //TODO: Need to write the logic to delete all the credentials from storage
+  const handleLogout = () => {
+    localStorageService.clearTokens();
+    navigate("/");
+  };
   return (
     <ul>
       <li
@@ -66,16 +71,11 @@ export const LogoutPopover = () => {
         Change password
       </li>
       <li
-        className="flex nowrap cursor-pointer px-6 justify-center hover:bg-pink-50"
-        onClick={() => handleLogout}
+        className="flex nowrap cursor-pointer px-6 justify-center items-center text-red-500 hover:bg-pink-50"
+        onClick={handleLogout}
       >
         <img src={logoutImage} className="pe-3 py-3" />
-        <Button
-          label="Logout"
-          className="px-2 my-2 bg-yellow-300"
-          severity="warning"
-          raised
-        />
+        <span>Logout</span>
       </li>
     </ul>
   );

@@ -5,12 +5,12 @@ import Sidebar from "./Sidebar";
 
 const Layout = () => {
   const [value, setValue] = useState("Home");
-  const updateValue = (newValue: string) => {
+  const updateHeaderTitle = (newValue: string) => {
     setValue(newValue);
   };
   return (
     <div className="flex h-full">
-      <HeaderContext.Provider value={{ value, updateValue }}>
+      <HeaderContext.Provider value={{ value, updateHeaderTitle }}>
         <Sidebar />
         <Main />
       </HeaderContext.Provider>

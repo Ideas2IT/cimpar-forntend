@@ -1,9 +1,8 @@
 import Header from "./Header";
-import "../../node_modules/primereact/resources/themes/lara-light-cyan/theme.css";
+import "../../node_modules/primereact/resources/themes/fluent-light/theme.css";
 import "../../node_modules/primereact/resources/primereact.min.css";
 import "../../node_modules/primeicons/primeicons.css";
-import { Outlet, RouterProvider } from "react-router-dom";
-import router from "../router";
+import { Outlet } from "react-router-dom";
 
 const Main = () => {
   return (
