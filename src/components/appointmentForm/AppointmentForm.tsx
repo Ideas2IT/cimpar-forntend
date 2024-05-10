@@ -13,16 +13,16 @@ import plus from "../../assets/icons/plus.svg";
 import "./AppointmentPage.css";
 import { RadioButton } from "primereact/radiobutton";
 import { FaRegCalendarMinus } from "react-icons/fa";
-import { Button as PrimeButton } from "primereact/button";
 import Button from "../Button";
 import { Link } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { ITest, medicalConditons, tests } from "../../assets/MockData";
 import { MultiSelect } from "primereact/multiselect";
 import { user } from "../userProfilePage/UserProfilePage";
 import moment from "moment";
+import BackButton from "../backButton/BackButton";
 
 export interface IItem {
   id: number;
@@ -34,6 +34,7 @@ export interface IFormData {
   dateOfAppointment: Date;
   scheduledTime: string;
   reasonForTest: string;
+  testReason: string;
   otherReasonForTest: string;
   medicalConditions: IItem[];
   otherMedicalConditon: string;
@@ -46,12 +47,13 @@ const AppointmentForm = () => {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {} as IFormData,
   });
 
-  const [testReason, setTestReason] = useState("");
+  // const [testReason, setTestReason] = useState("");
   const [selectedMedicalConditions, setSelectedMedicalConditons] = useState<
     IItem[]
   >([]);
@@ -61,6 +63,7 @@ const AppointmentForm = () => {
 
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
+    setShowDialog(true);
     console.log(data);
   };
 
@@ -74,37 +77,26 @@ const AppointmentForm = () => {
     setValue("allergies", values);
   };
 
-  const getDobAndAge = (dob: string) => {
+  const getDobAndAge = () => {
     const dateOfBirth = moment(user.dob, "DD-MM-YYYY").format("DD MMMM, YYYY");
     const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
     return dateOfBirth + " (" + age + ")";
   };
-
-  const selectedReasonForTest = useWatch({ control, name: "reasonForTest" });
+  const reasonForTest = watch("testReason");
 
   return (
     <>
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
         <div className="flex mx-4 justify-between items-center bg-gray-100">
-          <div className="flex justify-between items-center">
-            <Link to="/">
-              <PrimeButton className="p-2 bg-white shadow-none" text raised>
-                <i
-                  className="pi pi-arrow-left color-primary"
-                  color="danger"
-                ></i>
-              </PrimeButton>
-              <label className="text-blue-200 font-primary  text-xl cursor-pointer px-2">
-                Home/
-              </label>
-            </Link>
-            <label className="color-primary font-primary text-xl px-2">
-              Make Appointment
-            </label>
-          </div>
+          <BackButton
+            previousPage="Home"
+            currentPage="Make Appointment"
+            backLink="/"
+          />
           <div className="flex py-2 justify-between items-center">
             <Link to="/">
               <Button
+                onClick={() => {}}
                 className="ml-3 font-primary"
                 variant="primary"
                 type="reset"
@@ -139,12 +131,12 @@ const AppointmentForm = () => {
                 name="testToTake"
                 control={control}
                 rules={{
-                  required: "Test list cann't be empty",
+                  required: "Test list can't be empty",
                 }}
                 render={({ field }) => (
                   <MultiSelect
                     id="testToTake"
-                    onChange={(e) => e.value && setValue("testToTake", e.value)}
+                    onChange={(e) => setValue("testToTake", e.value)}
                     options={tests}
                     filter
                     optionLabel="name"
@@ -154,6 +146,11 @@ const AppointmentForm = () => {
                   />
                 )}
               />
+              {errors.testToTake && (
+                <span className="text-red-500 text-xs ">
+                  {errors.testToTake.message}
+                </span>
+              )}
             </div>
             <div className="lg:w-1/4 md:w-1/2 sm:w-1 d-flex relative">
               <label htmlFor="appointmentDate" className="block input-label">
@@ -223,68 +220,76 @@ const AppointmentForm = () => {
           <div className="flex flex-wrap py-3 mt-2">
             <div className="lg:w-1/2 pe-4">
               <label htmlFor="testReason" className="input-label">
-                Reason for test
+                Reason for test*
               </label>
               <div className="flex flex-row rounded-md pe-2 py-2">
-                <RadioButton
-                  name="reasonForTest"
-                  inputId="usualCheckup"
-                  className="me-3"
-                  value="usualCheckup"
-                  onChange={() => {
-                    setValue("reasonForTest", "usualCheckup");
-                    setTestReason("usualCheckup");
+                <Controller
+                  name="testReason"
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: "Test reason can't be empty",
                   }}
-                  checked={testReason === "usualCheckup"}
+                  render={({ field }) => (
+                    <>
+                      <RadioButton
+                        {...field}
+                        name="reasonForTest"
+                        inputId="usualCheckup"
+                        className="me-3"
+                        value="usualCheckup"
+                        checked={field.value === "usualCheckup"}
+                      />
+                      <label
+                        htmlFor="usualCheckup"
+                        className={`${field.value === "usualCheckup" && "activeLabel"} font-semibold`}
+                      >
+                        Usual checkup
+                      </label>
+                      <RadioButton
+                        {...field}
+                        name="reasonForTest"
+                        inputId="doctorsAdvice"
+                        className="mx-3"
+                        value="doctorsAdvice"
+                        checked={field.value === "doctorsAdvice"}
+                      />
+                      <label
+                        htmlFor="doctorsAdvice"
+                        className={`${field.value === "doctorsAdvice" && "activeLabel"} font-semibold`}
+                      >
+                        Advised by doctor
+                      </label>
+                      <RadioButton
+                        {...field}
+                        name="ReasonForTest"
+                        inputId="otherReason"
+                        className="mx-3"
+                        value="otherReason"
+                        checked={field.value === "otherReason"}
+                      />
+                      <label
+                        htmlFor="otherReason"
+                        className={`${field.value === "otherReason" && "activeLabel"} font-semibold`}
+                      >
+                        Other
+                      </label>
+                    </>
+                  )}
                 />
-                <label
-                  htmlFor="usualCheckup"
-                  className={`${testReason === "usualCheckup" && "activeLabel"} font-semibold`}
-                >
-                  Usual checkup
-                </label>
-                <RadioButton
-                  name="reasonForTest"
-                  inputId="doctorsAdvice"
-                  className="mx-3"
-                  value="doctorsAdvice"
-                  onChange={() => {
-                    setValue("reasonForTest", "doctorsAdvice");
-                    setTestReason("doctorsAdvice");
-                  }}
-                  checked={testReason === "doctorsAdvice"}
-                />
-                <label
-                  htmlFor="doctorsAdvice"
-                  className={`${testReason === "doctorsAdvice" && "activeLabel"} font-semibold`}
-                >
-                  Advised by doctor
-                </label>
-                <RadioButton
-                  name="ReasonForTest"
-                  inputId="otherReason"
-                  className="mx-3"
-                  value="otherReason"
-                  onChange={() => {
-                    setValue("reasonForTest", "otherReason");
-                    setTestReason("otherReason");
-                  }}
-                  checked={testReason === "otherReason"}
-                />
-                <label
-                  htmlFor="otherReason"
-                  className={`${testReason === "otherReason" && "activeLabel"} font-semibold`}
-                >
-                  Other
-                </label>
               </div>
+              {errors.testReason && (
+                <span className="text-red-500 text-xs ">
+                  {errors.testReason.message}
+                </span>
+              )}
             </div>
             <div className="md:w-1/2 min-h-[50px]">
               <label htmlFor="reasonDetails" className="input-label">
                 Other reason
               </label>
               <input
-                disabled={selectedReasonForTest !== "otherReason"}
+                disabled={reasonForTest !== "otherReason"}
                 {...register("otherReasonForTest")}
                 name={`otherReasonForTest`}
                 onChange={(e) => setValue("otherReasonForTest", e.target.value)}
@@ -352,7 +357,7 @@ const AppointmentForm = () => {
                 user.firstName + " " + user.middleName + "(" + user.gender + ")"
               }
             />
-            <DetailColumn label="DOB (Age)" content={getDobAndAge(user.dob)} />
+            <DetailColumn label="DOB (Age)" content={getDobAndAge()} />
             <DetailColumn
               styleClass="md:w-1/2"
               label="insurance provider & number"
@@ -364,7 +369,9 @@ const AppointmentForm = () => {
       {showDialog && (
         <CustomModal
           styleClass="w-[30rem] h-[15rem]"
-          handleClose={() => setShowDialog(false)}
+          handleClose={() => {
+            setShowDialog(false);
+          }}
         >
           <AppointmentStatus />
         </CustomModal>
@@ -450,7 +457,7 @@ export const CustomAutoComplete = ({
       />
       {Boolean(selectedItems.length) && (
         <span
-          className="px-2 text-red-500 text-sm font-ternary cursor-pointer min-w-[5rem]"
+          className="px-2 text-red-500 text-sm font-tertiary cursor-pointer min-w-[5rem]"
           onClick={() =>
             handleValueSelect({ value: [] } as AutoCompleteChangeEvent)
           }
@@ -487,7 +494,7 @@ const AppointmentStatus = () => {
         Your Appointment has been Successfully fixed.
       </label>
       <div className="flex justify-center">
-        <Link to="/">
+        <Link to="/test-result">
           <Button className="font-primary w-[12rem]" style="outline">
             <i className="pi pi-check me-2"></i>Go to Lab Results
           </Button>

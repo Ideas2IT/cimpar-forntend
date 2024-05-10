@@ -7,21 +7,27 @@ import Download from "../../assets/icons/download.svg?react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { Sidebar } from "primereact/sidebar";
 import { getStatusColors } from "../../services/commonFunctions";
+import {
+  IService,
+  immunizations,
+  labResults,
+  serviceData,
+} from "../../assets/MockData";
+import { ImmunizationDetailView } from "../testResult/Immunization";
 
-const TestResult = ({ results }: { results: LabTestResult[] }) => {
-  const [selectedTest, setSelectedTest] = useState({} as LabTestResult);
+const ServiceHistory = () => {
+  const [selectedService, setSelectedTest] = useState<IService>({} as IService);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
   const tableProps = {
-    selection: selectedTest,
-    value: results,
+    selection: selectedService,
+    value: serviceData,
     selectionMode: "single" as const,
-    dataKey: "orderId",
+    dataKey: "serviceId",
     tableStyle: { minWidth: "50rem" },
     className: "mt-2 max-h-[90%] rowHoverable",
     rowClassName: "h-10 border-b",
     scrollHeight: "40rem",
   };
-  const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
 
   const handlePageChange = (event: any) => {
     //TODO: Write logic to call api
@@ -29,7 +35,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
   };
 
   //TODO: Need to handle the logic
-  const handleReports = (action: string, row: LabTestResult) => {
+  const handleReports = (action: string, row: IService) => {
     setSelectedTest(row);
     action === "view" && setIsOpenSidebar(true);
   };
@@ -39,99 +45,99 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
       <div className="items-center flex">
         <span className="pe-3">Lab Result</span>
         <span
-          className={`${getStatusColors(selectedTest.status)} py-1 px-3 rounded-full text-sm font-tertiary`}
+          className={`${getStatusColors(selectedService.status)} py-1 px-3 rounded-full text-sm font-tertiary`}
         >
-          {selectedTest.status ? selectedTest.status : "-"}
+          {selectedService.status ? selectedService.status : "-"}
         </span>
       </div>
     );
   };
-
-  const resultColumns = [
+  const serviceColumns = [
     {
-      field: "testName",
-      header: "TEST NAME",
-      body: (rowData: LabTestResult) => <TestName name={rowData.testName} />,
+      field: "category",
+      header: "CATEGORY",
+      bodyClassName: "py-2",
+      body: (rowData: IService) => <div> {rowData.category} </div>,
     },
     {
-      field: "orderId",
-      header: "ORDER ID",
-      body: (rowData: LabTestResult) => <TestDetails value={rowData.orderId} />,
+      field: "serviceFor",
+      header: "SERVICE FOR",
+      body: (rowData: IService) => <TestDetails value={rowData.serviceFor} />,
     },
     {
-      field: "testedAt",
-      header: "TESTED AT",
-      body: (rowData: LabTestResult) => (
-        <TestDetails value={rowData.testedAt} />
-      ),
-    },
-    {
-      field: "dateOfTest",
-      header: "DATE OF TEST",
-      body: (rowData: LabTestResult) => (
-        <TestDetails value={rowData.dateOfTest} />
+      field: "dateOfService",
+      header: "DATE OF SERVICE",
+      body: (rowData: IService) => (
+        <TestDetails value={rowData.dateOfService} />
       ),
     },
     {
       field: "status",
       header: "STATUS",
-      body: (rowData: LabTestResult) => <TestStatus status={rowData.status} />,
-    },
-    {
-      field: "",
-      header: "",
-      body: (rowData: LabTestResult) => (
-        <ReportColumn data={rowData} handleReports={handleReports} />
-      ),
+      body: (rowData: IService) => <TestStatus status={rowData.status} />,
     },
   ];
 
   return (
     <>
       <DataTable {...tableProps}>
-        {resultColumns.map((column, index) => {
+        {serviceColumns.map((column, index) => {
           return (
             <Column
               key={index}
-              headerClassName={columnHeaderStyle}
-              bodyClassName="py-2"
               field={column.field}
               header={column.header}
               body={column.body}
+              headerClassName="text-sm font-secondary py-1 border-b bg-white"
             />
           );
         })}
+
+        <Column
+          field=""
+          header=""
+          headerClassName="text-sm font-secondary py-1 border-b bg-white"
+          body={(rowData) => (
+            <ReportColumn data={rowData} handleReports={handleReports} />
+          )}
+        />
       </DataTable>
-      {results.length > 10 && (
+      {serviceData.length > 10 && (
         <CustomPaginator
           rowLimit={10}
           handlePageChange={handlePageChange}
-          totalRecords={results.length}
+          totalRecords={serviceData.length}
         />
       )}
-      {!!Object.keys(selectedTest).length && (
+      {!!Object.keys(selectedService).length && (
         <Sidebar
           className="detailed-view w-[30rem]"
+          //TODO: Need to customze the header on the bases of service type
           header={<SidebarHeader />}
-          visible={!!Object.keys(selectedTest).length && isOpenSidebar}
+          visible={!!Object.keys(selectedService).length && isOpenSidebar}
           position="right"
           onHide={() => {
-            setSelectedTest({} as LabTestResult);
+            setSelectedTest({} as IService);
             setIsOpenSidebar(false);
           }}
         >
-          <TestDetailedView test={selectedTest} />
+          {selectedService.category.toLowerCase() === "lab test" ? (
+            // TODO: Need to fetch the results of selected service and render the component accordingly
+            <TestDetailedView test={labResults[0]} />
+          ) : (
+            <ImmunizationDetailView data={immunizations[0]} />
+          )}
         </Sidebar>
       )}
     </>
   );
 };
 
-const TestName = ({ name }: { name: String }) => {
-  return (
-    <div className="text-purple-800 font-tertiary">{name ? name : "-"}</div>
-  );
-};
+// const TestName = ({ name }: { name: String }) => {
+//   return (
+//     <div className="text-purple-800 font-tertiary">{name ? name : "-"}</div>
+//   );
+// };
 
 const TestDetails = ({ value }: { value: string }) => {
   return <div className="font-tertiary">{value ? value : "-"}</div>;
@@ -152,8 +158,8 @@ const ReportColumn = ({
   data,
   handleReports,
 }: {
-  data: LabTestResult;
-  handleReports: (action: string, data: LabTestResult) => void;
+  data: IService;
+  handleReports: (action: string, data: IService) => void;
 }) => {
   return (
     <div className="flex flex-row items-center stroke-purple-800 justify-start">
@@ -247,8 +253,10 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         {Boolean(columnKeys.length) &&
-          columnKeys.map((column) => {
-            return <TableCell label={column} value={getValue(column)} />;
+          columnKeys.map((column, index) => {
+            return (
+              <TableCell key={index} label={column} value={getValue(column)} />
+            );
           })}
       </div>
       {test.status.toLowerCase() !== "upcoming appointment" && (
@@ -289,4 +297,4 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
     </div>
   );
 };
-export default TestResult;
+export default ServiceHistory;

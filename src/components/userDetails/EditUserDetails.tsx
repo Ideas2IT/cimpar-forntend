@@ -19,6 +19,7 @@ import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Link } from "react-router-dom";
 import { Button as PrimeButton } from "primereact/button";
+import { ERROR, PATTERN } from "../../utils/AppConstants";
 
 const EditUserDetails = ({ user }: { user: IUser }) => {
   const datePickerRef = useRef<ReactDatePicker<never, undefined>>(null);
@@ -79,9 +80,8 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 {...register("firstName", {
                   required: "First name can not be empty.",
                   pattern: {
-                    value: /^[A-Za-z\s]+$/,
-                    message:
-                      "Name must contain letters, spaces, or hyphens only",
+                    value: PATTERN.NAME,
+                    message: ERROR.NAME_ERROR,
                   },
                 })}
                 name={`firstName`}
@@ -93,6 +93,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 id="firstName"
                 placeholder="First name"
               />
+              {errors.firstName && (
+                <span className="text-red-700 text-xs">
+                  {errors.firstName.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label className="block input-label" htmlFor="middleName">
@@ -101,9 +106,8 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <input
                 {...register("middleName", {
                   pattern: {
-                    value: /^[A-Za-z\s]+$/,
-                    message:
-                      "Name must contain letters, spaces, or hyphens only",
+                    value: PATTERN.NAME,
+                    message: ERROR.NAME_ERROR,
                   },
                 })}
                 name={`middleName`}
@@ -115,6 +119,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 id="middleName"
                 placeholder="Middle Name"
               />
+              {errors.middleName && (
+                <span className="text-red-700 text-xs">
+                  {errors.middleName.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label className="block input-label" htmlFor="lastName">
@@ -123,8 +132,8 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <input
                 {...register("lastName", {
                   pattern: {
-                    value: /^[A-Za-z\s]+$/,
-                    message: "Name should only contain letters",
+                    value: PATTERN.NAME,
+                    message: ERROR.NAME_ERROR,
                   },
                 })}
                 name={`lastName`}
@@ -136,6 +145,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 id="lastName"
                 placeholder="Last name"
               />
+              {errors.lastName && (
+                <span className="text-red-700 text-xs">
+                  {errors.lastName.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label className="block input-label" htmlFor="gender">
@@ -146,7 +160,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 control={control}
                 defaultValue={user.gender}
                 rules={{
-                  required: "Date of appointment is required",
+                  required: "Gender is required",
                 }}
                 render={({ field }) => (
                   <Dropdown
@@ -156,10 +170,15 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={genders}
                     optionLabel="name"
                     placeholder="Select a City"
-                    className="dropdown w-full md:w-14rem border border-gray-300 !py-[0.4rem]"
+                    className="dropdown w-full md:w-14rem border border-gray-300 rounded-lg h-[2.5rem] !py-[0.4rem]"
                   />
                 )}
               />
+              {errors.gender && (
+                <span className="text-red-700 text-xs">
+                  {errors.gender.message}
+                </span>
+              )}
             </div>
             <div className="pt-4 d-flex relative">
               <label htmlFor="dob" className="block input-label">
@@ -195,13 +214,18 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   <FaRegCalendarMinus />
                 </span>
               </div>
+              {errors.dob && (
+                <span className="text-red-700 text-xs">
+                  {errors.dob.message}
+                </span>
+              )}
             </div>
             <div className="pt-4 relative">
               <label htmlFor="height" className="block input-label pb-1">
                 Height*
               </label>
-              <div className="p-inputgroup flex-1 border h-[2.5rem] rounded-lg border-gray-300">
-                <span className="relative !w-[50%] border-r relative border-gray-300">
+              <div className="p-inputgroup flex-1 border h-[2.5rem] rounded-lg border border-gray-300">
+                <span className="relative !w-[50%] border-r relative px-1 border-gray-300">
                   <Controller
                     name="height.feet"
                     control={control}
@@ -210,11 +234,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       required: "Height is required",
                       min: {
                         value: 1,
-                        message: "Height must be greater than 0",
+                        message: "Invalid height",
                       },
                       max: {
                         value: 10,
-                        message: "Height can not exceed 10",
+                        message: "Invalid height",
                       },
                     }}
                     render={({ field }) => (
@@ -230,7 +254,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   />
                   <span className="absolute top-[.5rem] right-5">ft</span>
                 </span>
-                <span className="p-inputgroup-addon w-[50%] relative">
+                <span className="p-inputgroup-addon w-[48%] px-1 relative">
                   <Controller
                     name="height.inches"
                     control={control}
@@ -238,11 +262,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     rules={{
                       min: {
                         value: 0,
-                        message: "Height must be greater than or equal to 0",
+                        message: "Invalid height",
                       },
                       max: {
                         value: 11,
-                        message: "Height must be less than or equal to 100",
+                        message: "invalid height",
                       },
                     }}
                     render={({ field }) => (
@@ -260,6 +284,17 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   </span>
                 </span>
               </div>
+              {errors.height?.feet ? (
+                <span className="text-red-700 text-xs">
+                  {errors.height.feet.message}
+                </span>
+              ) : (
+                errors.height?.inches && (
+                  <span className="text-red-700 text-xs">
+                    {errors.height.inches.message}
+                  </span>
+                )
+              )}
             </div>
             <div className="pt-4  relative">
               <label className="block input-label pb-1" htmlFor="weight">
@@ -287,7 +322,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 control={control}
                 defaultValue={user.race}
                 rules={{
-                  required: "Race is required",
+                  required: "Race can not be empty",
                 }}
                 render={({ field }) => (
                   <Dropdown
@@ -297,26 +332,20 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={raceList}
                     optionLabel="name"
                     placeholder="Select"
-                    className="border p-0 w-full border-border-gray-300 text-xs px-0 shadow-none"
+                    className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
                   />
                 )}
               />
+              {errors.race && (
+                <span className="text-red-700 text-xs">
+                  {errors.race.message}
+                </span>
+              )}
             </div>
             <div className="pt-4  relative">
               <label className="block input-label pb-1" htmlFor="ethnicity">
                 Ethnicity*
               </label>
-              {/* <input
-                {...register("ethnicity")}
-                name={`ethnicity`}
-                onChange={(event) =>
-                  setValue("ethnicity", event?.target?.value)
-                }
-                className="cimpar-input focus:outline-none"
-                type="text"
-                id="ethnicity"
-                placeholder="Ethnicity"
-              /> */}
               <Controller
                 name="ethnicity"
                 control={control}
@@ -330,10 +359,15 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     value={field.value}
                     options={ethnicities}
                     placeholder="Select"
-                    className="border p-0 w-full border-border-gray-300 text-xs px-0 shadow-none"
+                    className="border p-0 w-full border-border-gray-300 rounded-lg h-[2.5rem] text-xs px-0 shadow-none"
                   />
                 )}
               />
+              {errors.ethnicity && (
+                <span className="text-red-700 text-xs">
+                  {errors.ethnicity.message}
+                </span>
+              )}
             </div>
           </div>
           <div className="py-6 font-primary text-xl">Contact Details</div>
@@ -343,21 +377,22 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 Phone Number*
               </label>
               <div className="p-inputgroup buttonGroup  flex-1 w-full">
-                <span className="country-code w-[40%] p-inputgroup-addon">
+                <span className="country-code w-[40%] p-inputgroup-addon h-[2.5rem]">
                   <Controller
                     name="countryCode"
                     control={control}
-                    defaultValue={{ name: "+55-BR", value: "+55-BR" }}
+                    defaultValue={user.countryCode}
                     rules={{
                       required: "Country code is required",
                     }}
                     render={({ field }) => (
                       <Dropdown
                         {...field}
+                        value={field.value}
                         options={countryCodes}
                         optionLabel="name"
                         placeholder="Select"
-                        className="border p-0 w-full border-border-gray-300 text-xs px-0 shadow-none !border-r-0"
+                        className="border p-0 w-full h-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                       />
                     )}
                   />
@@ -368,6 +403,10 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   defaultValue={user.phoneNumber}
                   rules={{
                     required: "Phone number is required",
+                    minLength: {
+                      value: 6,
+                      message: "Phone number can't be less than 6 digits",
+                    },
                   }}
                   render={({ field }) => (
                     <InputNumber
@@ -377,28 +416,30 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border border-gray-300 w-[60%]"
+                      className="border border-gray-300  rounded-tr-md z-100 w-[60%]"
                     />
                   )}
                 />
               </div>
+              {errors.phoneNumber && (
+                <span className="text-red-700 text-xs">
+                  {errors.phoneNumber.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label
                 className="block input-label pb-1"
                 htmlFor="alternateNumberCode"
               >
-                Alternate Number*
+                Alternate Number
               </label>
-              <div className="p-inputgroup buttonGroup  flex-1 w-full">
+              <div className="p-inputgroup buttonGroup  flex-1 w-full h-[2.5rem]">
                 <span className="country-code w-[40%] p-inputgroup-addon">
                   <Controller
                     name="alternateNumberCode"
                     control={control}
                     defaultValue={user.alternateNumberCode}
-                    rules={{
-                      required: "Country code is required",
-                    }}
                     render={({ field }) => (
                       <Dropdown
                         {...field}
@@ -408,7 +449,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                         options={countryCodes}
                         optionLabel="name"
                         placeholder="Select"
-                        className="border p-0 w-full border-border-gray-300 text-xs px-0 shadow-none !border-r-0"
+                        className="border p-0 h-full w-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                       />
                     )}
                   />
@@ -450,6 +491,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 id="city"
                 placeholder="City"
               />
+              {errors.city && (
+                <span className="text-red-700 text-xs">
+                  {errors.city.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label className="block input-label pb-1" htmlFor="zipCode">
@@ -468,11 +514,16 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={zipCodes}
                     placeholder="Select a ZipCode"
                     optionLabel="name"
-                    className="dropdown w-full md:w-14rem border border-gray-300 !py-[0.4rem]"
+                    className="dropdown w-full md:w-14rem border border-gray-300 rounded-lg !py-[0.4rem]"
                     value={field.value}
                   />
                 )}
               />
+              {errors.zipCode && (
+                <span className="text-red-700 text-xs">
+                  {errors.zipCode.message}
+                </span>
+              )}
             </div>
             <div className="pt-4 col-span-2">
               <label className="block input-label pb-1" htmlFor="fullAddress">
@@ -491,6 +542,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 id="fullAddress"
                 placeholder="Full address"
               />
+              {errors.fullAddress && (
+                <span className="text-red-700 text-xs">
+                  {errors.fullAddress.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label className="block input-label pb-1" htmlFor="state">
@@ -510,10 +566,15 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={states}
                     optionLabel="value"
                     placeholder="Select a State"
-                    className="dropdown w-full md:w-14rem border border-gray-300 !py-[0.4rem]"
+                    className="dropdown w-full md:w-14rem border border-gray-300 rounded-lg !py-[0.4rem]"
                   />
                 )}
               />
+              {errors.state && (
+                <span className="text-red-700 text-xs">
+                  {errors.state.message}
+                </span>
+              )}
             </div>
             <div className="pt-4">
               <label className="block input-label pb-1" htmlFor="country">
@@ -532,11 +593,16 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={countries}
                     optionLabel="name"
                     placeholder="Select a Country"
-                    className="dropdown w-full md:w-14rem border border-gray-300 !py-[0.4rem]"
+                    className="dropdown w-full md:w-14rem border border-gray-300  rounded-lg !py-[0.4rem]"
                     value={field.value}
                   />
                 )}
               />
+              {errors.country && (
+                <span className="text-red-700 text-xs">
+                  {errors.country.message}
+                </span>
+              )}
             </div>
           </div>
         </div>

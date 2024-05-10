@@ -18,13 +18,13 @@ export interface IUser {
   height: IHeight;
   weight: number;
   ethnicity: string;
-  countryCode: country;
-  alternateNumberCode: country;
+  countryCode: string;
+  alternateNumberCode: string;
   insuranceName: string;
   insuranceNumber: string;
   medicationTakenBefore: IMedication[];
   currentMedication: IMedication[];
-  insurance?: IInsurance;
+  insurance?: IInsurance[];
   isOnMedicine: boolean;
   medicationalHistory: boolean;
 }
@@ -44,6 +44,7 @@ export interface IMedication {
 }
 
 export interface IInsurance {
+  id: number;
   insuranceType: string;
   insuranceNumber: string;
   policyNumber: string;

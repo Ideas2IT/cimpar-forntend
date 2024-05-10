@@ -8,6 +8,9 @@ import UserDetails from "../userDetails/UserDetails";
 import { IUser } from "../../interfaces/User";
 import { useNavigate } from "react-router-dom";
 import Medication from "../medication/Medication";
+import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
+import MedicalConditionDetails from "../MedicalDetails/MedicalConditionDetails";
+import VisitHistory from "../visitHistory/VisitHistory";
 export const user: IUser = {
   dob: "11-11-1993",
   ethnicity: "Chinese",
@@ -24,8 +27,8 @@ export const user: IUser = {
   phoneNumber: 9906461523,
   state: "Colorado",
   zipCode: "zy-1232",
-  countryCode: { name: "+55-BR", value: "+55-BR" },
-  alternateNumberCode: { name: "+55-BR", value: "+55-BR" },
+  countryCode: "+61-AU",
+  alternateNumberCode: "+55-BR",
   insuranceName: "American Family Insurance",
   insuranceNumber: "10*******982",
   medicationTakenBefore: [
@@ -35,13 +38,32 @@ export const user: IUser = {
     { id: 4, name: "Paroxetine HCL and Zoloft" },
   ],
   currentMedication: [],
-  insurance: {
-    insuranceType: "Primary",
-    insuranceNumber: "df-1231-tr",
-    policyNumber: "lic-sdfsd-323-c4",
-    groupNumber: "Bijaj",
-    insuranceCompany: "",
-  },
+  insurance: [
+    {
+      id: 1,
+      insuranceType: "Primary",
+      insuranceNumber: "df-1231-tr",
+      policyNumber: "lic-sdfsd-323-c4",
+      groupNumber: "1-800-MYAMFAM",
+      insuranceCompany: "Medicare",
+    },
+    {
+      id: 2,
+      insuranceType: "Secondary",
+      insuranceNumber: "df-1231-tr",
+      policyNumber: "lic-sdfsd-323-c4",
+      groupNumber: "1-800-MYAMFAM",
+      insuranceCompany: "American Automobile Association",
+    },
+    {
+      id: 3,
+      insuranceType: "Tertiary",
+      insuranceNumber: "df-1231-tr",
+      policyNumber: "lic-sdfsd-323-c4",
+      groupNumber: "1-800-MYAMFAM",
+      insuranceCompany: "American Family Insurance",
+    },
+  ],
   isOnMedicine: true,
   medicationalHistory: true,
 };
@@ -49,7 +71,7 @@ const UserProfilePage = () => {
   const navigate = useNavigate();
   const tabs: Tab[] = [
     {
-      key: "personal",
+      key: "Personal",
       value: "Personal",
       content: (
         <div className="px-6 py-1 h-full">
@@ -67,20 +89,29 @@ const UserProfilePage = () => {
       ),
     },
     {
-      key: "MedicalConditions",
-      value: "Medical Conditions & Allergies",
+      key: "insurance",
+      value: "Insurance",
       content: (
         <div className="px-6 py-1 h-full">
-          {/* <Table rowData={defaultData} columns={columns} /> */}
+          <InsuranceDetails />
         </div>
       ),
     },
     {
-      key: "hospitalizationHistory",
-      value: "Hospitalization History",
+      key: "MedicalConditions",
+      value: "Medical Conditions & Allergies",
       content: (
         <div className="px-6 py-1 h-full">
-          {/* <Table rowData={defaultData} columns={columns} /> */}
+          <MedicalConditionDetails />
+        </div>
+      ),
+    },
+    {
+      key: "visitHistory",
+      value: "Visit History",
+      content: (
+        <div className="px-6 py-1 h-full">
+          <VisitHistory />
         </div>
       ),
     },
@@ -97,13 +128,17 @@ const UserProfilePage = () => {
       case "medications":
         navigate("/editMedications");
         break;
+      case "medical conditions & allergies":
+        navigate("/edit-medical-conditons");
+        break;
       default:
+        navigate("/");
         break;
     }
   };
 
   return (
-    <div className="flex flex-col flex-grow">
+    <div className="flex flex-col flex-grow px-6">
       <div className="flex justify-between items-center mb-3">
         <div>
           <button
@@ -112,18 +147,49 @@ const UserProfilePage = () => {
           >
             {hideTabs ? <SlideOpen fill="clear" /> : <SlideBack fill="white" />}
           </button>
-          <span className="font-bold text-lg text-cyan-800">{selectedTab}</span>
+          <span className="font-primary text-xl text-cyan-800">
+            {selectedTab}
+          </span>
         </div>
         <div className="flex items-center">
-          <Button
-            className="ml-3"
-            variant="primary"
-            style="outline"
-            onClick={() => handleEdit()}
-          >
-            <i className=" pi pi-pencil stroke-purple-700 mr-2" />
-            Edit Details
-          </Button>
+          {selectedTab.toLowerCase() === "insurance" ? (
+            <Button
+              disabled={
+                user.insurance?.length && user.insurance?.length >= 3
+                  ? true
+                  : false
+              }
+              className="ml-3"
+              variant="primary"
+              style="outline"
+              onClick={() => navigate("/edit-insurance")}
+            >
+              <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+              Add Insurance
+            </Button>
+          ) : selectedTab.toLowerCase() === "visit history" ? (
+            <Button
+              className="ml-3"
+              variant="primary"
+              style="outline"
+              onClick={() => {
+                navigate("/edit-visit-history");
+              }}
+            >
+              <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+              Add Visit History
+            </Button>
+          ) : (
+            <Button
+              className="ml-3"
+              variant="primary"
+              style="outline"
+              onClick={() => handleEdit()}
+            >
+              <i className=" pi pi-pencil stroke-purple-700 mr-2" />
+              Edit Details
+            </Button>
+          )}
         </div>
       </div>
       <div className="flex flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">

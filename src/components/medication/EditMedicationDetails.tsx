@@ -64,7 +64,7 @@ const EditMedicationDetails = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white !h-[35rem] p-6">
+          <div className="bg-white !h-[35rem] p-6 rounded-xl">
             <div>
               <label className="">
                 Are you currently taking any medication?*
@@ -148,7 +148,6 @@ const EditMedicationDetails = () => {
                 defaultValue={user.currentMedication} // Default value
                 render={({ field }) => (
                   <Chips
-                    // {...field}
                     removeIcon={"pi pi-times"}
                     placeholder={
                       !values.length
