@@ -22,11 +22,11 @@ export interface IUser {
   alternateNumberCode: string;
   insuranceName: string;
   insuranceNumber: string;
-  medicationTakenBefore: IMedication[];
-  currentMedication: IMedication[];
+  medicationTakenBefore: string[];
+  currentMedication: string[];
   insurance?: IInsurance[];
-  isOnMedicine: boolean;
-  medicationalHistory: boolean;
+  isOnMedicine: "yes" | "no";
+  medicationalHistory: "yes" | "no";
 }
 interface IHeight {
   feet: number;

@@ -69,6 +69,7 @@ const InsuranceDetails = () => {
           <Column
             key={index}
             field={column.field}
+            bodyClassName="py-4"
             header={column.header}
             headerClassName="text-sm font-secondary py-6 border-b bg-white"
             body={column.body}
@@ -86,14 +87,14 @@ const PolicyColumn = ({ value }: { value: String }) => {
 const PolicyHandler = ({ data }: { data: IInsurance }) => {
   const { toast, successToast, errorToast } = useToast();
   return (
-    <div className="flex flex-row justify-between">
+    <div className="flex flex-row items-center justify-between">
       <NavLink to={`/edit-insurance/${data.id}`}>
         <i className="pi pi-pen-to-square text-purple-800" />
       </NavLink>
       <i
-        className="pi pi-trash text-red-500"
+        className="pi pi-trash  mx-2 text-red-500"
         onClick={() => {
-          errorToast(
+          successToast(
             "Deleted Successfully",
             "Your insurance has been deleted successfully"
           );

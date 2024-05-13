@@ -10,3 +10,7 @@
 .p-chips-multiple-container {
   width: 100%;
 }
+
+.chips .p-chips-token {
+  @apply mb-1;
+}

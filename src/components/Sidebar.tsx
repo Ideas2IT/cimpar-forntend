@@ -5,6 +5,10 @@ import AddRecord from "../assets/icons/addrecord.svg?react";
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import HeaderContext from "../context/HeaderContext";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import { setSelectedSidebarTab } from "../store/slices/commonSlice";
+import { PATH_NAME } from "../utils/AppConstants";
 
 interface Tab {
   key: string;
@@ -31,9 +35,10 @@ const Sidebar = () => {
       header: "Profile",
       key: "profile",
       icon: <Profile />,
-      routerLink: "/profile",
+      routerLink: PATH_NAME.PROFILE,
     },
   ];
+  const dispatch = useDispatch<AppDispatch>();
   const [selectedTab, setSelectedTab] = useState<Tab>(tabs[0]);
   const { updateHeaderTitle } = useContext(HeaderContext);
   const location = useLocation();
@@ -41,6 +46,7 @@ const Sidebar = () => {
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);
     updateHeaderTitle(tab.header);
+    dispatch(setSelectedSidebarTab("personal"));
   };
 
   useEffect(() => {

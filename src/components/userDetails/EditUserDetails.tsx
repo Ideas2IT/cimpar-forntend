@@ -1,7 +1,7 @@
 import { Controller, useForm } from "react-hook-form";
 import { IUser } from "../../interfaces/User";
 import ReactDatePicker from "react-datepicker";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { FaRegCalendarMinus } from "react-icons/fa";
 import "./EditUserDetails.css";
 import {
@@ -17,12 +17,14 @@ import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button as PrimeButton } from "primereact/button";
-import { ERROR, PATTERN } from "../../utils/AppConstants";
+import { ERROR, PATH_NAME, PATTERN } from "../../utils/AppConstants";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
+import { Calendar } from "primereact/calendar";
 
 const EditUserDetails = ({ user }: { user: IUser }) => {
-  const datePickerRef = useRef<ReactDatePicker<never, undefined>>(null);
   const {
     register,
     control,
@@ -33,7 +35,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
     defaultValues: user,
   });
 
+  const { toast, successToast } = useToast();
+  const navigate = useNavigate();
   const handleFormSubmit = (data: IUser) => {
+    successToast("Data Updated", "Profile updated successfully");
+    navigate(PATH_NAME.PROFILE);
     console.log(data);
   };
   return (
@@ -43,7 +49,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
           <BackButton
             previousPage="Personal"
             currentPage="Edit Profile"
-            backLink="/profile"
+            backLink={PATH_NAME.PROFILE}
           />
           <div>
             <div className="flex py-2 justify-between items-center">
@@ -193,26 +199,17 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     required: "Date of appointment is required",
                   }}
                   render={({ field }) => (
-                    <ReactDatePicker
-                      placeholderText="Select date of birth"
-                      required={true}
-                      ref={datePickerRef}
-                      wrapperClassName="w-full"
-                      calendarIconClassname="right-0 mt-2"
-                      id="dob"
-                      dateFormat={"dd MMMM, yyyy"}
-                      onChange={(date) => setValue("dob", date)}
-                      selected={new Date(field.value)}
-                      className="h-[2.5rem] ps-2 border border-gray-300 px-1 block w-[100%] mt-1 md:text-sm rounded-md right-0 left-0 focus:outline-none"
+                    <Calendar
+                      {...field}
+                      placeholder="Select date of birth"
+                      showIcon
+                      icon="pi pi-calendar-minus"
+                      value={new Date(field.value)}
+                      dateFormat="dd MM, yy"
+                      className="calander border rounded-lg h-[2.5rem]"
                     />
                   )}
                 />
-                <span
-                  className="absolute top-[1rem] right-[1rem]"
-                  onClick={() => datePickerRef?.current?.setOpen(true)}
-                >
-                  <FaRegCalendarMinus />
-                </span>
               </div>
               {errors.dob && (
                 <span className="text-red-700 text-xs">
@@ -607,6 +604,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
           </div>
         </div>
       </form>
+      <Toast ref={toast} />
     </div>
   );
 };

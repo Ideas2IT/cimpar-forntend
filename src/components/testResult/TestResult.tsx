@@ -94,7 +94,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
             <Column
               key={index}
               headerClassName={columnHeaderStyle}
-              bodyClassName="py-2"
+              bodyClassName="py-4"
               field={column.field}
               header={column.header}
               body={column.body}
@@ -156,7 +156,7 @@ const ReportColumn = ({
   handleReports: (action: string, data: LabTestResult) => void;
 }) => {
   return (
-    <div className="flex flex-row items-center stroke-purple-800 justify-start">
+    <div className="flex flex-row items-center stroke-purple-800 items-center justify-start">
       <Eye className="me-2" onClick={() => handleReports("view", data)} />
       {(data.status.toLowerCase() === "under porcesses" ||
         data.status.toLowerCase() === "available") && (

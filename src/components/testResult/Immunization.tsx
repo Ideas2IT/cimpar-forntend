@@ -62,7 +62,7 @@ const TestResult = () => {
                 key={column.header}
                 field={column.field}
                 header={column.header}
-                bodyClassName="py-5"
+                bodyClassName="py-4"
                 headerClassName="text-sm font-secondary py-1 border-b bg-white"
                 body={(rowData) => (
                   <ColumnData content={rowData[column.field]} />
@@ -208,6 +208,6 @@ const ViewColumn = ({
 };
 
 const ColumnData = ({ content }: { content: string }) => {
-  return <div className="text-sm">{content ? content : "-"}</div>;
+  return <div className="text-[16px] font-tertiary">{content ? content : "-"}</div>;
 };
 export default TestResult;

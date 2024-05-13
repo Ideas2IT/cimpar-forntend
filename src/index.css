@@ -137,3 +137,11 @@ body {
 .input-field {
   @apply h-[2.5rem] border border-gray-300 rounded-lg;
 }
+
+.color-success {
+  color: #3c9f66;
+}
+
+.bg-success {
+  background: #3c9f66;
+}

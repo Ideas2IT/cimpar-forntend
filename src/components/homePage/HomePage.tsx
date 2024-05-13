@@ -4,7 +4,7 @@ import vaccinationIcon from "../../assets/icons/vaccination.svg";
 import imagingIcon from "../../assets/icons/imagingicon.svg";
 import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
 import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
-import { NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
 interface ICard {
   id: number;
   title: string;
@@ -68,7 +68,7 @@ const HomePage = () => {
     <>
       <div className=" px-6 color-primary font-primary text-xl">
         Our services
-        <div className="mt-4 flex grid lg:grid-cols-4 gap-4 bg-white p-6 rounded-xl">
+        <div className="mt-4 flex grid lg:grid-cols-4 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
           {cards.map((card: ICard) => {
             return <Card card={card} />;
           })}
@@ -91,7 +91,7 @@ const Card = ({ card }: { card: ICard }) => {
           <span>
             {card.title}
             {card.disabled && (
-              <span className="px-2 font-light">(coming soon)</span>
+              <span className="px-2  text-sm font-light">(coming soon)</span>
             )}
           </span>
         </div>

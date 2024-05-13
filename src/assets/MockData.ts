@@ -203,7 +203,7 @@ export const serviceData: IService[] = [
     category: "Lab Test",
     serviceFor: "Blood Count",
     dateOfService: "01 April,2024 ",
-    status: "Under Proccesing",
+    status: "Under processing",
   },
   {
     serviceId: 3,
@@ -541,8 +541,14 @@ export const labResults: LabTestResult[] = [
 ];
 
 export const reportFiles = [
-  { fileName: "testReports.pdf", id: 1, size: "12 kb" },
-  { fileName: "Lipid profile and urine examination.pdf", id: 1, size: "12 kb" },
-  { fileName: "KFT report .pdf", id: 1, size: "12 kb" },
-  { fileName: "CBC report.pdf", id: 1, size: "12 kb" },
+  { fileName: "testReports.pdf", id: 1, uploadDate: "12 may,2024" },
+  {
+    fileName: "Lipid profile and urine examination.pdf",
+    id: 2,
+    uploadDate: "01 mar, 2024",
+  },
+  { fileName: "KFT report .pdf", id: 4, uploadDate: "01 may, 2023" },
+  { fileName: "KFT report .pdf", id: 3, uploadDate: "01 may, 2023" },
+  { fileName: "KFT report .pdf", id: 5, uploadDate: "01 may, 2023" },
+  { fileName: "CBC report.pdf", id: 6, uploadDate: "11 mar, 2022" },
 ];

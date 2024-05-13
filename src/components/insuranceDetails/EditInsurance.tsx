@@ -6,18 +6,18 @@ import { RadioButton } from "primereact/radiobutton";
 import { Controller, useForm } from "react-hook-form";
 import { user } from "../userProfilePage/UserProfilePage";
 import { IInsurance } from "../../interfaces/User";
-import { ChangeEvent, useEffect, useState } from "react";
-import {
-  insuranceCompanies,
-  insurances,
-  raceList,
-} from "../../assets/MockData";
+import { useEffect, useState } from "react";
+import { insuranceCompanies } from "../../assets/MockData";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
+import { PATH_NAME } from "../../utils/AppConstants";
 
 const EditInsurance = () => {
   const location = useLocation();
   const [selectedInsurance, setSelectedInsurance] = useState({} as IInsurance);
+  const { successToast, toast } = useToast();
 
   useEffect(() => {
     if (user.insurance?.length) {
@@ -31,23 +31,23 @@ const EditInsurance = () => {
   }, [location.pathname]);
 
   const {
-    register,
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: selectedInsurance,
   });
   useEffect(() => {
-    setValue("insuranceType", selectedInsurance.insuranceType);
-    setValue("insuranceCompany", selectedInsurance.insuranceCompany);
-    setValue("policyNumber", selectedInsurance.policyNumber);
-    setValue("groupNumber", selectedInsurance.groupNumber);
-    setValue("insuranceNumber", selectedInsurance.insuranceNumber);
+    reset({ ...selectedInsurance });
   }, [selectedInsurance]);
 
   const handleFormSubmit = (data: IInsurance) => {
+    successToast(
+      "Insurance updated",
+      "Insurance details has been updated successfully"
+    );
     console.log(data);
   };
 
@@ -62,11 +62,11 @@ const EditInsurance = () => {
                 ? "Edit Insurance"
                 : "Add Insurance"
             }
-            backLink="/profile"
+            backLink={PATH_NAME.PROFILE}
           />
           <div>
             <div className="flex py-2 justify-between items-center">
-              <Link to="/profile">
+              <Link to={PATH_NAME.PROFILE}>
                 <Button
                   className="ml-3 font-primary text-purple-800"
                   variant="primary"
@@ -162,8 +162,6 @@ const EditInsurance = () => {
               render={({ field }) => (
                 <Dropdown
                   {...field}
-                  //   value={field.value}
-                  //   onChange={(e) => setValue("insuranceCompany", e.value)}
                   options={insuranceCompanies}
                   optionLabel="value"
                   placeholder="Select Insurance Company"
@@ -256,6 +254,7 @@ const EditInsurance = () => {
           </div>
         </div>
       </form>
+      <Toast ref={toast} />
     </div>
   );
 };

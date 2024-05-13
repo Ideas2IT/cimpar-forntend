@@ -12,6 +12,10 @@ import HomePage from "./components/homePage/HomePage";
 import TestResult from "./components/testResult/TestResult";
 import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
 import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
+import { PATH_NAME } from "./utils/AppConstants";
+import SignUpForm from "./components/loginForm/SignUpForm";
+import SetPassword from "./components/setPassword/SetPassword";
+import LoginForm from "./components/loginForm/LoginForm";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -22,7 +26,19 @@ const router = createBrowserRouter([
         index: true,
       },
       {
-        path: "/profile",
+        path: "login",
+        element: <LoginForm />,
+      },
+      {
+        path: "/signup",
+        element: <SignUpForm />,
+      },
+      // {
+      //   path: "/set-password",
+      //   element: <SetPassword />,
+      // },
+      {
+        path: PATH_NAME.PROFILE,
         element: <UserProfilePage />,
       },
       {

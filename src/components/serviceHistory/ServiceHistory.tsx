@@ -21,7 +21,7 @@ const ServiceHistory = () => {
   const tableProps = {
     selection: selectedService,
     value: serviceData,
-    selectionMode: "single" as const,
+    selectionMode: "single" as "single" | "multiple",
     dataKey: "serviceId",
     tableStyle: { minWidth: "50rem" },
     className: "mt-2 max-h-[90%] rowHoverable",
@@ -84,6 +84,7 @@ const ServiceHistory = () => {
         {serviceColumns.map((column, index) => {
           return (
             <Column
+            bodyClassName="py-4"
               key={index}
               field={column.field}
               header={column.header}

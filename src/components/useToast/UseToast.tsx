@@ -12,9 +12,9 @@ const useToast = () => {
       <div className="w-full p-3">
         <div className="flex flex-row justify-start w-full">
           <img src={bluetick} />
-          <label className="text-[#3C9F66] font-primary px-4">{title}</label>
+          <label className="color-success font-primary px-4">{title}</label>
         </div>
-        <div className="text-center w-full text-sm py-2 text-gray-500">
+        <div className="text-start ps-[2.3rem] w-full text-sm py-2 text-gray-500">
           {message}
         </div>
       </div>
@@ -22,7 +22,7 @@ const useToast = () => {
     toast?.current?.show({
       severity: "error",
       summary: "error",
-      life: 1000000,
+      life: 1000,
       content: customContentSuccess,
     });
   };
@@ -34,7 +34,7 @@ const useToast = () => {
           <ErrorIcon />
           <label className="text-red-500 font-primary px-4">{title}</label>
         </div>
-        <div className="text-center w-full text-sm py-2 text-gray-500">
+        <div className="text-start ps-[2.3rem] w-full text-sm py-2 text-gray-500">
           {message}
         </div>
       </div>
@@ -42,7 +42,7 @@ const useToast = () => {
     toast?.current?.show({
       severity: "error",
       summary: "error",
-      life: 300000,
+      life: 1000,
       content: customContentError,
     });
   };

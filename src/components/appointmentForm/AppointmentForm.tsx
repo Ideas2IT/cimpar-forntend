@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
 import { Controller, useForm } from "react-hook-form";
-import { ITest, medicalConditons, tests } from "../../assets/MockData";
+import { ITest, allergies, medicalConditons, tests } from "../../assets/MockData";
 import { MultiSelect } from "primereact/multiselect";
 import { user } from "../userProfilePage/UserProfilePage";
 import moment from "moment";
@@ -184,7 +184,6 @@ const AppointmentForm = () => {
                   className="absolute top-[1rem] right-[1rem]"
                   onClick={() => datePickerRef?.current?.setOpen(true)}
                 >
-                  <FaRegCalendarMinus />
                 </span>
               </div>
             </div>
@@ -337,7 +336,7 @@ const AppointmentForm = () => {
             </label>
             <CustomAutoComplete
               placeholder="Add one or more allergies"
-              items={medicalConditons}
+              items={allergies}
               selectedItems={selectedAllergies}
               handleSelection={handleSelectedAllergies}
             />
