@@ -15,6 +15,8 @@ import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import "./VisitHistory.css";
 import { InputTextarea } from "primereact/inputtextarea";
+import { FileUpload } from "primereact/fileupload";
+import { PATH_NAME } from "../../utils/AppConstants";
 
 const EditVisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
@@ -32,7 +34,6 @@ const EditVisitHistory = () => {
   }, [location.pathname]);
 
   const {
-    register,
     control,
     handleSubmit,
     reset,
@@ -45,6 +46,7 @@ const EditVisitHistory = () => {
   useEffect(() => {
     reset({ ...selectedHistory });
   }, [selectedHistory]);
+
   const handleFormSubmit = (fromData: IVisitHistory) => {
     console.log(fromData);
   };
@@ -54,12 +56,16 @@ const EditVisitHistory = () => {
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
         <div className="flex flex-row justify-between px-6">
           <BackButton
-            backLink="/profile"
-            previousPage="Visit History"
-            currentPage="Edit Visit History"
+            backLink={PATH_NAME.PROFILE}
+            previousPage="visit History"
+            currentPage={
+              !!Object.keys(selectedHistory).length
+                ? "Edit Visit History"
+                : "Add Visit History"
+            }
           />
           <div className="flex py-2 justify-between items-center">
-            <Link to="/profile">
+            <Link to={PATH_NAME.PROFILE}>
               <Button
                 className="ml-3 font-primary text-purple-800"
                 variant="primary"
@@ -273,9 +279,43 @@ const EditVisitHistory = () => {
             <label className="input-label pb-2">
               If you have any documents related,Please add them (optional)
             </label>
-            {reportFiles.map((reportFile) => {
-              return <div>{reportFile.fileName}</div>;
-            })}
+            <div className="flex flex-row grid md:grid-cols-3">
+              {reportFiles.map((reportFile) => {
+                return (
+                  <div className="report-wrapper">
+                    <div className="w-[80%]">
+                      <label
+                        title={reportFile.fileName}
+                        className="block overflow-hidden whitespace-nowrap overflow-ellipsis"
+                      >
+                        {reportFile.fileName}
+                      </label>
+                      <label className="font-tertiary text-sm">
+                        {reportFile.uploadDate}
+                      </label>
+                    </div>
+                    <div className="font-bold">
+                      <i className="pi pi-pen-to-square text-purple-800 px-3" />
+                      <i className="pi pi-trash text-red-500" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <FileUpload
+              chooseOptions={{
+                label: "Add",
+                icon: <i className="pi pi-file-plus pe-2" />,
+                className:
+                  " bg-[#EEF1F4] text-[#2D6D80] rounded-full px-5 border-none",
+              }}
+              mode="basic"
+              name="demo[]"
+              url="/api/upload"
+              accept="image/*, application/pdf"
+              maxFileSize={1000000}
+              // onUpload={onUpload}
+            />
           </div>
         </div>
       </form>

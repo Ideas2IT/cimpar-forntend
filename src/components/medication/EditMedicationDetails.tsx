@@ -9,13 +9,15 @@ import { RadioButton } from "primereact/radiobutton";
 import "./Medication.css";
 import { Chips } from "primereact/chips";
 import { useState } from "react";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import { PATH_NAME } from "../../utils/AppConstants";
 
 const EditMedicationDetails = () => {
   const {
-    register,
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: user,
@@ -25,11 +27,7 @@ const EditMedicationDetails = () => {
     console.log(data);
   };
 
-  const RadioButtonPassThroughOptions = {
-    input: { className: "bg-red-300" },
-  };
-
-  const [values, setValues] = useState<string[]>([]);
+  const isMedicalHistory = watch("medicationalHistory");
   return (
     <>
       <div className="px-6 ">
@@ -38,7 +36,7 @@ const EditMedicationDetails = () => {
             <BackButton
               previousPage="Medication"
               currentPage="Edit Medication"
-              backLink="/profile"
+              backLink={PATH_NAME.PROFILE}
             />
             <div>
               <div className="flex py-2 justify-between items-center">
@@ -72,97 +70,105 @@ const EditMedicationDetails = () => {
               <Controller
                 name="isOnMedicine"
                 control={control}
-                defaultValue={user.isOnMedicine} // Default value
+                rules={{ required: "Field is required" }}
+                defaultValue={user.isOnMedicine}
                 render={({ field }) => (
                   <div className="font-primary text-xl flex flex-row items-center py-4">
                     <label
                       className={`${field.value && "active"} pe-4 flex items-center text-[16px]`}
-                      onChange={() => setValue("isOnMedicine", true)}
+                      onChange={() => setValue("isOnMedicine", "yes")}
                     >
                       <RadioButton
                         className="me-2"
                         value="Primary"
                         inputRef={field.ref}
-                        checked={field.value}
+                        checked={field.value === "yes"}
                       />
                       Yes
                     </label>
                     <label
                       className={`${!field.value && "active"} pe-4 flex items-center text-[16px]`}
-                      onChange={() => setValue("isOnMedicine", false)}
+                      onChange={() => setValue("isOnMedicine", "no")}
                     >
                       <RadioButton
                         className="me-2 h-full w-full"
                         inputRef={field.ref}
                         {...field}
                         value="Secondary"
-                        checked={!field.value}
+                        checked={field.value === "no"}
                       />
                       No
                     </label>
                   </div>
                 )}
               />
+              {errors.isOnMedicine && (
+                <ErrorMessage message={errors.isOnMedicine.message} />
+              )}
             </div>
             <div className="mt-4">
               <label className="">Have you been on medication before?*</label>
               <Controller
                 name="medicationalHistory"
                 control={control}
-                defaultValue={user.medicationalHistory} // Default value
+                rules={{ required: "Field is required" }}
+                defaultValue={user.medicationalHistory}
                 render={({ field }) => (
                   <div className="font-primary text-xl flex flex-row items-center py-4">
                     <label
                       className={`${field.value && "active"} pe-4 flex items-center text-[16px]`}
-                      onChange={() => setValue("medicationalHistory", true)}
+                      onChange={() => setValue("medicationalHistory", "yes")}
                     >
                       <RadioButton
                         className="me-2"
                         value="Primary"
                         inputRef={field.ref}
-                        checked={field.value}
+                        checked={field.value === "yes"}
                       />
                       Yes
                     </label>
                     <label
                       className={`${!field.value && "active"} pe-4 flex items-center text-[16px]`}
-                      onChange={() => setValue("medicationalHistory", false)}
+                      onChange={() => setValue("medicationalHistory", "no")}
                     >
                       <RadioButton
                         className="me-2 h-full w-full"
                         {...field}
                         value="Secondary"
-                        checked={!field.value}
+                        checked={field.value === "no"}
                       />
                       No
                     </label>
                   </div>
                 )}
               />
+              {errors.medicationalHistory && (
+                <ErrorMessage message={errors.medicationalHistory.message} />
+              )}
             </div>
             <label className="pb-2">Medication Names</label>
-            <div className="pt-4 w-[50%] min-h-[10rem] border border-gray-300 rounded-lg">
-              <Controller
-                name="currentMedication"
-                control={control}
-                defaultValue={user.currentMedication} // Default value
-                render={({ field }) => (
-                  <Chips
-                    removeIcon={"pi pi-times"}
-                    placeholder={
-                      !values.length
-                        ? "Enter your medication name(s), separated by commas"
-                        : ""
-                    }
-                    value={values}
-                    onChange={(e) =>
-                      e.value ? setValues(e.value) : setValues([])
-                    }
-                    separator=","
-                  />
-                )}
-              />
-            </div>
+            {isMedicalHistory === "yes" && (
+              <div className="pt-4 w-[50%] min-h-[10rem] border border-gray-300 rounded-lg">
+                <Controller
+                  name="currentMedication"
+                  control={control}
+                  defaultValue={user.currentMedication}
+                  render={({ field }) => (
+                    <Chips
+                      className="chips"
+                      {...field}
+                      removeIcon={"pi pi-times"}
+                      placeholder={
+                        !field.value.length
+                          ? "Enter your medication name(s), separated by commas"
+                          : ""
+                      }
+                      separator=","
+                    />
+                  )}
+                />
+              </div>
+            )}
           </div>
         </form>
       </div>

@@ -181,7 +181,7 @@ const MediaColumn = ({
   return (
     <div className="flex flex-row justify-between font-bold text-purple-800">
       <i className="pi pi-eye" onClick={() => handleView(data)} />
-      <i className="pi pi-download" />
+      <i className="pi pi-download mx-2" />
       <i
         className="pi pi-pen-to-square"
         onClick={() => navigate(`/edit-visit-history/${data.id}`)}

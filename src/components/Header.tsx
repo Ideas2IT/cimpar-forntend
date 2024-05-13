@@ -5,6 +5,9 @@ import logoutImage from "../assets/icons/logout.svg";
 import HeaderContext from "../context/HeaderContext";
 import { useNavigate } from "react-router-dom";
 import localStorageService from "../services/localStorageService";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import { setIsLoggedIn } from "../store/slices/commonSlice";
 const Header = () => {
   const { value } = useContext(HeaderContext);
 
@@ -51,7 +54,7 @@ const Header = () => {
 //TODO: Need to write the password change logic
 
 export const LogoutPopover = () => {
-  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleChangePassword = () => {
     console.log("Hanlde change password");
@@ -60,7 +63,7 @@ export const LogoutPopover = () => {
   //TODO: Need to write the logic to delete all the credentials from storage
   const handleLogout = () => {
     localStorageService.clearTokens();
-    navigate("/");
+    dispatch(setIsLoggedIn(false));
   };
   return (
     <ul>

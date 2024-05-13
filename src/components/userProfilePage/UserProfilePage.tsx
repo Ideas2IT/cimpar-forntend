@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tab from "../../interfaces/Tab";
 import VerticalTabView from "../VerticalTabView";
 import SlideOpen from "../../assets/icons/slideOpen.svg?react";
@@ -11,6 +11,12 @@ import Medication from "../medication/Medication";
 import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
 import MedicalConditionDetails from "../MedicalDetails/MedicalConditionDetails";
 import VisitHistory from "../visitHistory/VisitHistory";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectTab,
+  setSelectedSidebarTab,
+} from "../../store/slices/commonSlice";
+import { AppDispatch } from "../../store/store";
 export const user: IUser = {
   dob: "11-11-1993",
   ethnicity: "Chinese",
@@ -32,12 +38,23 @@ export const user: IUser = {
   insuranceName: "American Family Insurance",
   insuranceNumber: "10*******982",
   medicationTakenBefore: [
-    { id: 1, name: "Celexa" },
-    { id: 2, name: "Lexapro" },
-    { id: 3, name: "Prozacfluvoxamine" },
-    { id: 4, name: "Paroxetine HCL and Zoloft" },
+    "Celexa",
+    "Lexapro",
+    "Prozacfluvoxamine",
+    "Paroxetine HCL and Zoloft",
+    // { id: 1, name: "Celexa" },
+    // { id: 2, name: "Lexapro" },
+    // { id: 3, name: "Prozacfluvoxamine" },
+    // { id: 4, name: "Paroxetine HCL and Zoloft" },
   ],
-  currentMedication: [],
+  currentMedication: [
+    "Celexa",
+    "Lexapro",
+    "Prozacfluvoxamine",
+    "Paroxetine HCL and Zoloft",
+  ],
+  // { id: 1, name: "pantop 40" },
+  // { id: 2, name: "Amlokind" },
   insurance: [
     {
       id: 1,
@@ -64,8 +81,8 @@ export const user: IUser = {
       insuranceCompany: "American Family Insurance",
     },
   ],
-  isOnMedicine: true,
-  medicationalHistory: true,
+  isOnMedicine: "no",
+  medicationalHistory: "yes",
 };
 const UserProfilePage = () => {
   const navigate = useNavigate();
@@ -116,9 +133,15 @@ const UserProfilePage = () => {
       ),
     },
   ];
-
-  const [selectedTab, setSelectedTab] = useState("personal");
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedOption = useSelector(selectTab);
+  const [selectedTab, setSelectedTab] = useState(selectedOption?selectedOption :'personal');
   const [hideTabs, setHideTabs] = useState(false);
+
+  useEffect(() => {
+    console.log(selectedOption)
+    dispatch(setSelectedSidebarTab(selectedTab));
+  }, [selectedTab])
 
   const handleEdit = () => {
     switch (selectedTab.toLowerCase()) {

@@ -1,0 +1,11 @@
+.form-wrapper {
+  @apply w-full h-full bg-gray-300 flex justify-center items-center;
+}
+
+.signup-input {
+  @apply w-full h-full rounded-lg pe-6 border border-gray-300 focus:border-2 focus:border-purple-800;
+}
+
+.p-password .p-password-show-icon, .p-password-hide-icon {
+  @apply right-[0.5rem];
+}

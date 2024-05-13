@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tab from "../interfaces/Tab";
+import { useSelector } from "react-redux";
+import { selectTab } from "../store/slices/commonSlice";
+import { useLocation } from "react-router-dom";
+import { PATH_NAME } from "../utils/AppConstants";
 
 interface VerticalTabProps {
   tabs: Tab[];
@@ -12,7 +16,22 @@ const VerticalTabView: React.FC<VerticalTabProps> = ({
   hideTabs,
   changeTab,
 }) => {
+  const selectedOption = useSelector(selectTab);
   const [selectedTab, setSelectedTab] = useState(tabs[0]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname) {
+      if (location.pathname === PATH_NAME.PROFILE && selectedOption !== "") {
+        setSelectedTab(
+          tabs.find((t) => {
+            return t.value.toLowerCase() === selectedOption.toLowerCase();
+          }) || tabs[0]
+        );
+      }
+    }
+  }, [location.pathname]);
 
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);

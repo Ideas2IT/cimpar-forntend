@@ -14,6 +14,7 @@ import BackButton from "../backButton/BackButton";
 import { Link } from "react-router-dom";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
+import { PATH_NAME } from "../../utils/AppConstants";
 
 const EditMedicalConditions = () => {
   const {
@@ -36,12 +37,12 @@ const EditMedicalConditions = () => {
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
         <div className="flex flex-row justify-between py-2">
           <BackButton
-            backLink="/profile"
+            backLink={PATH_NAME.PROFILE}
             currentPage="Edit Medical Conditions & Allergies"
             previousPage="Medical Conditions & Allergies"
           />
           <div className="flex py-2 justify-between items-center">
-            <Link to="/profile">
+            <Link to={PATH_NAME.PROFILE}>
               <Button
                 className="ml-3 font-primary text-purple-800"
                 variant="primary"

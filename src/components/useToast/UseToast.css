@@ -3,10 +3,6 @@
 }
 
 .p-toast,
-/* .p-toast-container, */
-/* .p-toast-item, */
-/* .p-toast-image, */
-/* .p-toast-title { */
 .p-toast-message {
   background: white;
   opacity: 100;
