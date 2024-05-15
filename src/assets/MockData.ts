@@ -108,6 +108,12 @@ export const tests: ITest[] = [
   { id: 6, name: "Cholera" },
 ];
 
+export const services = [
+  { id: 1, name: "All Services" },
+  { id: 3, name: "Lab Tests" },
+  { id: 2, name: "Immunization" },
+];
+
 export const medicalConditons: IItem[] = [
   { id: 1, name: "dfdfbc" },
   { id: 4, name: "panish flu or Influenza" },
@@ -254,7 +260,7 @@ export const visitHistory: IVisitHistory[] = [
     visitLocation: "ACMH Hospital",
     admissionDate: "01 April,2023",
     dischargeDate: "01 April,2024 ",
-    visitReason: "Upcoming appointment",
+    visitReason: "Broken leg in an accident",
     treatmentSummary:
       "Treatment for a broken leg typically involves realignment of the bones through surgery followed by immobilization and rehabilitation.",
     followUpCare:
@@ -268,9 +274,9 @@ export const visitHistory: IVisitHistory[] = [
   {
     id: 2,
     visitLocation: "Harlingen Medical Centre",
-    admissionDate: "Blood Count",
+    admissionDate: "10 march, 2024",
     dischargeDate: "01 April,2024 ",
-    visitReason: "Upcoming appointment",
+    visitReason: "Pneumonia",
     treatmentSummary: "",
     followUpCare: "",
     patientNotes: "",
@@ -281,9 +287,9 @@ export const visitHistory: IVisitHistory[] = [
   {
     id: 3,
     visitLocation: "Hatford Hospital",
-    admissionDate: "Blood Count",
+    admissionDate: "01 April,2024",
     dischargeDate: "01 April,2024 ",
-    visitReason: "Upcoming appointment",
+    visitReason: "Tonsillitis surgery",
     treatmentSummary: "",
     followUpCare: "",
     patientNotes: "",
@@ -548,7 +554,13 @@ export const reportFiles = [
     uploadDate: "01 mar, 2024",
   },
   { fileName: "KFT report .pdf", id: 4, uploadDate: "01 may, 2023" },
-  { fileName: "KFT report .pdf", id: 3, uploadDate: "01 may, 2023" },
-  { fileName: "KFT report .pdf", id: 5, uploadDate: "01 may, 2023" },
-  { fileName: "CBC report.pdf", id: 6, uploadDate: "11 mar, 2022" },
+  // { fileName: "KFT report .pdf", id: 3, uploadDate: "01 may, 2023" },
+  // { fileName: "KFT report .pdf", id: 5, uploadDate: "01 may, 2023" },
+  // { fileName: "CBC report.pdf", id: 6, uploadDate: "11 mar, 2022" },
+];
+
+export const reasonsForTest: IItem[] = [
+  { id: 1, name: "Usual checkup" },
+  { id: 2, name: "Advised by doctor" },
+  { id: 3, name: "Other" },
 ];

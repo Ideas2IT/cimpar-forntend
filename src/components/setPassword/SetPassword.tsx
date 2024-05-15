@@ -6,12 +6,17 @@ import { Password } from "primereact/password";
 import "./SetPassword.css";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Toast } from "primereact/toast";
+import useToast from "../useToast/UseToast";
 
 const SetPassword = () => {
   interface ISetPassword {
     newPassword: string;
     confirmPassword: string;
   }
+  const navigate = useNavigate();
+  const { errorToast, toast } = useToast();
 
   const {
     control,
@@ -20,7 +25,14 @@ const SetPassword = () => {
   } = useForm({ defaultValues: {} as ISetPassword });
 
   const handleSetPassowrd = (data: ISetPassword) => {
-    console.log(data);
+    if (data.confirmPassword !== data.newPassword) {
+      errorToast(
+        "Set password failed",
+        "Error: The password and confirm password do not match."
+      );
+      return;
+    }
+    navigate("/");
   };
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
@@ -99,6 +111,7 @@ const SetPassword = () => {
             />
           </div>
         </div>
+        <Toast ref={toast} />
       </form>
     </div>
   );

@@ -35,7 +35,7 @@ const EditMedicalConditions = () => {
   return (
     <>
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
-        <div className="flex flex-row justify-between py-2">
+        <div className="flex flex-col md:flex-row justify-between py-2">
           <BackButton
             backLink={PATH_NAME.PROFILE}
             currentPage="Edit Medical Conditions & Allergies"

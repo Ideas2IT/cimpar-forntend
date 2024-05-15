@@ -1,15 +1,19 @@
 import Tab from "../interfaces/Tab";
 
 import VerticalTabView from "./VerticalTabView";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SearchInput from "./SearchInput";
 import SlideBack from "../assets/icons/slideback.svg?react";
 import SlideOpen from "../assets/icons/slideOpen.svg?react";
 import Immunization from "./testResult/Immunization";
 import TestResult from "./testResult/TestResult";
 import ServiceHistory from "./serviceHistory/ServiceHistory";
-import { labResults } from "../assets/MockData";
-import { Dropdown } from "primereact/dropdown";
+import { labResults, services } from "../assets/MockData";
+import FilterIcon from "../assets/icons/filter.svg?react";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { Button } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
+import { IItem } from "./appointmentForm/AppointmentForm";
 export interface LabTestResult {
   testName: string;
   testedAt: string;
@@ -33,7 +37,6 @@ const LabTestResults = () => {
       content: (
         <div className="px-6 py-1 h-full">
           <ServiceHistory />
-          {/* <TestResult results={defaultData} /> */}
         </div>
       ),
     },
@@ -59,11 +62,27 @@ const LabTestResults = () => {
 
   const [hideTabs, setHideTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Lab Test Results");
+  const [isOpen, setIsOpen] = useState(false);
+  const op = useRef<OverlayPanel>(null);
+  const [selectedServices, setSelectedServices] = useState([] as number[]);
 
   //TODO: Need to call API with search query
   const handleSearch = (value: String) => {
     console.log(value);
   };
+
+  const handleServiceFilter = (newServie: IItem) => {
+    if (selectedServices.includes(newServie.id)) {
+      const servicesCopy = selectedServices.filter((service) => {
+        return service !== newServie.id;
+      });
+      setSelectedServices(servicesCopy);
+    } else {
+      setSelectedServices([...selectedServices, newServie.id]);
+    }
+  };
+
+  const handleFilter = () => {};
 
   return (
     <div className="flex flex-col flex-grow px-6">
@@ -80,18 +99,68 @@ const LabTestResults = () => {
           </span>
         </div>
         <div className="flex items-center">
+          <div
+            className="rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center cursor-pointer"
+            onClick={(event) => {
+              op.current?.toggle(event);
+              setIsOpen((prev) => !prev);
+            }}
+          >
+            <FilterIcon className="mx-3 color-primary" />
+            <span className="color-primary">All Services</span>
+            <span
+              className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
+            />
+          </div>
+          <OverlayPanel
+            unstyled
+            className="bg-white py-2 mt-5 shadow-md rounded-lg"
+            onHide={() => setIsOpen(false)}
+            ref={op}
+          >
+            <div className="w-[20rem] min-h-[12rem] p-4 pb-1">
+              {services.map((option, index) => {
+                return (
+                  <div
+                    key={index}
+                    className="border-b py-1 cursor-pointer"
+                    onClick={() => handleServiceFilter(option)}
+                  >
+                    <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
+                      <label className="font-tertiary text-lg">
+                        {option.name}
+                      </label>
+                      <Checkbox
+                        className="service-box"
+                        checked={selectedServices.includes(option.id)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="flex justify-end mt-3">
+                <Button
+                  className="color-primary bg-white border-2 border-[#2d6d80] py-2 px-6 rounded-lg me-2 shadow-none"
+                  label="Cancel"
+                  outlined
+                  onClick={(event) => {
+                    op.current?.toggle(event);
+                    setIsOpen((prev) => !prev);
+                  }}
+                />
+                <Button
+                  className="text-white bg-primary py-2 px-6 rounded-lg"
+                  label="Apply"
+                  onClick={(event) => {
+                    op.current?.toggle(event);
+                    setIsOpen((prev) => !prev);
+                    handleFilter();
+                  }}
+                />
+              </div>
+            </div>
+          </OverlayPanel>
           <SearchInput handleSearch={handleSearch} />
-          {/* <Link to="appointment">
-            <Button className="ml-3" variant="primary" style="outline">
-              <Calendar className="stroke-purple-700 mr-2" />
-              Make appointment
-            </Button>
-          </Link>
-          <Button className="ml-3" variant="primary" style="outline">
-            <AddRecord className="stroke-purple-700 mr-2" />
-            Add record
-          </Button> */}
-          
         </div>
       </div>
       <div className="flex flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">

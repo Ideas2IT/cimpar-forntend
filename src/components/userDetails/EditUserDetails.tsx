@@ -23,6 +23,7 @@ import { ERROR, PATH_NAME, PATTERN } from "../../utils/AppConstants";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
+import { InputText } from "primereact/inputtext";
 
 const EditUserDetails = ({ user }: { user: IUser }) => {
   const {
@@ -373,8 +374,8 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <label className="block input-label pb-1" htmlFor="phoneNumber">
                 Phone Number*
               </label>
-              <div className="p-inputgroup buttonGroup  flex-1 w-full">
-                <span className="country-code w-[40%] p-inputgroup-addon h-[2.5rem]">
+              <div className="p-inputgroup buttonGroup px-2">
+                <span className="country-code w-[40%] h-[2.5rem] align-middle">
                   <Controller
                     name="countryCode"
                     control={control}
@@ -408,12 +409,13 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   render={({ field }) => (
                     <InputNumber
                       {...field}
+                      inputId="phoneNumber"
                       onChange={(e) =>
                         e.value && setValue("phoneNumber", e.value)
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border border-gray-300  rounded-tr-md z-100 w-[60%]"
+                      className="border border-gray-300 rounded-r-lg w-[60%]"
                     />
                   )}
                 />
@@ -446,7 +448,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                         options={countryCodes}
                         optionLabel="name"
                         placeholder="Select"
-                        className="border p-0 h-full w-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
+                        className="border rounded-r-lg p-0 h-full w-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                       />
                     )}
                   />
@@ -466,7 +468,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border border-gray-300 w-[60%]"
+                      className="border rounded-r-lg border-gray-300 w-[60%]"
                     />
                   )}
                 />
@@ -506,14 +508,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   required: "ZipCode can not be empty",
                 }}
                 render={({ field }) => (
-                  <Dropdown
-                    onChange={(e) => setValue("zipCode", e.target.value)}
-                    options={zipCodes}
-                    placeholder="Select a ZipCode"
-                    optionLabel="name"
-                    className="dropdown w-full md:w-14rem border border-gray-300 rounded-lg !py-[0.4rem]"
-                    value={field.value}
-                  />
+                  <InputText {...field} className="input-field w-full" />
                 )}
               />
               {errors.zipCode && (

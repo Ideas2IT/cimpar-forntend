@@ -148,7 +148,7 @@ const EditMedicationDetails = () => {
             </div>
             <label className="pb-2">Medication Names</label>
             {isMedicalHistory === "yes" && (
-              <div className="pt-4 w-[50%] min-h-[10rem] border border-gray-300 rounded-lg">
+              <div className="pt-4 lg:w-[50%] min-h-[10rem] border border-gray-300 rounded-lg">
                 <Controller
                   name="currentMedication"
                   control={control}

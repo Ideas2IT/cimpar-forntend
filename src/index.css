@@ -130,6 +130,10 @@ body {
   color: #2d6d80;
 }
 
+.bg-primary {
+  background: #2d6d80;
+}
+
 .p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
   padding: 0 10px;
   margin: 10px 0;
@@ -144,4 +148,19 @@ body {
 
 .bg-success {
   background: #3c9f66;
+}
+
+.p-checkbox .p-checkbox-box {
+  border: 2px solid #2d6d80 !important;
+}
+
+.p-checkbox.p-highlight .p-checkbox-box {
+  background: #2d6d80;
+}
+
+.p-dialog-content {
+  border-radius: 0 0 16px 16px;
+}
+.p-dialog-header {
+  border-radius: 10px 10px 0 0;
 }

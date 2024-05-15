@@ -179,13 +179,13 @@ const MediaColumn = ({
 }) => {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-row justify-between font-bold text-purple-800">
+    <div className="flex flex-row font-bold justify-between font-bold text-purple-800">
       <i className="pi pi-eye" onClick={() => handleView(data)} />
-      <i className="pi pi-download mx-2" />
       <i
-        className="pi pi-pen-to-square"
+        className="pi pi-pen-to-square px-3"
         onClick={() => navigate(`/edit-visit-history/${data.id}`)}
       />
+      <i className="pi pi-trash text-red-500 me-2" />
     </div>
   );
 };

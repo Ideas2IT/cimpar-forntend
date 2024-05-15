@@ -91,7 +91,7 @@ const Card = ({ card }: { card: ICard }) => {
           <span>
             {card.title}
             {card.disabled && (
-              <span className="px-2  text-sm font-light">(coming soon)</span>
+              <span className="px-2  text-md font-light">(coming soon)</span>
             )}
           </span>
         </div>

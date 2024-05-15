@@ -11,18 +11,24 @@ import {
 } from "primereact/autocomplete";
 import plus from "../../assets/icons/plus.svg";
 import "./AppointmentPage.css";
-import { RadioButton } from "primereact/radiobutton";
-import { FaRegCalendarMinus } from "react-icons/fa";
 import Button from "../Button";
 import { Link } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
 import { Controller, useForm } from "react-hook-form";
-import { ITest, allergies, medicalConditons, tests } from "../../assets/MockData";
+import {
+  ITest,
+  allergies,
+  medicalConditons,
+  reasonsForTest,
+  tests,
+} from "../../assets/MockData";
 import { MultiSelect } from "primereact/multiselect";
 import { user } from "../userProfilePage/UserProfilePage";
 import moment from "moment";
 import BackButton from "../backButton/BackButton";
+import { Dropdown } from "primereact/dropdown";
+import ErrorMessage from "../errorMessage/ErrorMessage";
 
 export interface IItem {
   id: number;
@@ -34,7 +40,7 @@ export interface IFormData {
   dateOfAppointment: Date;
   scheduledTime: string;
   reasonForTest: string;
-  testReason: string;
+  testReason: IItem;
   otherReasonForTest: string;
   medicalConditions: IItem[];
   otherMedicalConditon: string;
@@ -63,8 +69,8 @@ const AppointmentForm = () => {
 
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
+    console.log("form submitted");
     setShowDialog(true);
-    console.log(data);
   };
 
   const handleSelectMedicalConditons = (values: IItem[]) => {
@@ -107,7 +113,7 @@ const AppointmentForm = () => {
               </Button>
             </Link>
             <Button
-              onClick={() => setShowDialog(true)}
+              onClick={() => handleSubmit}
               className="ml-3 font-primary"
               variant="primary"
               style="outline"
@@ -135,14 +141,13 @@ const AppointmentForm = () => {
                 }}
                 render={({ field }) => (
                   <MultiSelect
-                    id="testToTake"
-                    onChange={(e) => setValue("testToTake", e.value)}
+                    inputId="testToTake"
+                    {...field}
                     options={tests}
                     filter
                     optionLabel="name"
                     placeholder="Select Tests"
-                    value={field.value}
-                    className="w-full md:w-full border border-gray-300 mt-1 h-[2.5rem]"
+                    className="input-field"
                   />
                 )}
               />
@@ -183,8 +188,7 @@ const AppointmentForm = () => {
                 <span
                   className="absolute top-[1rem] right-[1rem]"
                   onClick={() => datePickerRef?.current?.setOpen(true)}
-                >
-                </span>
+                ></span>
               </div>
             </div>
             <div className="lg:w-1/4 md:w-1/2 sm:w-1 lg:pe-0 lg:ps-4 md:px=4">
@@ -214,6 +218,9 @@ const AppointmentForm = () => {
                   />
                 )}
               />
+              {errors.scheduledTime && (
+                <ErrorMessage message={errors.scheduledTime.message} />
+              )}
             </div>
           </div>
           <div className="flex flex-wrap py-3 mt-2">
@@ -221,59 +228,22 @@ const AppointmentForm = () => {
               <label htmlFor="testReason" className="input-label">
                 Reason for test*
               </label>
-              <div className="flex flex-row rounded-md pe-2 py-2">
+              <div className="flex flex-row rounded-md">
                 <Controller
                   name="testReason"
                   control={control}
-                  defaultValue=""
                   rules={{
-                    required: "Test reason can't be empty",
+                    required: "Date of appointment is required",
                   }}
                   render={({ field }) => (
-                    <>
-                      <RadioButton
-                        {...field}
-                        name="reasonForTest"
-                        inputId="usualCheckup"
-                        className="me-3"
-                        value="usualCheckup"
-                        checked={field.value === "usualCheckup"}
-                      />
-                      <label
-                        htmlFor="usualCheckup"
-                        className={`${field.value === "usualCheckup" && "activeLabel"} font-semibold`}
-                      >
-                        Usual checkup
-                      </label>
-                      <RadioButton
-                        {...field}
-                        name="reasonForTest"
-                        inputId="doctorsAdvice"
-                        className="mx-3"
-                        value="doctorsAdvice"
-                        checked={field.value === "doctorsAdvice"}
-                      />
-                      <label
-                        htmlFor="doctorsAdvice"
-                        className={`${field.value === "doctorsAdvice" && "activeLabel"} font-semibold`}
-                      >
-                        Advised by doctor
-                      </label>
-                      <RadioButton
-                        {...field}
-                        name="ReasonForTest"
-                        inputId="otherReason"
-                        className="mx-3"
-                        value="otherReason"
-                        checked={field.value === "otherReason"}
-                      />
-                      <label
-                        htmlFor="otherReason"
-                        className={`${field.value === "otherReason" && "activeLabel"} font-semibold`}
-                      >
-                        Other
-                      </label>
-                    </>
+                    <Dropdown
+                      {...field}
+                      inputId="testReason"
+                      options={reasonsForTest}
+                      optionLabel="name"
+                      placeholder="Select test reason"
+                      className="w-full border border-gray-300 rounded-lg px-2 h-[2.8rem]"
+                    />
                   )}
                 />
               </div>
@@ -288,7 +258,8 @@ const AppointmentForm = () => {
                 Other reason
               </label>
               <input
-                disabled={reasonForTest !== "otherReason"}
+                id="reasonDetails"
+                disabled={reasonForTest?.name !== "Other"}
                 {...register("otherReasonForTest")}
                 name={`otherReasonForTest`}
                 onChange={(e) => setValue("otherReasonForTest", e.target.value)}
@@ -319,13 +290,13 @@ const AppointmentForm = () => {
             </label>
             <input
               {...register("otherMedicalConditon")}
+              id="otherMedicalConditions"
               name={`otherMedicalConditon`}
               onChange={(event) =>
                 setValue("otherMedicalConditon", event?.target?.value || "")
               }
               className="cimpar-input focus:outline-none"
               type="text"
-              id="otherMedicalConditions"
               placeholder="Mild concussion."
             />
           </div>
@@ -367,6 +338,7 @@ const AppointmentForm = () => {
       </form>
       {showDialog && (
         <CustomModal
+          showCloseButton={true}
           styleClass="w-[30rem] h-[15rem]"
           handleClose={() => {
             setShowDialog(false);
@@ -437,7 +409,6 @@ export const CustomAutoComplete = ({
   return (
     <div className="border block border-gray-300 rounded-md flex flex-row justify-between items-center">
       <AutoComplete
-        // className="border block border-gray-300 rounded-md layout-none focus:border-none"
         className="w-[90%]"
         field="name"
         multiple

@@ -9,13 +9,13 @@ import EditMedicationDetails from "./components/medication/EditMedicationDetails
 import Layout from "./components/Layout";
 import EditInsurance from "./components/insuranceDetails/EditInsurance";
 import HomePage from "./components/homePage/HomePage";
-import TestResult from "./components/testResult/TestResult";
 import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
 import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
 import { PATH_NAME } from "./utils/AppConstants";
 import SignUpForm from "./components/loginForm/SignUpForm";
 import SetPassword from "./components/setPassword/SetPassword";
 import LoginForm from "./components/loginForm/LoginForm";
+import ForgotPassword from "./components/forgotPassword/ForgotPassword";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -25,14 +25,14 @@ const router = createBrowserRouter([
         element: <HomePage />,
         index: true,
       },
-      {
-        path: "login",
-        element: <LoginForm />,
-      },
-      {
-        path: "/signup",
-        element: <SignUpForm />,
-      },
+      // {
+      //   path: "login",
+      //   element: <LoginForm />,
+      // },
+      // {
+      //   path: "/signup",
+      //   element: <SignUpForm />,
+      // },
       // {
       //   path: "/set-password",
       //   element: <SetPassword />,
@@ -78,6 +78,22 @@ const router = createBrowserRouter([
         element: <EditVisitHistory />,
       },
     ],
+  },
+  {
+    path: "login",
+    element: <LoginForm />,
+  },
+  {
+    path: "/signup",
+    element: <SignUpForm />,
+  },
+  {
+    path: "/set-password",
+    element: <SetPassword />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
   },
 ]);
 

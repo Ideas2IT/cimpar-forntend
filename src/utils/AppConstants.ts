@@ -22,4 +22,5 @@ export const MESSAGE = {
   SIGNUP_SUCCESSFUL:
     "Successfully Signed-up , Please Login with your register email & password",
   PASSWORD_LENGTH_ERROR: "Password length should be at least 8 characters long",
+  PASSOWRD_RESET: "Enter your email to recieve a link to reset your password.",
 };
