@@ -279,28 +279,29 @@ const EditVisitHistory = () => {
             <label className="input-label pb-2">
               If you have any documents related,Please add them (optional)
             </label>
-            <div className="flex flex-row grid md:grid-cols-3">
-              {reportFiles.map((reportFile) => {
-                return (
-                  <div className="report-wrapper">
-                    <div className="w-[80%]">
-                      <label
-                        title={reportFile.fileName}
-                        className="block overflow-hidden whitespace-nowrap overflow-ellipsis"
-                      >
-                        {reportFile.fileName}
-                      </label>
-                      <label className="font-tertiary text-sm">
-                        {reportFile.uploadDate}
-                      </label>
+            <div className="flex flex-row gap-3">
+              {!!Object.keys(selectedHistory).length &&
+                reportFiles.map((reportFile) => {
+                  return (
+                    <div className="report-wrapper">
+                      <div className="w-[80%]">
+                        <label
+                          title={reportFile.fileName}
+                          className="block overflow-hidden whitespace-nowrap overflow-ellipsis"
+                        >
+                          {reportFile.fileName}
+                        </label>
+                        <label className="font-tertiary text-sm">
+                          {reportFile.uploadDate}
+                        </label>
+                      </div>
+                      <div className="font-bold">
+                        <i className="pi pi-pen-to-square text-purple-800 px-3" />
+                        <i className="pi pi-trash text-red-500" />
+                      </div>
                     </div>
-                    <div className="font-bold">
-                      <i className="pi pi-pen-to-square text-purple-800 px-3" />
-                      <i className="pi pi-trash text-red-500" />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
             <FileUpload
               chooseOptions={{

@@ -3,13 +3,15 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { useContext, useRef, useState } from "react";
 import logoutImage from "../assets/icons/logout.svg";
 import HeaderContext from "../context/HeaderContext";
-import { useNavigate } from "react-router-dom";
 import localStorageService from "../services/localStorageService";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
 import { setIsLoggedIn } from "../store/slices/commonSlice";
+import CustomModal from "./customModal/CustomModal";
+import ChangePassword from "./changePassword/ChangePassword";
 const Header = () => {
   const { value } = useContext(HeaderContext);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const loggedInUser = {
     name: "Bharani Balamurgan",
@@ -18,6 +20,10 @@ const Header = () => {
   };
   const op = useRef<OverlayPanel>(null);
   const [toggleButton, setToggleButton] = useState(false);
+
+  const handleChangePassword = () => {
+    setIsChangePasswordOpen(true);
+  };
   return (
     <div className="flex justify-between items-center mb-6 mx-6">
       <p className="font-bold text-2xl font-primary text-gray-700">{value}</p>
@@ -45,21 +51,28 @@ const Header = () => {
         onHide={() => setToggleButton(false)}
         ref={op}
       >
-        <LogoutPopover />
+        <LogoutPopover handleChangePassword={handleChangePassword} />
       </OverlayPanel>
+      {isChangePasswordOpen && (
+        <CustomModal
+          styleClass="h-[25rem] w-[30rem] rounded-lg"
+          handleClose={() => setIsChangePasswordOpen(false)}
+        >
+          <ChangePassword handleClose={() => setIsChangePasswordOpen(false)} />
+        </CustomModal>
+      )}
     </div>
   );
 };
 
 //TODO: Need to write the password change logic
 
-export const LogoutPopover = () => {
+export const LogoutPopover = ({
+  handleChangePassword,
+}: {
+  handleChangePassword: () => void;
+}) => {
   const dispatch = useDispatch<AppDispatch>();
-
-  const handleChangePassword = () => {
-    console.log("Hanlde change password");
-  };
-
   //TODO: Need to write the logic to delete all the credentials from storage
   const handleLogout = () => {
     localStorageService.clearTokens();

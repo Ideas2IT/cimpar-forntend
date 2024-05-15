@@ -23,7 +23,14 @@ input::-webkit-inner-spin-button {
 .dropdown {
   @apply shadow-none;
 }
+
 .country-code .p-inputtext {
   padding-left: 0.6rem !important;
-  padding-right: 0.4rem !important;
+  padding-right: 0.2rem !important;
+  @apply flex items-center;
+}
+
+.custom-input,
+input {
+  @apply rounded-r-lg;
 }

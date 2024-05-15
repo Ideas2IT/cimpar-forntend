@@ -3,7 +3,7 @@ import ReyaIcon from "../../assets/reya-logo.svg?react";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { PATH_NAME, PATTERN } from "../../utils/AppConstants";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Controller, useForm } from "react-hook-form";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -24,9 +24,11 @@ const SignUpForm = () => {
     reset,
     formState: { errors },
   } = useForm({ defaultValues: {} as ISignUp });
+  const navigate = useNavigate();
 
   const handleSignUp = (data: ISignUp) => {
     console.log(data);
+    navigate("/set-password");
   };
   return (
     <div className="form-wrapper">

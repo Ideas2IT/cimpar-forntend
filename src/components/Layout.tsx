@@ -5,12 +5,16 @@ import Sidebar from "./Sidebar";
 import LoginForm from "./loginForm/LoginForm";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../store/slices/commonSlice";
+import { useLocation } from "react-router-dom";
+import SetPassword from "./setPassword/SetPassword";
 const Layout = () => {
   const [value, setValue] = useState("Home");
   const updateHeaderTitle = (newValue: string) => {
     setValue(newValue);
   };
   const isLoggedIn = useSelector(selectIsLoggedIn);
+  const location = useLocation();
+  console.log(location.pathname)
   return (
     <>
       {isLoggedIn ? (
@@ -20,6 +24,8 @@ const Layout = () => {
             <Main />
           </HeaderContext.Provider>
         </div>
+      ) : location.pathname === "/set-password" ? (
+        <SetPassword />
       ) : (
         <LoginForm />
       )}

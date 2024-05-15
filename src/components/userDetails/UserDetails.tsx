@@ -17,7 +17,7 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
       value:
         patient.height.feet + " feet " + patient.height.inches + " inches ",
     },
-    { label: "WEIGHT", value: patient.weight + "Lbs" },
+    { label: "WEIGHT", value: patient.weight + " Pounds" },
     { label: "ETHNICITY", value: patient.ethnicity },
   ];
 

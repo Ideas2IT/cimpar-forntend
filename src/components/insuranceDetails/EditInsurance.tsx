@@ -48,7 +48,6 @@ const EditInsurance = () => {
       "Insurance updated",
       "Insurance details has been updated successfully"
     );
-    console.log(data);
   };
 
   return (
@@ -64,30 +63,29 @@ const EditInsurance = () => {
             }
             backLink={PATH_NAME.PROFILE}
           />
-          <div>
-            <div className="flex py-2 justify-between items-center">
-              <Link to={PATH_NAME.PROFILE}>
-                <Button
-                  className="ml-3 font-primary text-purple-800"
-                  variant="primary"
-                  type="reset"
-                  style="link"
-                >
-                  <i className="p" />
-                  <i className="pi pi-times me-2"></i>Cancel
-                </Button>
-              </Link>
-              <PrimeButton
-                className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
-                outlined
-                type="submit"
+
+          <div className="flex py-2 justify-between items-center">
+            <Link to={PATH_NAME.PROFILE}>
+              <Button
+                className="ml-3 font-primary text-purple-800"
+                variant="primary"
+                type="button"
+                style="link"
               >
-                <i className="pi pi-check me-2"></i>Save
-              </PrimeButton>
-            </div>
+                <i className="p" />
+                <i className="pi pi-times me-2"></i>Cancel
+              </Button>
+            </Link>
+            <PrimeButton
+              className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
+              outlined
+              type="submit"
+            >
+              <i className="pi pi-check me-2"></i>Save
+            </PrimeButton>
           </div>
         </div>
-        <div className="h-[70vh] bg-white rounded-lg p-6">
+        <div className="min-h-[70vh] bg-white rounded-lg p-6">
           <label className="font-ternary text-sm">
             Select Your Insurance Type based on your priority
           </label>
@@ -148,7 +146,7 @@ const EditInsurance = () => {
               </span>
             )}
           </div>
-          <div className="pt-4 w-[50%]">
+          <div className="pt-4 lg:w-[50%] sm:w-[100%]">
             <label className="block input-label pb-1" htmlFor="race">
               Insurance Company*
             </label>
@@ -175,7 +173,7 @@ const EditInsurance = () => {
               </span>
             )}
           </div>
-          <div className="grid grid-cols-4 pt-4 gap-6">
+          <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-3 pt-4 gap-6">
             <div>
               <label className="block input-label pb-1" htmlFor="race">
                 Insurance Number*

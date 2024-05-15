@@ -33,7 +33,7 @@ const LoginForm = () => {
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
       <form onSubmit={handleSubmit((data) => handleSetPassowrd(data))}>
-        <div className="rounded-xl bg-white w-[30rem] h-[30rem] p-6">
+        <div className="rounded-xl bg-white w-[30rem] min-h-[25rem] p-6">
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" />
           </div>
@@ -84,8 +84,8 @@ const LoginForm = () => {
                 }}
                 render={({ field }) => (
                   <Password
+                    panelStyle={{ display: "none" }}
                     {...field}
-                    value={field.value}
                     inputClassName="signup-input h-full"
                     className="h-full w-full"
                     placeholder="Enter Password"
