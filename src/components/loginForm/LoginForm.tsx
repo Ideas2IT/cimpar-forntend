@@ -6,7 +6,7 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
@@ -19,6 +19,7 @@ const LoginForm = () => {
   }
 
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
   const {
     control,
@@ -26,14 +27,15 @@ const LoginForm = () => {
     formState: { errors, isSubmitting },
   } = useForm({ defaultValues: {} as ILogin });
 
-  const handleSetPassowrd = (data: ILogin) => {
+  const handleLogin = (data: ILogin) => {
     dispatch(setIsLoggedIn(true));
+    navigate("/");
   };
 
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
-      <form onSubmit={handleSubmit((data) => handleSetPassowrd(data))}>
-        <div className="rounded-xl bg-white w-[30rem] min-h-[25rem] p-6">
+      <form onSubmit={handleSubmit((data) => handleLogin(data))}>
+        <div className="rounded-xl bg-white md:w-[30rem] md:min-h-[25rem] p-6">
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" />
           </div>
@@ -46,7 +48,9 @@ const LoginForm = () => {
           {/* <label className="input-label">{MESSAGE.SIGNUP_SUCCESSFUL}</label> */}
           <div className="font-primary text-2xl py-3">Login</div>
           <div className="col-span-2 w-full my-3">
-            <label className="input-label">Email*</label>
+            <label className="input-label" htmlFor="email">
+              Email*
+            </label>
             <div className="relative h-[2.5rem] my-1">
               <Controller
                 name="email"
@@ -58,6 +62,7 @@ const LoginForm = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="email"
                     keyfilter="email"
                     className="signup-input"
                     type="email"
@@ -70,7 +75,9 @@ const LoginForm = () => {
             </div>
           </div>
           <div className="w-full py-4 relative">
-            <label className="input-label">Password*</label>
+            <label className="input-label" htmlFor="password">
+              Password*
+            </label>
             <div className="h-[2.5rem] relative">
               <Controller
                 control={control}
@@ -84,8 +91,9 @@ const LoginForm = () => {
                 }}
                 render={({ field }) => (
                   <Password
-                    panelStyle={{ display: "none" }}
                     {...field}
+                    panelStyle={{ display: "none" }}
+                    inputId="password"
                     inputClassName="signup-input h-full"
                     className="h-full w-full"
                     placeholder="Enter Password"
@@ -98,7 +106,7 @@ const LoginForm = () => {
               <ErrorMessage message={errors.password.message} />
             )}
           </div>
-          <Link to="/">
+          <Link to="/forgot-password">
             <label className="text-purple-800 font-primary cursor-pointer">
               Forgot Password?
             </label>

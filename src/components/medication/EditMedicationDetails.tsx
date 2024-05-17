@@ -8,7 +8,6 @@ import { IUser } from "../../interfaces/User";
 import { RadioButton } from "primereact/radiobutton";
 import "./Medication.css";
 import { Chips } from "primereact/chips";
-import { useState } from "react";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { PATH_NAME } from "../../utils/AppConstants";
 
@@ -30,7 +29,7 @@ const EditMedicationDetails = () => {
   const isMedicalHistory = watch("medicationalHistory");
   return (
     <>
-      <div className="px-6 ">
+      <div className="px-6 h-[100%]">
         <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
           <div className="flex flex-row justify-between pb-6">
             <BackButton
@@ -73,30 +72,35 @@ const EditMedicationDetails = () => {
                 rules={{ required: "Field is required" }}
                 defaultValue={user.isOnMedicine}
                 render={({ field }) => (
-                  <div className="font-primary text-xl flex flex-row items-center py-4">
-                    <label
-                      className={`${field.value && "active"} pe-4 flex items-center text-[16px]`}
+                  <div className="font-primary text-xl flex items-center py-4">
+                    <RadioButton
+                      className="me-2"
+                      value="Primary"
+                      inputRef={field.ref}
                       onChange={() => setValue("isOnMedicine", "yes")}
+                      checked={field.value === "yes"}
+                    />
+                    <label
+                      className={`${field.value === "yes" && "active"} pe-4 text-[16px] cursor-pointer`}
+                      onClick={() => {
+                        console.log("clicked");
+                        setValue("isOnMedicine", "yes");
+                      }}
                     >
-                      <RadioButton
-                        className="me-2"
-                        value="Primary"
-                        inputRef={field.ref}
-                        checked={field.value === "yes"}
-                      />
                       Yes
                     </label>
-                    <label
-                      className={`${!field.value && "active"} pe-4 flex items-center text-[16px]`}
+                    <RadioButton
+                      className="me-2"
+                      inputRef={field.ref}
+                      {...field}
+                      value="Secondary"
                       onChange={() => setValue("isOnMedicine", "no")}
+                      checked={field.value === "no"}
+                    />
+                    <label
+                      className={`${field.value === "no" && "active"} pe-4 text-[16px] cursor-pointer`}
+                      onClick={() => setValue("isOnMedicine", "no")}
                     >
-                      <RadioButton
-                        className="me-2 h-full w-full"
-                        inputRef={field.ref}
-                        {...field}
-                        value="Secondary"
-                        checked={field.value === "no"}
-                      />
                       No
                     </label>
                   </div>
@@ -114,29 +118,25 @@ const EditMedicationDetails = () => {
                 rules={{ required: "Field is required" }}
                 defaultValue={user.medicationalHistory}
                 render={({ field }) => (
-                  <div className="font-primary text-xl flex flex-row items-center py-4">
-                    <label
-                      className={`${field.value && "active"} pe-4 flex items-center text-[16px]`}
+                  <div className="flex font-primary text-xl items-center">
+                    <RadioButton
+                      checked={field.value === "yes"}
                       onChange={() => setValue("medicationalHistory", "yes")}
+                    />
+                    <label
+                      className={`${field.value === "yes" && "active"} me-4 text-[16px] cursor-pointer ms-3`}
+                      onClick={() => setValue("medicationalHistory", "yes")}
                     >
-                      <RadioButton
-                        className="me-2"
-                        value="Primary"
-                        inputRef={field.ref}
-                        checked={field.value === "yes"}
-                      />
                       Yes
                     </label>
-                    <label
-                      className={`${!field.value && "active"} pe-4 flex items-center text-[16px]`}
+                    <RadioButton
                       onChange={() => setValue("medicationalHistory", "no")}
+                      checked={field.value === "no"}
+                    />
+                    <label
+                      className={`${field.value === "no" && "active"} me-4 text-[16px] cursor-pointer ms-3`}
+                      onClick={() => setValue("medicationalHistory", "no")}
                     >
-                      <RadioButton
-                        className="me-2 h-full w-full"
-                        {...field}
-                        value="Secondary"
-                        checked={field.value === "no"}
-                      />
                       No
                     </label>
                   </div>

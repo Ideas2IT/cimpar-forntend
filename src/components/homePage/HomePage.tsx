@@ -41,7 +41,7 @@ const HomePage = () => {
     },
     {
       id: 4,
-      title: "Home Health Records",
+      title: "Home Health",
       icon: healthRecordIcon,
       color: "bg-[#D3E4D3]",
       disabled: true,
@@ -66,7 +66,7 @@ const HomePage = () => {
   ];
   return (
     <>
-      <div className=" px-6 color-primary font-primary text-xl">
+      <div className="px-6 color-primary font-primary text-xl">
         Our services
         <div className="mt-4 flex grid lg:grid-cols-4 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
           {cards.map((card: ICard) => {
@@ -87,13 +87,11 @@ const Card = ({ card }: { card: ICard }) => {
         <div className="p-6">
           <img src={card.icon} alt={card.title} className="h-[2rem] w-[2rem]" />
         </div>
-        <div className="px-6 nowrap">
-          <span>
-            {card.title}
-            {card.disabled && (
-              <span className="px-2  text-md font-light">(coming soon)</span>
-            )}
-          </span>
+        <div className="px-6">
+          <span>{card.title}</span>
+          {card.disabled && (
+            <span className="px-2 text-md font-light">(coming soon)</span>
+          )}
         </div>
       </div>
     </NavLink>

@@ -103,7 +103,6 @@ const VisitHistory = () => {
   };
 
   const viewRecord = (record: IVisitHistory) => {
-    console.log(record);
     setSelectedHistory(record);
   };
 
@@ -179,7 +178,7 @@ const MediaColumn = ({
 }) => {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-row font-bold justify-between font-bold text-purple-800">
+    <div className="flex flex-row font-bold justify-between font-bold max-w-[5rem] text-purple-800">
       <i className="pi pi-eye" onClick={() => handleView(data)} />
       <i
         className="pi pi-pen-to-square px-3"

@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useContext, useRef, useState } from "react";
-import logoutImage from "../assets/icons/logout.svg";
+import LogoutImage from "../assets/icons/logout.svg?react";
 import HeaderContext from "../context/HeaderContext";
 import localStorageService from "../services/localStorageService";
 import { useDispatch } from "react-redux";
@@ -87,10 +87,10 @@ export const LogoutPopover = ({
         Change password
       </li>
       <li
-        className="flex nowrap cursor-pointer px-6 justify-center items-center text-red-500 hover:bg-pink-50"
+        className="flex nowrap cursor-pointer px-6 justify-center items-center text-red-500 hover:bg-pink-50 py-3"
         onClick={handleLogout}
       >
-        <img src={logoutImage} className="pe-3 py-3" />
+        <LogoutImage className="me-3"/>
         <span>Logout</span>
       </li>
     </ul>

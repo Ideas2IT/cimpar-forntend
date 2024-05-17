@@ -7,6 +7,7 @@ import Download from "../../assets/icons/download.svg?react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { Sidebar } from "primereact/sidebar";
 import { getStatusColors } from "../../services/commonFunctions";
+import { Button } from "primereact/button";
 
 const TestResult = ({ results }: { results: LabTestResult[] }) => {
   const [selectedTest, setSelectedTest] = useState({} as LabTestResult);
@@ -36,13 +37,22 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
 
   const SidebarHeader = () => {
     return (
-      <div className="items-center flex">
-        <span className="pe-3">Lab Result</span>
-        <span
-          className={`${getStatusColors(selectedTest.status)} py-1 px-3 rounded-full text-sm font-tertiary`}
-        >
-          {selectedTest.status ? selectedTest.status : "-"}
-        </span>
+      <div className="flex items-center justify-between w-full">
+        <div>
+          <span className="pe-3">Lab Result</span>
+          <span
+            className={`${getStatusColors(selectedTest.status)} py-1 px-3 rounded-full text-sm font-tertiary`}
+          >
+            {selectedTest.status ? selectedTest.status : "-"}
+          </span>
+        </div>
+        {selectedTest.status === "Available" && (
+          <Button
+            label="Download"
+            className="text-purple-900 bg-purple-100 rounded-full py-1 px-3 border border-purple-900 me-3 text-sm"
+            icon="pi pi-download"
+          />
+        )}
       </div>
     );
   };
@@ -193,7 +203,7 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
 
   const Result = () => {
     return (
-      <div className="flex grid lg:grid-cols-2">
+      <div className="flex grid lg:grid-cols-2 gap-3">
         <TableCell label="RESULT" value="16" highlight={true} />
         <TableCell label="REFERENCE RANGE" value="10-13" />
         <TableCell label="UNITS" value="G/dL" />
@@ -274,7 +284,7 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
           <div className="font-primary text-primary py-6 text-xl">
             Ordering Physician details
           </div>
-          <div className="grid md:grid-cols-2 sm:grid-cols-1 gap">
+          <div className="grid md:grid-cols-2 sm:grid-cols-1 gap-3">
             <TableCell
               label="PHYSICIAN NAME"
               value={getValue("PHYSICIAN NAME")}

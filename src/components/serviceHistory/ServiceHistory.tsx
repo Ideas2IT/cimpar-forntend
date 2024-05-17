@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LabTestResult } from "../LabTestResults";
-import { DataTable } from "primereact/datatable";
+import { DataTable ,DataTableProps} from "primereact/datatable";
 import { Column } from "primereact/column";
 import Eye from "../../assets/icons/eye.svg?react";
 import Download from "../../assets/icons/download.svg?react";
@@ -18,7 +18,7 @@ import { ImmunizationDetailView } from "../testResult/Immunization";
 const ServiceHistory = () => {
   const [selectedService, setSelectedTest] = useState<IService>({} as IService);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
-  const tableProps = {
+  const tableProps:DataTableProps = {
     selection: selectedService,
     value: serviceData,
     selectionMode: "single" as "single" | "multiple",
@@ -124,7 +124,7 @@ const ServiceHistory = () => {
         >
           {selectedService.category.toLowerCase() === "lab test" ? (
             // TODO: Need to fetch the results of selected service and render the component accordingly
-            <TestDetailedView test={labResults[0]} />
+            <TestDetailedView test={labResults[2]} />
           ) : (
             <ImmunizationDetailView data={immunizations[0]} />
           )}

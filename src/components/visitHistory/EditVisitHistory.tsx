@@ -9,18 +9,21 @@ import {
   reportFiles,
   visitHistory,
 } from "../../assets/MockData";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import "./VisitHistory.css";
 import { InputTextarea } from "primereact/inputtextarea";
 import { FileUpload } from "primereact/fileupload";
-import { PATH_NAME } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
+import { Toast } from "primereact/toast";
+import useToast from "../useToast/UseToast";
 
 const EditVisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
   const location = useLocation();
+  const { toast, successToast, errorToast } = useToast();
 
   useEffect(() => {
     if (visitHistory.length) {
@@ -46,11 +49,43 @@ const EditVisitHistory = () => {
   useEffect(() => {
     reset({ ...selectedHistory });
   }, [selectedHistory]);
+  const uploaderRef = useRef<FileUpload | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  const handleFormSubmit = (fromData: IVisitHistory) => {
-    console.log(fromData);
+  //TODO: Need to write the logic to handle API
+  const handleFormSubmit = (fromData: IVisitHistory) => {};
+
+  const handleRemoveFile = (index: number) => {
+    const updatedFiles = uploadedFiles;
+    updatedFiles.splice(index, 1);
+    setUploadedFiles([...updatedFiles]);
+    successToast(MESSAGE.FILE_DELETE_TOAST_TITLE, MESSAGE.FILE_DELETE_TOAST);
   };
 
+  const handleFileUpload = (event: any) => {
+    let invalidFile = false;
+    !!event.files.length &&
+      event.files.map((file: File) => {
+        if (file.type.split("/")[0] !== "image") {
+          invalidFile = true;
+        }
+      });
+    if (invalidFile) {
+      errorToast(
+        MESSAGE.INVALID_FILE_FORMAT_TITLE,
+        MESSAGE.INVALID_FILE_FORMAT
+      );
+    } else {
+      setUploadedFiles([...event.files]);
+      successToast(MESSAGE.FILE_UPLOAD_TOAST_TITLE, MESSAGE.FILE_UPLOAD_TOAST);
+    }
+  };
+
+  useEffect(() => {
+    if (uploaderRef.current) {
+      uploaderRef.current.setFiles([...uploadedFiles]);
+    }
+  }, [uploadedFiles]);
   return (
     <div>
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
@@ -97,7 +132,11 @@ const EditVisitHistory = () => {
                   required: "Visit location can't be empty",
                 }}
                 render={({ field }) => (
-                  <InputText {...field} className="input-field w-full" />
+                  <InputText
+                    {...field}
+                    placeholder="Enter Hospitan Name"
+                    className="input-field w-full"
+                  />
                 )}
               />
               {errors.visitLocation && (
@@ -154,7 +193,7 @@ const EditVisitHistory = () => {
                         setValue("hospitalContact", e.target.value)
                       }
                       placeholder="Phone Number"
-                      className="border border-gray-300  rounded-tr-md z-100 w-[60%]"
+                      className="border border-gray-300  rounded-r-lg w-[60%]"
                     />
                   )}
                 />
@@ -181,6 +220,7 @@ const EditVisitHistory = () => {
                     className="calander border rounded-lg h-[2.5rem]"
                     showIcon={true}
                     icon="pi pi-calendar-minus"
+                    placeholder="Selet Date"
                   />
                 )}
               />
@@ -191,7 +231,7 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative">
-              <label className="pb-1 input-label">Admission Date*</label>
+              <label className="pb-1 input-label">Discharge Date*</label>
               <Controller
                 name="dischargeDate"
                 control={control}
@@ -206,6 +246,7 @@ const EditVisitHistory = () => {
                     className="calander input-field"
                     showIcon={true}
                     icon="pi pi-calendar-minus"
+                    placeholder="Select Date"
                   />
                 )}
               />
@@ -222,7 +263,11 @@ const EditVisitHistory = () => {
                 control={control}
                 defaultValue={selectedHistory.visitReason}
                 render={({ field }) => (
-                  <InputText {...field} className="input-field w-full" />
+                  <InputText
+                    {...field}
+                    className="input-field w-full"
+                    placeholder="Enter reason for visit"
+                  />
                 )}
               />
             </div>
@@ -233,7 +278,11 @@ const EditVisitHistory = () => {
                 control={control}
                 defaultValue={selectedHistory.primaryCareTeam}
                 render={({ field }) => (
-                  <InputText {...field} className="input-field w-full" />
+                  <InputText
+                    {...field}
+                    placeholder="Enter Names"
+                    className="input-field w-full"
+                  />
                 )}
               />
             </div>
@@ -244,7 +293,11 @@ const EditVisitHistory = () => {
                 control={control}
                 defaultValue={selectedHistory.treatmentSummary}
                 render={({ field }) => (
-                  <InputTextarea {...field} className="large-input" />
+                  <InputTextarea
+                    {...field}
+                    placeholder="Enter Treatment Summary"
+                    className="large-input pt-2"
+                  />
                 )}
               />
             </div>
@@ -255,7 +308,11 @@ const EditVisitHistory = () => {
                 control={control}
                 defaultValue={selectedHistory.followUpCare}
                 render={({ field }) => (
-                  <InputTextarea {...field} className="large-input" />
+                  <InputTextarea
+                    {...field}
+                    placeholder="Enter Follow-up care"
+                    className="large-input pt-2"
+                  />
                 )}
               />
             </div>
@@ -268,58 +325,62 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <InputTextarea
                     {...field}
+                    placeholder="Enter activity notes"
                     autoResize={false}
-                    className="large-input"
+                    className="large-input pt-2"
                   />
                 )}
               />
             </div>
           </div>
-          <div className="">
+          <div className="w-[100%]">
             <label className="input-label pb-2">
               If you have any documents related,Please add them (optional)
             </label>
-            <div className="flex flex-row gap-3">
-              {!!Object.keys(selectedHistory).length &&
-                reportFiles.map((reportFile) => {
+            <div className="grid md:grid-cols-4 md:grid-cols-2 gap-x-10 gap-y-5 py-4 max-w-[100%] overflow-wrap">
+              {!!uploadedFiles.length &&
+                uploadedFiles.map((reportFile, index) => {
                   return (
-                    <div className="report-wrapper">
-                      <div className="w-[80%]">
+                    <div
+                      key={reportFile.name}
+                      className="flex flex-row w-[8rem]"
+                    >
+                      <div className="w-[90%] text-[#2D6D80]">
                         <label
-                          title={reportFile.fileName}
+                          title={reportFile.name}
                           className="block overflow-hidden whitespace-nowrap overflow-ellipsis"
                         >
-                          {reportFile.fileName}
-                        </label>
-                        <label className="font-tertiary text-sm">
-                          {reportFile.uploadDate}
+                          {reportFile.name}
                         </label>
                       </div>
-                      <div className="font-bold">
-                        <i className="pi pi-pen-to-square text-purple-800 px-3" />
-                        <i className="pi pi-trash text-red-500" />
+                      <div className="font-bold w-[10%] text-end">
+                        <i
+                          onClick={() => handleRemoveFile(index)}
+                          className="pi pi-trash text-red-500 cursor-pointer"
+                        />
                       </div>
                     </div>
                   );
                 })}
             </div>
             <FileUpload
+              ref={uploaderRef}
+              auto
+              customUpload
+              multiple
+              uploadHandler={(e) => handleFileUpload(e)}
               chooseOptions={{
                 label: "Add",
                 icon: <i className="pi pi-file-plus pe-2" />,
-                className:
-                  " bg-[#EEF1F4] text-[#2D6D80] rounded-full px-5 border-none",
+                className:'custom-file-uploader'
               }}
-              mode="basic"
-              name="demo[]"
-              url="/api/upload"
-              accept="image/*, application/pdf"
+              accept="image/*"
               maxFileSize={1000000}
-              // onUpload={onUpload}
             />
           </div>
         </div>
       </form>
+      <Toast ref={toast} />
     </div>
   );
 };

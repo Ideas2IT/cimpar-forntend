@@ -7,7 +7,17 @@
   resize: none;
 }
 
-.report-wrapper {
+/* .report-wrapper {
   @apply p-3 bg-[#EEF1F4] h-[4rem] w-[20rem] rounded-lg m-1 flex items-center justify-between;
+} */
+
+.p-fileupload-buttonbar {
+  @apply bg-white;
+}
+.p-fileupload-content {
+  @apply hidden;
 }
 
+.custom-file-uploader {
+  @apply bg-[#EEF1F4] text-[#2D6D80] rounded-full px-5 border-none mt-2;
+}

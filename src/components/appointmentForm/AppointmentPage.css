@@ -34,3 +34,14 @@
   border: 2px solid #d1d5db;
   border-radius: 6px;
 }
+
+.confirm-dialog .p-dialog-content {
+  @apply rounded-none;
+}
+.panel-header::before {
+  content: "Select an option";
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-size: 14px;
+}

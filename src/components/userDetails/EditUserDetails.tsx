@@ -386,6 +386,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     render={({ field }) => (
                       <Dropdown
                         {...field}
+                        inputId="phoneNumber"
                         value={field.value}
                         options={countryCodes}
                         optionLabel="name"
@@ -415,7 +416,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border border-gray-300 rounded-r-lg w-[60%]"
+                      className="border custom-input border-gray-300 rounded-r-lg w-[60%]"
                     />
                   )}
                 />
@@ -468,7 +469,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border rounded-r-lg border-gray-300 w-[60%]"
+                      className="border custom-input rounded-r-lg border-gray-300 w-[60%]"
                     />
                   )}
                 />
