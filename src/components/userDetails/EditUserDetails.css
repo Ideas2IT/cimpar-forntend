@@ -30,7 +30,6 @@ input::-webkit-inner-spin-button {
   @apply flex items-center;
 }
 
-.custom-input,
-input {
+.custom-input input {
   @apply rounded-r-lg;
 }

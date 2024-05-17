@@ -29,6 +29,8 @@ import moment from "moment";
 import BackButton from "../backButton/BackButton";
 import { Dropdown } from "primereact/dropdown";
 import ErrorMessage from "../errorMessage/ErrorMessage";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { MESSAGE } from "../../utils/AppConstants";
 
 export interface IItem {
   id: number;
@@ -59,7 +61,6 @@ const AppointmentForm = () => {
     defaultValues: {} as IFormData,
   });
 
-  // const [testReason, setTestReason] = useState("");
   const [selectedMedicalConditions, setSelectedMedicalConditons] = useState<
     IItem[]
   >([]);
@@ -69,8 +70,7 @@ const AppointmentForm = () => {
 
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
-    console.log("form submitted");
-    setShowDialog(true);
+    confirm();
   };
 
   const handleSelectMedicalConditons = (values: IItem[]) => {
@@ -89,6 +89,25 @@ const AppointmentForm = () => {
     return dateOfBirth + " (" + age + ")";
   };
   const reasonForTest = watch("testReason");
+
+  const accept = () => {
+    setShowDialog(true);
+  };
+
+  const reject = () => {
+    console.log("handle Reject");
+  };
+
+  const confirm = () => {
+    confirmDialog({
+      message: MESSAGE.APPOINTMENT_SUBMIT_WARNING,
+      header: "Confirmation",
+      icon: "pi pi-info-circle text-yellow-500",
+      defaultFocus: "accept",
+      accept,
+      reject,
+    });
+  };
 
   return (
     <>
@@ -152,16 +171,14 @@ const AppointmentForm = () => {
                 )}
               />
               {errors.testToTake && (
-                <span className="text-red-500 text-xs ">
-                  {errors.testToTake.message}
-                </span>
+                <ErrorMessage message={errors.testToTake.message} />
               )}
             </div>
             <div className="lg:w-1/4 md:w-1/2 sm:w-1 d-flex relative">
               <label htmlFor="appointmentDate" className="block input-label">
                 Date of appointment for test*
               </label>
-              <div className="absolute left-0 right-0">
+              <div className="relative">
                 <Controller
                   name="dateOfAppointment"
                   control={control}
@@ -186,41 +203,42 @@ const AppointmentForm = () => {
                   )}
                 />
                 <span
-                  className="absolute top-[1rem] right-[1rem]"
+                  className="absolute top-[1rem] right-[1rem] pi pi-calendar-minus"
                   onClick={() => datePickerRef?.current?.setOpen(true)}
                 ></span>
               </div>
             </div>
-            <div className="lg:w-1/4 md:w-1/2 sm:w-1 lg:pe-0 lg:ps-4 md:px=4">
+            <div className="lg:w-1/4 md:w-1/2 sm:w-1 lg:pe-0 lg:ps-4 md:px-4 relative">
               <label htmlFor="scheduleTime" className="block input-label">
                 Scheduled Time*
               </label>
-              <Controller
-                name="scheduledTime"
-                control={control}
-                defaultValue={""}
-                rules={{
-                  required: "Date of appointment is required",
-                }}
-                render={({ field }) => (
-                  <TimePicker
-                    minutePlaceholder="MM"
-                    hourPlaceholder="HH"
-                    value={field.value}
-                    id="scheduleTime"
-                    className="timePicker w-full h-[2.5rem] mt-1 rounded-md border border-gray-300"
-                    format="hh:mm a"
-                    clearIcon=""
-                    closeClock={true}
-                    onChange={(time) =>
-                      time && setValue("scheduledTime", time?.toString())
-                    }
-                  />
+              <div className="relative">
+                <Controller
+                  name="scheduledTime"
+                  control={control}
+                  defaultValue={""}
+                  rules={{
+                    required: "Date of appointment is required",
+                  }}
+                  render={({ field }) => (
+                    <TimePicker
+                      {...field}
+                      disableClock={true}
+                      minutePlaceholder="MM"
+                      hourPlaceholder="HH"
+                      id="scheduleTime"
+                      className="timePicker w-full h-[2.5rem] mt-1 rounded-md border border-gray-300"
+                      format="hh:mm a"
+                      clearIcon={<i className="hidden" />}
+                      closeClock={true}
+                    />
+                  )}
+                />
+                <span className="absolute pi pi-clock top-[1rem] right-[1rem]" />
+                {errors.scheduledTime && (
+                  <ErrorMessage message={errors.scheduledTime.message} />
                 )}
-              />
-              {errors.scheduledTime && (
-                <ErrorMessage message={errors.scheduledTime.message} />
-              )}
+              </div>
             </div>
           </div>
           <div className="flex flex-wrap py-3 mt-2">
@@ -248,9 +266,7 @@ const AppointmentForm = () => {
                 />
               </div>
               {errors.testReason && (
-                <span className="text-red-500 text-xs ">
-                  {errors.testReason.message}
-                </span>
+                <ErrorMessage message={errors.testReason.message} />
               )}
             </div>
             <div className="md:w-1/2 min-h-[50px]">
@@ -264,7 +280,7 @@ const AppointmentForm = () => {
                 name={`otherReasonForTest`}
                 onChange={(e) => setValue("otherReasonForTest", e.target.value)}
                 type="text"
-                className="cimpar-input py-[.6rem] focus:outline-none"
+                className="cimpar-input py-[.6rem] focus:outline-none font-tertiary"
                 placeholder="Type the reason here (optional)"
               />
             </div>
@@ -295,9 +311,9 @@ const AppointmentForm = () => {
               onChange={(event) =>
                 setValue("otherMedicalConditon", event?.target?.value || "")
               }
-              className="cimpar-input focus:outline-none"
+              className="cimpar-input focus:outline-none font-sans"
               type="text"
-              placeholder="Mild concussion."
+              placeholder="Enter other medical Conditions"
             />
           </div>
           <div className="font-primary text-xl pt-4 pb-2">Allergies</div>
@@ -347,6 +363,14 @@ const AppointmentForm = () => {
           <AppointmentStatus />
         </CustomModal>
       )}
+      <ConfirmDialog
+        className="confirm-dialog"
+        acceptClassName="px-5 mx-3 py-2 bg-purple-900 rounded-full text-white"
+        rejectClassName="px-5 mx-3 py-2 border-purple-900 border rounded-full text-purple"
+        maskStyle={{ backdropFilter: "red", background: "#55555530" }}
+        closable={true}
+        dismissableMask
+      />
     </>
   );
 };
@@ -417,13 +441,14 @@ export const CustomAutoComplete = ({
         onChange={(event) => handleValueSelect(event)}
         completeMethod={search}
         itemTemplate={(option) => <ItemTemplate item={option} />}
-        placeholder={placeholder ? placeholder : "Select or Add"}
+        placeholder={!selectedItems.length && placeholder ? placeholder : ""}
         emptyMessage="No result found"
         showEmptyMessage={true}
         itemProp="py-0"
         removeTokenIcon={"pi pi-times"}
-        panelClassName="custom-autocomplete-panel"
-        panelStyle={{ left: "500px" }}
+        panelClassName={`custom-autocomplete-panel ${suggestions.length && "panel-header"}`}
+        panelStyle={{ paddingTop: "40px" }}
+        inputClassName="w-auto"
       />
       {Boolean(selectedItems.length) && (
         <span
@@ -448,7 +473,7 @@ const ItemTemplate = ({ item }: { item: IItem }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="capitalize">{item.name}</div>
+      <div className="capitalize font-secondary">{item.name}</div>
       {isHovered && <img src={plus} />}
     </div>
   );

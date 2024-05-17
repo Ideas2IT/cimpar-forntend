@@ -87,7 +87,7 @@ const PolicyColumn = ({ value }: { value: String }) => {
 const PolicyHandler = ({ data }: { data: IInsurance }) => {
   const { toast, successToast, errorToast } = useToast();
   return (
-    <div className="flex flex-row items-center justify-between">
+    <div className="flex flex-row max-w-[4rem] items-center justify-between">
       <NavLink to={`/edit-insurance/${data.id}`}>
         <i className="pi pi-pen-to-square text-purple-800" />
       </NavLink>

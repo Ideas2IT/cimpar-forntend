@@ -115,7 +115,7 @@ export const services = [
 ];
 
 export const medicalConditons: IItem[] = [
-  { id: 1, name: "dfdfbc" },
+  { id: 1, name: "Diabetes" },
   { id: 4, name: "panish flu or Influenza" },
   { id: 2, name: "Bubonic Plague" },
   { id: 3, name: "Coronavirus" },
@@ -253,6 +253,7 @@ export interface IVisitHistory {
   primaryCareTeam: string;
   hospitalContact: string;
   phoneNumberCode: string;
+  documents?:File[];
 }
 export const visitHistory: IVisitHistory[] = [
   {
@@ -554,9 +555,9 @@ export const reportFiles = [
     uploadDate: "01 mar, 2024",
   },
   { fileName: "KFT report .pdf", id: 4, uploadDate: "01 may, 2023" },
-  // { fileName: "KFT report .pdf", id: 3, uploadDate: "01 may, 2023" },
-  // { fileName: "KFT report .pdf", id: 5, uploadDate: "01 may, 2023" },
-  // { fileName: "CBC report.pdf", id: 6, uploadDate: "11 mar, 2022" },
+  { fileName: "KFT report .pdf", id: 3, uploadDate: "01 may, 2023" },
+  { fileName: "KFT report .pdf", id: 5, uploadDate: "01 may, 2023" },
+  { fileName: "CBC report.pdf", id: 6, uploadDate: "11 mar, 2022" },
 ];
 
 export const reasonsForTest: IItem[] = [

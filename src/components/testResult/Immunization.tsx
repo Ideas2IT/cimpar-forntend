@@ -73,7 +73,7 @@ const TestResult = () => {
         <Column
           field="view"
           header=""
-          bodyClassName="py-5"
+          bodyClassName="py-5  max-w-[2rem]"
           headerClassName="text-sm font-secondary py-1 border-b bg-white"
           body={(rowData) => (
             <ViewColumn
@@ -95,7 +95,7 @@ const TestResult = () => {
       }
       <Sidebar
         className="detailed-view w-[28rem]"
-        header={"immunization details"}
+        header={"Immunization Details"}
         visible={isSidebarOpen}
         position="right"
         onHide={() => {
@@ -208,6 +208,8 @@ const ViewColumn = ({
 };
 
 const ColumnData = ({ content }: { content: string }) => {
-  return <div className="text-[16px] font-tertiary">{content ? content : "-"}</div>;
+  return (
+    <div className="text-[16px] font-tertiary">{content ? content : "-"}</div>
+  );
 };
 export default TestResult;

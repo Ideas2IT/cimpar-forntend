@@ -9,7 +9,7 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
         "" + " " + patient.lastName ||
         "",
     },
-    { label: "DOB", value: patient.dob },
+    { label: "DOB", value: new Date(patient.dob).toDateString() },
     { label: "GENDER", value: patient.gender },
     { label: "RACE", value: patient.race },
     {
@@ -22,10 +22,13 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
   ];
 
   const contactDetails = [
-    { label: "PHONE NUMBER", value: patient.phoneNumber },
+    {
+      label: "PHONE NUMBER",
+      value: patient.countryCode.split("-")[0] + "-" + patient.phoneNumber,
+    },
     {
       label: "ALTERNATIVE NUMBER",
-      value: patient.alternativeNumber,
+      value: patient.alternativeNumber ? patient.alternativeNumber : "None",
     },
     {
       label: "FULL ADDRESS",

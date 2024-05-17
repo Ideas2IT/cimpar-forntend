@@ -23,4 +23,13 @@ export const MESSAGE = {
     "Successfully Signed-up , Please Login with your register email & password",
   PASSWORD_LENGTH_ERROR: "Password length should be at least 8 characters long",
   PASSOWRD_RESET: "Enter your email to recieve a link to reset your password.",
+  APPOINTMENT_SUBMIT_WARNING:
+    "Are you sure that you want to make an appointment?",
+  FILE_DELETE_TOAST: "File has been deleted successfully",
+  FILE_DELETE_TOAST_TITLE: "File Deleted",
+  FILE_UPLOAD_TOAST_TITLE: "File Uploaded",
+  FILE_UPLOAD_TOAST: "File has been uploaded successfully.",
+  INVALID_FILE_FORMAT_TITLE: "Invalid File Format",
+  INVALID_FILE_FORMAT:
+    "Report should be in image JPG, PNG, or JPEG format only",
 };

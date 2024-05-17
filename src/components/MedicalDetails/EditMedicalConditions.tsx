@@ -155,27 +155,31 @@ const EditMedicalConditions = () => {
             <label className="input-label">
               Would you like to add your family history medical conditions?
             </label>
-            <div className="flex flex-row py-2">
+            <div className="flex items-center font-primary content-center py-2">
               <Controller
                 name="areFamilyConditions"
                 control={control}
                 defaultValue={patientMedicalDetails.areFamilyConditions}
                 render={({ field }) => (
                   <>
-                    <label className="flex items-center pe-6">
-                      <RadioButton
-                        className="me-2"
-                        checked={field.value === true}
-                        onChange={() => setValue("areFamilyConditions", true)}
-                      />
+                    <RadioButton
+                      checked={field.value === true}
+                      onChange={() => setValue("areFamilyConditions", true)}
+                    />
+                    <label
+                      className={`mx-4 cursor-pointer ${field.value && "active"}`}
+                      onClick={() => setValue("areFamilyConditions", true)}
+                    >
                       Yes
                     </label>
-                    <label className="flex items-center">
-                      <RadioButton
-                        onChange={() => setValue("areFamilyConditions", false)}
-                        className="me-2"
-                        checked={field.value === false}
-                      />
+                    <RadioButton
+                      onChange={() => setValue("areFamilyConditions", false)}
+                      checked={field.value === false}
+                    />
+                    <label
+                      className={`ms-4 cursor-pointer ${!field.value && "active"}`}
+                      onClick={() => setValue("areFamilyConditions", false)}
+                    >
                       No
                     </label>
                   </>

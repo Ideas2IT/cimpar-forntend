@@ -6,18 +6,20 @@ import { RadioButton } from "primereact/radiobutton";
 import { Controller, useForm } from "react-hook-form";
 import { user } from "../userProfilePage/UserProfilePage";
 import { IInsurance } from "../../interfaces/User";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { insuranceCompanies } from "../../assets/MockData";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 import { PATH_NAME } from "../../utils/AppConstants";
+import { FileUpload } from "primereact/fileupload";
 
 const EditInsurance = () => {
   const location = useLocation();
   const [selectedInsurance, setSelectedInsurance] = useState({} as IInsurance);
   const { successToast, toast } = useToast();
+  const uploaderRef = useRef<FileUpload | null>(null);
 
   useEffect(() => {
     if (user.insurance?.length) {
@@ -163,7 +165,7 @@ const EditInsurance = () => {
                   options={insuranceCompanies}
                   optionLabel="value"
                   placeholder="Select Insurance Company"
-                  className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
+                  className="pe-2 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
                 />
               )}
             />
@@ -198,6 +200,25 @@ const EditInsurance = () => {
                   {errors.insuranceNumber.message}
                 </span>
               )}
+              <>
+                <label className="input-label mt-5 block">
+                  Upload your insurance ID
+                </label>
+                <FileUpload
+                  ref={uploaderRef}
+                  auto
+                  customUpload
+                  multiple
+                  // uploadHandler={(e) => handleFileUpload(e)}
+                  chooseOptions={{
+                    label: "Upload",
+                    icon: <i className="pi pi-file-plus pe-2" />,
+                    className: "custom-file-uploader !pt-1",
+                  }}
+                  accept="image/*"
+                  maxFileSize={1000000}
+                />
+              </>
             </div>
             <div>
               <label className="block input-label pb-1" htmlFor="race">
@@ -223,6 +244,25 @@ const EditInsurance = () => {
                   {errors.policyNumber.message}
                 </span>
               )}
+              <>
+                <label className="input-label mt-5 block">
+                  Upload your insurance card
+                </label>
+                <FileUpload
+                  ref={uploaderRef}
+                  auto
+                  // customUpload
+                  // multiple
+                  // uploadHandler={(e) => handleFileUpload(e)}
+                  chooseOptions={{
+                    label: "Upload",
+                    icon: <i className="pi pi-file-plus pe-2" />,
+                    className: "custom-file-uploader",
+                  }}
+                  accept="image/*"
+                  maxFileSize={1000000}
+                />
+              </>
             </div>
             <div>
               <label className="block input-label pb-1" htmlFor="race">

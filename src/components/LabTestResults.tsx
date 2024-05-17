@@ -61,24 +61,33 @@ const LabTestResults = () => {
   ];
 
   const [hideTabs, setHideTabs] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("Lab Test Results");
+  const [selectedTab, setSelectedTab] = useState("Service History");
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
   const [selectedServices, setSelectedServices] = useState([] as number[]);
 
   //TODO: Need to call API with search query
-  const handleSearch = (value: String) => {
-    console.log(value);
-  };
+  const handleSearch = (value: String) => {};
 
-  const handleServiceFilter = (newServie: IItem) => {
-    if (selectedServices.includes(newServie.id)) {
+  const handleServiceFilter = (newService: IItem) => {
+    if (
+      newService.name.toLowerCase() === "all services" &&
+      !selectedServices.includes(newService.id)
+    ) {
+      setSelectedServices(
+        services.map((ser) => {
+          return ser.id;
+        })
+      );
+      return;
+    }
+    if (selectedServices.includes(newService.id)) {
       const servicesCopy = selectedServices.filter((service) => {
-        return service !== newServie.id;
+        return service !== newService.id;
       });
       setSelectedServices(servicesCopy);
     } else {
-      setSelectedServices([...selectedServices, newServie.id]);
+      setSelectedServices([...selectedServices, newService.id]);
     }
   };
 
@@ -100,7 +109,7 @@ const LabTestResults = () => {
         </div>
         <div className="flex items-center">
           <div
-            className="rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center cursor-pointer"
+            className={`${selectedTab === "Service History" ? "rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center cursor-pointer" : "hidden"}`}
             onClick={(event) => {
               op.current?.toggle(event);
               setIsOpen((prev) => !prev);

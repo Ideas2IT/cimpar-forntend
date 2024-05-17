@@ -20,20 +20,17 @@ const SignUpForm = () => {
   const {
     control,
     handleSubmit,
-    setValue,
-    reset,
     formState: { errors },
   } = useForm({ defaultValues: {} as ISignUp });
   const navigate = useNavigate();
 
   const handleSignUp = (data: ISignUp) => {
-    console.log(data);
     navigate("/set-password");
   };
   return (
     <div className="form-wrapper">
       <form onSubmit={handleSubmit((data) => handleSignUp(data))}>
-        <div className="bg-white w-[30rem] h-[27rem] rounded-lg p-6">
+        <div className="bg-white md:w-[30rem] md:h-[27rem] rounded-lg p-6">
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" />
           </div>
@@ -145,7 +142,7 @@ const SignUpForm = () => {
               </label>
               <Button
                 type="submit"
-                className="bg-purple-800 text-white px-4 py-1 rounded-full font-primary"
+                className="bg-purple-800 text-white md:px-4 px-1 py-1 rounded-full font-primary"
                 label="Sign Up"
               />
             </div>
