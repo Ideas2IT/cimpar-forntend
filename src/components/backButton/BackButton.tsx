@@ -14,6 +14,7 @@ const BackButton = ({
     <div className="flex justify-between items-center lg:flex-row md:flex-col sm:flex-col">
       <Link to={backLink} className="flex items-center">
         <PrimeButton
+          type="button"
           className="p-2 bg-white shadow-none rounded-md"
           text
           raised

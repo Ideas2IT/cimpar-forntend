@@ -110,8 +110,8 @@ export const tests: ITest[] = [
 
 export const services = [
   { id: 1, name: "All Services" },
-  { id: 3, name: "Lab Tests" },
-  { id: 2, name: "Immunization" },
+  { id: 2, name: "Lab Tests" },
+  { id: 3, name: "Immunization" },
 ];
 
 export const medicalConditons: IItem[] = [

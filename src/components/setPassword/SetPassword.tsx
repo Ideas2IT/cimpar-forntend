@@ -1,6 +1,6 @@
 import ReyaIcon from "../../assets/reya-logo.svg?react";
 import CheckMark from "../../assets/icons/bluetick.svg?react";
-import { MESSAGE } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Password } from "primereact/password";
 import "./SetPassword.css";
@@ -32,7 +32,7 @@ const SetPassword = () => {
       );
       return;
     }
-    navigate("/");
+    navigate(PATH_NAME.HOME);
   };
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">

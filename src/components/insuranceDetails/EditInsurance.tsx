@@ -6,7 +6,7 @@ import { RadioButton } from "primereact/radiobutton";
 import { Controller, useForm } from "react-hook-form";
 import { user } from "../userProfilePage/UserProfilePage";
 import { IInsurance } from "../../interfaces/User";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { insuranceCompanies } from "../../assets/MockData";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
@@ -14,13 +14,28 @@ import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 import { PATH_NAME } from "../../utils/AppConstants";
 import { FileUpload } from "primereact/fileupload";
+import { FileTile } from "../visitHistory/EditVisitHistory";
+import ReportImage from "../reportImage/ReportImage";
 
 const EditInsurance = () => {
   const location = useLocation();
   const [selectedInsurance, setSelectedInsurance] = useState({} as IInsurance);
   const { successToast, toast } = useToast();
-  const uploaderRef = useRef<FileUpload | null>(null);
+  const [showImage, setShowImage] = useState(false);
+  const [selectedReport, setSelectedReport] = useState({} as File);
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: selectedInsurance,
+  });
 
+  const insuranceId = watch("insuranceId");
+  const insuranceCard = watch("insuranceCard");
   useEffect(() => {
     if (user.insurance?.length) {
       const insurance = user.insurance.find(
@@ -32,15 +47,6 @@ const EditInsurance = () => {
     }
   }, [location.pathname]);
 
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm({
-    defaultValues: selectedInsurance,
-  });
   useEffect(() => {
     reset({ ...selectedInsurance });
   }, [selectedInsurance]);
@@ -201,23 +207,33 @@ const EditInsurance = () => {
                 </span>
               )}
               <>
-                <label className="input-label mt-5 block">
+                <label className="input-label my-5 block">
                   Upload your insurance ID
                 </label>
-                <FileUpload
-                  ref={uploaderRef}
-                  auto
-                  customUpload
-                  multiple
-                  // uploadHandler={(e) => handleFileUpload(e)}
-                  chooseOptions={{
-                    label: "Upload",
-                    icon: <i className="pi pi-file-plus pe-2" />,
-                    className: "custom-file-uploader !pt-1",
-                  }}
-                  accept="image/*"
-                  maxFileSize={1000000}
-                />
+                {insuranceId?.name ? (
+                  <FileTile
+                    handleView={() => {
+                      setShowImage(true);
+                      setSelectedReport(insuranceId);
+                    }}
+                    fileName={insuranceId?.name || ""}
+                    handleRemoveFile={() => setValue("insuranceId", {} as File)}
+                  />
+                ) : (
+                  <FileUpload
+                    auto
+                    customUpload
+                    multiple
+                    uploadHandler={(e) => setValue("insuranceId", e.files[0])}
+                    chooseOptions={{
+                      label: "Upload",
+                      icon: <i className="pi pi-file-plus pe-2" />,
+                      className: "custom-file-uploader",
+                    }}
+                    accept="image/*"
+                    maxFileSize={1000000}
+                  />
+                )}
               </>
             </div>
             <div>
@@ -245,23 +261,34 @@ const EditInsurance = () => {
                 </span>
               )}
               <>
-                <label className="input-label mt-5 block">
+                <label className="input-label my-5 block">
                   Upload your insurance card
                 </label>
-                <FileUpload
-                  ref={uploaderRef}
-                  auto
-                  // customUpload
-                  // multiple
-                  // uploadHandler={(e) => handleFileUpload(e)}
-                  chooseOptions={{
-                    label: "Upload",
-                    icon: <i className="pi pi-file-plus pe-2" />,
-                    className: "custom-file-uploader",
-                  }}
-                  accept="image/*"
-                  maxFileSize={1000000}
-                />
+                {insuranceCard?.name ? (
+                  <FileTile
+                    handleView={() => {
+                      setShowImage(true);
+                      setSelectedReport(insuranceCard);
+                    }}
+                    fileName={insuranceCard?.name || ""}
+                    handleRemoveFile={() =>
+                      setValue("insuranceCard", {} as File)
+                    }
+                  />
+                ) : (
+                  <FileUpload
+                    auto
+                    customUpload
+                    uploadHandler={(e) => setValue("insuranceCard", e.files[0])}
+                    chooseOptions={{
+                      label: "Upload",
+                      icon: <i className="pi pi-file-plus pe-2" />,
+                      className: "custom-file-uploader",
+                    }}
+                    accept="image/*"
+                    maxFileSize={1000000}
+                  />
+                )}
               </>
             </div>
             <div>
@@ -293,6 +320,19 @@ const EditInsurance = () => {
         </div>
       </form>
       <Toast ref={toast} />
+      {
+        showImage && (
+          <ReportImage
+            closeModal={() => setShowImage(false)}
+            file={selectedReport}
+          />
+        )
+        // && (
+        //   <CustomModal styleClass="" handleClose={handleCloseModal}>
+        //     <Image src={imageUrl} />
+        //   </CustomModal>
+        // )
+      }
     </div>
   );
 };

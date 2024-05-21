@@ -82,7 +82,7 @@ const Card = ({ card }: { card: ICard }) => {
   return (
     <NavLink to={!card.disabled ? card.link : ""}>
       <div
-        className={`${card.color} h-[10rem] rounded-xl ${!card.disabled ? "cursor-pointer" : "text-gray-300"}`}
+        className={`${card.color} md:h-[10rem] h-[5rem] rounded-xl ${!card.disabled ? "cursor-pointer" : "text-gray-300"}`}
       >
         <div className="p-6">
           <img src={card.icon} alt={card.title} className="h-[2rem] w-[2rem]" />

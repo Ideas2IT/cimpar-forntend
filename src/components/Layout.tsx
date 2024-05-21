@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import HeaderContext from ".././context/HeaderContext";
 import Main from "./Main";
 import Sidebar from "./Sidebar";

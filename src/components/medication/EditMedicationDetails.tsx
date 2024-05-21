@@ -39,7 +39,7 @@ const EditMedicationDetails = () => {
             />
             <div>
               <div className="flex py-2 justify-between items-center">
-                <Link to="/">
+                <Link to={PATH_NAME.PROFILE}>
                   <Button
                     className="ml-3 font-primary text-purple-800"
                     variant="primary"

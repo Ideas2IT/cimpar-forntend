@@ -1,5 +1,4 @@
 import Tab from "../interfaces/Tab";
-
 import VerticalTabView from "./VerticalTabView";
 import { useRef, useState } from "react";
 import SearchInput from "./SearchInput";
@@ -64,7 +63,7 @@ const LabTestResults = () => {
   const [selectedTab, setSelectedTab] = useState("Service History");
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
-  const [selectedServices, setSelectedServices] = useState([] as number[]);
+  const [selectedServices, setSelectedServices] = useState([1,2,3] as number[]);
 
   //TODO: Need to call API with search query
   const handleSearch = (value: String) => {};
@@ -80,18 +79,40 @@ const LabTestResults = () => {
         })
       );
       return;
+    } else if (newService.name.toLowerCase() === "all services") {
+      setSelectedServices([]);
+      return;
     }
+
     if (selectedServices.includes(newService.id)) {
       const servicesCopy = selectedServices.filter((service) => {
-        return service !== newService.id;
+        return service !== newService.id && service !== 1;
       });
       setSelectedServices(servicesCopy);
     } else {
-      setSelectedServices([...selectedServices, newService.id]);
+      if (selectedServices.length) {
+        setSelectedServices(
+          services.map((serv) => {
+            return serv.id;
+          })
+        );
+      } else {
+        setSelectedServices([...selectedServices, newService.id]);
+      }
     }
   };
 
   const handleFilter = () => {};
+
+  const setLabel = () => {
+    if (selectedServices.includes(1)  || !selectedServices.length) {
+      return "All Services";
+    } else if (selectedServices.includes(2)) {
+      return "Lab Tests";
+    } else {
+      return "Immunization";
+    }
+  };
 
   return (
     <div className="flex flex-col flex-grow px-6">
@@ -116,7 +137,7 @@ const LabTestResults = () => {
             }}
           >
             <FilterIcon className="mx-3 color-primary" />
-            <span className="color-primary">All Services</span>
+            <span className="color-primary">{setLabel()}</span>
             <span
               className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
             />

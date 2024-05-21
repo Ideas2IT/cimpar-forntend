@@ -9,12 +9,19 @@ export const PATTERN = {
 };
 
 export const PATH_NAME = {
+  HOME: "/",
   PROFILE: "/profile",
   LOGIN: "/login",
   SIGNUP: "/signup",
   EDIT_PROFILE: "/edit-profile",
   EIDT_MEDICATION: "/edit-medication",
-  EDIT_MEDICAL_CONDITIONS: "/edit-medical-condition",
+  EDIT_MEDICAL_CONDITIONS: "/edit-medical-conditions",
+  EDIT_VISIT_HISTORY: "/edit-visit-history",
+  SET_PASSWORD: "/set-password",
+  EDIT_INSURANCE: "/edit-insurance",
+  FORGOT_PASSWORD: "/forgot-password",
+  TEST_RESULT: "/test-result",
+  HEALTH_RECORDS:"/health-records",
 };
 
 export const MESSAGE = {
@@ -32,4 +39,7 @@ export const MESSAGE = {
   INVALID_FILE_FORMAT_TITLE: "Invalid File Format",
   INVALID_FILE_FORMAT:
     "Report should be in image JPG, PNG, or JPEG format only",
+  PASSWORD_UPDATE_FAILED_TITLE: "Password Update Failed",
+  PASSWORD_UPDATE_FAILED_MESSAGE:
+    "New password does not match with confirm password",
 };

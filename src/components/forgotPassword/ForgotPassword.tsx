@@ -1,28 +1,32 @@
 import { InputText } from "primereact/inputtext";
 import ReyaIcon from "../../assets/reya-logo.svg?react";
-import { MESSAGE, PATTERN } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME, PATTERN } from "../../utils/AppConstants";
 import { Controller, useForm } from "react-hook-form";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Button } from "primereact/button";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./forgotPassword.css";
+
 const ForgotPassword = () => {
   interface IForgotPassword {
     email: string;
   }
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({ defaultValues: {} as IForgotPassword });
 
   const handleFormSubmit = (data: IForgotPassword) => {
     setIsSubmitted(true);
-    console.log(data);
   };
+
+  const email = watch("email");
 
   return (
     <div className="wrapper">
@@ -71,10 +75,7 @@ const ForgotPassword = () => {
               </label>
               <label className="input-label">
                 We have sent you an email at
-                <span className="text-lg font-primary">
-                  {" "}
-                  example@gmail.com.
-                </span>{" "}
+                <span className="text-lg font-primary px-1"> {email}</span>
                 Check your inbox and follow the instructions to reset your
                 account password.
               </label>
@@ -86,7 +87,7 @@ const ForgotPassword = () => {
               <>
                 <Button
                   onClick={() => {
-                    navigate("/");
+                    navigate(PATH_NAME.HOME);
                   }}
                   type="button"
                   className="button font-primary"
@@ -101,13 +102,13 @@ const ForgotPassword = () => {
               </>
             ) : (
               <div className="button-wrapper font-primary">
-                <Link to="/">
+                <Link to={PATH_NAME.HOME}>
                   <Button label="Back to Login" />
                 </Link>
                 <Button
                   onClick={() => {
                     window.open("https://mail.google.com/", "_blank");
-                    navigate("/");
+                    navigate(PATH_NAME.HOME);
                   }}
                   type="button"
                   className="button font-primary"

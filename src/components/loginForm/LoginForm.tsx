@@ -1,5 +1,4 @@
 import ReyaIcon from "../../assets/reya-logo.svg?react";
-import CheckMark from "../../assets/icons/bluetick.svg?react";
 import { MESSAGE, PATH_NAME, PATTERN } from "../../utils/AppConstants";
 import { InputText } from "primereact/inputtext";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -7,7 +6,6 @@ import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
 import { setIsLoggedIn } from "../../store/slices/commonSlice";
@@ -29,7 +27,7 @@ const LoginForm = () => {
 
   const handleLogin = (data: ILogin) => {
     dispatch(setIsLoggedIn(true));
-    navigate("/");
+    navigate(PATH_NAME.HOME);
   };
 
   return (
@@ -106,7 +104,7 @@ const LoginForm = () => {
               <ErrorMessage message={errors.password.message} />
             )}
           </div>
-          <Link to="/forgot-password">
+          <Link to={PATH_NAME.FORGOT_PASSWORD}>
             <label className="text-purple-800 font-primary cursor-pointer">
               Forgot Password?
             </label>

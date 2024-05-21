@@ -25,7 +25,7 @@ const SignUpForm = () => {
   const navigate = useNavigate();
 
   const handleSignUp = (data: ISignUp) => {
-    navigate("/set-password");
+    navigate(PATH_NAME.SET_PASSWORD);
   };
   return (
     <div className="form-wrapper">

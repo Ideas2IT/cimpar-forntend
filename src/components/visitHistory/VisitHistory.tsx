@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
+import { PATH_NAME } from "../../utils/AppConstants";
 
 const VisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
@@ -182,7 +183,7 @@ const MediaColumn = ({
       <i className="pi pi-eye" onClick={() => handleView(data)} />
       <i
         className="pi pi-pen-to-square px-3"
-        onClick={() => navigate(`/edit-visit-history/${data.id}`)}
+        onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}/${data.id}`)}
       />
       <i className="pi pi-trash text-red-500 me-2" />
     </div>

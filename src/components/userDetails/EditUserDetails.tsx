@@ -1,8 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
 import { IUser } from "../../interfaces/User";
-import ReactDatePicker from "react-datepicker";
-import { useRef } from "react";
-import { FaRegCalendarMinus } from "react-icons/fa";
 import "./EditUserDetails.css";
 import {
   countries,
@@ -11,7 +8,6 @@ import {
   genders,
   raceList,
   states,
-  zipCodes,
 } from "../../assets/MockData";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
@@ -40,8 +36,9 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
   const navigate = useNavigate();
   const handleFormSubmit = (data: IUser) => {
     successToast("Data Updated", "Profile updated successfully");
-    navigate(PATH_NAME.PROFILE);
-    console.log(data);
+    setTimeout(() => {
+      navigate(PATH_NAME.PROFILE);
+    }, 1500);
   };
   return (
     <div className="px-6 ">
@@ -54,7 +51,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
           />
           <div>
             <div className="flex py-2 justify-between items-center">
-              <Link to="/">
+              <Link to={PATH_NAME.PROFILE}>
                 <Button
                   className="ml-3 font-primary text-purple-800"
                   variant="primary"
@@ -67,7 +64,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </Link>
               <PrimeButton
                 onClick={() => handleSubmit}
-                className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
+                className="ml-3 submit-button"
                 outlined
                 type="submit"
               >
@@ -177,7 +174,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={genders}
                     optionLabel="name"
                     placeholder="Select a City"
-                    className="dropdown w-full md:w-14rem border border-gray-300 rounded-lg h-[2.5rem] !py-[0.4rem]"
+                    className="dropdown w-full md:w-[14rem] gender"
                   />
                 )}
               />
@@ -277,7 +274,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       />
                     )}
                   />
-                  <span className="absolute top-[.5rem] text-black right-5">
+                  <span className="absolute top-[.5rem] text-black right-3">
                     in
                   </span>
                 </span>
@@ -330,7 +327,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={raceList}
                     optionLabel="name"
                     placeholder="Select"
-                    className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
+                    className="race-dropdown"
                   />
                 )}
               />
@@ -375,7 +372,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 Phone Number*
               </label>
               <div className="p-inputgroup buttonGroup px-2">
-                <span className="country-code w-[40%] h-[2.5rem] align-middle">
+                <span className="country-code w-[50%] h-[2.5rem] align-middle">
                   <Controller
                     name="countryCode"
                     control={control}
@@ -416,7 +413,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border custom-input border-gray-300 rounded-r-lg w-[60%]"
+                      className="border custom-input border-gray-300 rounded-r-lg w-[50%]"
                     />
                   )}
                 />
@@ -435,7 +432,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 Alternate Number
               </label>
               <div className="p-inputgroup buttonGroup  flex-1 w-full h-[2.5rem]">
-                <span className="country-code w-[40%] p-inputgroup-addon">
+                <span className="country-code w-[50%] p-inputgroup-addon">
                   <Controller
                     name="alternateNumberCode"
                     control={control}
@@ -469,7 +466,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
-                      className="border custom-input rounded-r-lg border-gray-300 w-[60%]"
+                      className="border custom-input rounded-r-lg border-gray-300 w-[50%]"
                     />
                   )}
                 />

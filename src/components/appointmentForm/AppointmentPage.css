@@ -36,7 +36,7 @@
 }
 
 .confirm-dialog .p-dialog-content {
-  @apply rounded-none;
+  @apply rounded-b-none rounded-t-lg;
 }
 .panel-header::before {
   content: "Select an option";
@@ -44,4 +44,26 @@
   left: 10px;
   top: 10px;
   font-size: 14px;
+}
+
+.p-autocomplete
+  .p-autocomplete-multiple-container
+  .p-autocomplete-input-token
+  input {
+  @apply min-w-[17rem];
+}
+
+.p-multiselect-item .p-checkbox {
+  order: 2;
+}
+
+.p-multiselect-item {
+  @apply border-b border-gray-300 mx-3 flex justify-between items-center;
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* align-items: center; */
+}
+
+.custom-autocomplete {
+  @apply border block border-gray-300 rounded-md flex h-[2.5rem] flex-row justify-between items-center;
 }

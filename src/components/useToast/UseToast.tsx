@@ -22,7 +22,7 @@ const useToast = () => {
     toast?.current?.show({
       severity: "error",
       summary: "error",
-      life: 1000,
+      life: 2000,
       content: customContentSuccess,
     });
   };
@@ -42,7 +42,7 @@ const useToast = () => {
     toast?.current?.show({
       severity: "error",
       summary: "error",
-      life: 1000,
+      life: 2000,
       content: customContentError,
     });
   };
