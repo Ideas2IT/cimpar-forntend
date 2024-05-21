@@ -111,43 +111,35 @@ body {
 }
 
 .p-radiobutton .p-radiobutton-box .p-radiobutton-icon {
-  background-color: #2d6d80;
+  @apply bg-[#2d6d80];
 }
 
 .react-time-picker__wrapper {
   border: none !important;
 }
 
-.react-time-picker__clock-button__icon {
-  stroke: gray !important;
-}
-
-.react-datepicker__view-calendar-icon input {
-  padding: 0 5px !important;
-}
-
 .color-primary {
-  color: #2d6d80;
+  @apply text-[#2d6d80;];
 }
 
 .bg-primary {
-  background: #2d6d80;
+  @apply bg-[#2d6d80;];
 }
 
 .p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
-  padding: 0 10px;
-  margin: 10px 0;
+  @apply px-2 py-0 mx-0 my-2;
 }
+
 .input-field {
   @apply h-[2.5rem] border border-gray-300 rounded-lg;
 }
 
 .color-success {
-  color: #3c9f66;
+  @apply text-[#3c9f66];
 }
 
 .bg-success {
-  background: #3c9f66;
+  @apply bg-[#3c9f66];
 }
 
 .p-checkbox .p-checkbox-box {
@@ -155,13 +147,13 @@ body {
 }
 
 .p-checkbox.p-highlight .p-checkbox-box {
-  background: #2d6d80;
+  @apply bg-[#2d6d80];
 }
 
 .p-dialog-content {
-  border-radius: 0 0 16px 16px;
+  @apply rounded-b-lg;
 }
 
 .p-dialog-header {
-  border-radius: 10px 10px 0 0;
+  @apply rounded-t-md;
 }

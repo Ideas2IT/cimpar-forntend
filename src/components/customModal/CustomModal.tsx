@@ -1,5 +1,6 @@
 import { Dialog } from "primereact/dialog";
 import { ReactElement } from "react";
+import "./CustomModal.css";
 
 const CustomModal = ({
   children,
@@ -12,17 +13,17 @@ const CustomModal = ({
     <>
       <Dialog
         dismissableMask={true}
-        headerStyle={{ height: "1rem" }}
+        headerStyle={{ borderRadius: "16px 16px 0 0" }}
         closable={showCloseButton}
         header={header && header}
         visible={true}
         modal
-        className={`${styleClass} rounded-2`}
+        className={`!rounded-xl ${styleClass}`}
         draggable={false}
         style={{ borderRadius: "20px" }}
         maskClassName="bg-gray-500 bg-opacity-50"
         contentClassName="pb-1"
-        headerClassName="p-2"
+        headerClassName={`p-2 ${header ? "border-b" : "border-none"}`}
         onHide={() => handleClose()}
       >
         {children}

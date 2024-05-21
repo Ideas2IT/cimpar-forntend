@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
@@ -35,7 +35,9 @@ const EditInsurance = () => {
   });
 
   const insuranceId = watch("insuranceId");
-  const insuranceCard = watch("insuranceCard");
+  // const insuranceCard = watch("insuranceCard");
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (user.insurance?.length) {
       const insurance = user.insurance.find(
@@ -56,6 +58,9 @@ const EditInsurance = () => {
       "Insurance updated",
       "Insurance details has been updated successfully"
     );
+    setTimeout(() => {
+      navigate(PATH_NAME.PROFILE);
+    }, 1500);
   };
 
   return (
@@ -260,7 +265,7 @@ const EditInsurance = () => {
                   {errors.policyNumber.message}
                 </span>
               )}
-              <>
+              {/* <>
                 <label className="input-label my-5 block">
                   Upload your insurance card
                 </label>
@@ -289,7 +294,7 @@ const EditInsurance = () => {
                     maxFileSize={1000000}
                   />
                 )}
-              </>
+              </> */}
             </div>
             <div>
               <label className="block input-label pb-1" htmlFor="race">

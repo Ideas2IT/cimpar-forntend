@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
@@ -19,11 +19,18 @@ import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 import ReportImage from "../reportImage/ReportImage";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import moment from "moment";
 
 const EditVisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
   const location = useLocation();
   const { toast, successToast, errorToast } = useToast();
+  const uploaderRef = useRef<FileUpload | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [showReport, setShowReport] = useState(false);
+  const [selectedFile, setSelectedFile] = useState({} as File);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (visitHistory.length) {
@@ -47,15 +54,17 @@ const EditVisitHistory = () => {
   });
 
   useEffect(() => {
+    console.log(selectedHistory);
     reset({ ...selectedHistory });
   }, [selectedHistory]);
-  const uploaderRef = useRef<FileUpload | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [showReport, setShowReport] = useState(false);
-  const [selectedFile, setSelectedFile] = useState({} as File);
 
   //TODO: Need to write the logic to handle API
-  const handleFormSubmit = (fromData: IVisitHistory) => {};
+  const handleFormSubmit = (fromData: IVisitHistory) => {
+    successToast("Updated Successfully", "Visit history updated successfully");
+    setTimeout(() => {
+      navigate(PATH_NAME.PROFILE);
+    }, 1500);
+  };
 
   const handleRemoveFile = (index: number) => {
     const updatedFiles = uploadedFiles;
@@ -223,7 +232,8 @@ const EditVisitHistory = () => {
                 }}
                 render={({ field }) => (
                   <Calendar
-                    value={new Date(field.value)}
+                    {...field}
+                    value={new Date(moment(field.value).format("DD MMM, YYYY"))}
                     dateFormat="dd MM, yy"
                     className="calander border rounded-lg h-[2.5rem]"
                     showIcon={true}
@@ -249,7 +259,8 @@ const EditVisitHistory = () => {
                 }}
                 render={({ field }) => (
                   <Calendar
-                    value={new Date(field.value)}
+                    {...field}
+                    value={new Date(moment(field.value).format("DD MMM, YYYY"))}
                     dateFormat="dd MM, yy"
                     className="calander input-field"
                     showIcon={true}
@@ -269,6 +280,9 @@ const EditVisitHistory = () => {
               <Controller
                 name="visitReason"
                 control={control}
+                rules={{
+                  required: "Visit reason can't be empty",
+                }}
                 defaultValue={selectedHistory.visitReason}
                 render={({ field }) => (
                   <InputText
@@ -278,12 +292,18 @@ const EditVisitHistory = () => {
                   />
                 )}
               />
+              {errors.visitReason && (
+                <ErrorMessage message={errors.visitReason.message} />
+              )}
             </div>
             <div className="relative col-span-2">
               <label className="input-label pb-1">Primary Care Team*</label>
               <Controller
                 name="primaryCareTeam"
                 control={control}
+                rules={{
+                  required: "Test list can't be empty",
+                }}
                 defaultValue={selectedHistory.primaryCareTeam}
                 render={({ field }) => (
                   <InputText
@@ -293,12 +313,18 @@ const EditVisitHistory = () => {
                   />
                 )}
               />
+              {errors.primaryCareTeam && (
+                <ErrorMessage message={errors.primaryCareTeam.message} />
+              )}
             </div>
             <div className="relative col-span-2">
               <label className="input-label pb-1">Treatment Summary*</label>
               <Controller
                 name="treatmentSummary"
                 control={control}
+                rules={{
+                  required: "Treatment summary can't be empty",
+                }}
                 defaultValue={selectedHistory.treatmentSummary}
                 render={({ field }) => (
                   <InputTextarea
@@ -308,12 +334,18 @@ const EditVisitHistory = () => {
                   />
                 )}
               />
+              {errors.treatmentSummary && (
+                <ErrorMessage message={errors.treatmentSummary.message} />
+              )}
             </div>
             <div className="relative col-span-2">
               <label className="input-label pb-1">Follow-up Care*</label>
               <Controller
                 name="followUpCare"
                 control={control}
+                rules={{
+                  required: "Follow-up care can't be empty",
+                }}
                 defaultValue={selectedHistory.followUpCare}
                 render={({ field }) => (
                   <InputTextarea
@@ -323,12 +355,18 @@ const EditVisitHistory = () => {
                   />
                 )}
               />
+              {errors.followUpCare && (
+                <ErrorMessage message={errors.followUpCare.message} />
+              )}
             </div>
             <div className="relative col-span-2">
               <label className="input-label pb-1">Activity Notes*</label>
               <Controller
                 name="patientNotes"
                 control={control}
+                rules={{
+                  required: "Active notes can't be empty",
+                }}
                 defaultValue={selectedHistory.patientNotes}
                 render={({ field }) => (
                   <InputTextarea
@@ -339,6 +377,9 @@ const EditVisitHistory = () => {
                   />
                 )}
               />
+              {errors.patientNotes && (
+                <ErrorMessage message={errors.patientNotes.message} />
+              )}
             </div>
           </div>
           <div className="w-[100%]">

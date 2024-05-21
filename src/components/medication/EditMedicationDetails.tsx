@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
@@ -10,6 +10,8 @@ import "./Medication.css";
 import { Chips } from "primereact/chips";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { PATH_NAME } from "../../utils/AppConstants";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
 
 const EditMedicationDetails = () => {
   const {
@@ -22,8 +24,16 @@ const EditMedicationDetails = () => {
     defaultValues: user,
   });
 
+  const { successToast, toast } = useToast();
+  const navigate = useNavigate();
   const handleFormSubmit = (data: IUser) => {
-    console.log(data);
+    successToast(
+      "Update Successful",
+      "Medication Details has been updated successfully"
+    );
+    setTimeout(() => {
+      navigate(PATH_NAME.PROFILE);
+    }, 1500);
   };
 
   const isMedicalHistory = watch("medicationalHistory");
@@ -171,6 +181,7 @@ const EditMedicationDetails = () => {
             )}
           </div>
         </form>
+        <Toast ref={toast} />
       </div>
     </>
   );

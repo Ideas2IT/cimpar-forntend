@@ -22,11 +22,11 @@ import moment from "moment";
 import BackButton from "../backButton/BackButton";
 import { Dropdown } from "primereact/dropdown";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
+import { PATH_NAME } from "../../utils/AppConstants";
 import { Calendar } from "primereact/calendar";
 import { Button as PrimeButton } from "primereact/button";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
+import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
 
 export interface IItem {
   id: number;
@@ -43,6 +43,7 @@ export interface IFormData {
   medicalConditions: IItem[];
   otherMedicalConditon: string;
   allergies: IItem[];
+  otherAllergies: string;
 }
 
 const AppointmentForm = () => {
@@ -65,10 +66,13 @@ const AppointmentForm = () => {
   const multiSelectRef = useRef<MultiSelect>(null);
   const reasonForTest = watch("testReason");
   const navigate = useNavigate();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formData, setFormData] = useState({} as IFormData);
 
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
-    confirm();
+    setShowConfirmDialog(true);
+    setFormData(data);
   };
 
   const handleSelectMedicalConditons = (values: IItem[]) => {
@@ -88,23 +92,23 @@ const AppointmentForm = () => {
   };
 
   //TODO: need to call appointment creation API
-  const accept = () => {
-    setShowDialog(true);
-  };
+  // const accept = () => {
+  //   setShowDialog(true);
+  // };
 
   //TODO: need to handle the logic if user rejects the form submission
-  const reject = () => {};
+  // const reject = () => {};
 
-  const confirm = () => {
-    confirmDialog({
-      message: MESSAGE.APPOINTMENT_SUBMIT_WARNING,
-      header: "Confirmation",
-      icon: "pi pi-info-circle text-yellow-500",
-      defaultFocus: "accept",
-      accept,
-      reject,
-    });
-  };
+  // const confirm = () => {
+  //   confirmDialog({
+  //     message: MESSAGE.APPOINTMENT_SUBMIT_WARNING,
+  //     header: "Confirmation",
+  //     icon: "pi pi-info-circle text-yellow-500",
+  //     defaultFocus: "accept",
+  //     accept,
+  //     reject,
+  //   });
+  // };
 
   const TestFooterFormat = () => {
     return (
@@ -132,6 +136,11 @@ const AppointmentForm = () => {
     navigate(PATH_NAME.EDIT_PROFILE, {
       state: { from: PATH_NAME.HEALTH_RECORDS },
     });
+  };
+
+  const handleConfirmation = (value: boolean) => {
+    setShowDialog(value);
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -308,7 +317,7 @@ const AppointmentForm = () => {
             </div>
           </div>
           <div className="font-primary text-xl py-2">Medical Condition</div>
-          <div>
+          <>
             <label htmlFor="medicalConditions" className="block input-label">
               Please select the medical conditions you currently have.
             </label>
@@ -318,7 +327,7 @@ const AppointmentForm = () => {
               items={medicalConditons}
               selectedItems={selectedMedicalConditions}
             />
-          </div>
+          </>
           <div className="pt-4">
             <label
               className="block input-label"
@@ -335,11 +344,11 @@ const AppointmentForm = () => {
               }
               className="cimpar-input focus:outline-none font-sans"
               type="text"
-              placeholder="Enter other medical Conditions"
+              placeholder="Enter other medical conditions"
             />
           </div>
           <div className="font-primary text-xl pt-4 pb-2">Allergies</div>
-          <div>
+          <>
             <label className="block input-label" htmlFor="allergies">
               Please select the allergies you currently have.
             </label>
@@ -348,6 +357,22 @@ const AppointmentForm = () => {
               items={allergies}
               selectedItems={selectedAllergies}
               handleSelection={handleSelectedAllergies}
+            />
+          </>
+          <div className="pt-4">
+            <label className="block input-label" htmlFor="otherAllergies">
+              Other allergies.
+            </label>
+            <input
+              {...register("otherAllergies")}
+              id="otherAllergies"
+              name={`otherMedicalConditon`}
+              onChange={(event) =>
+                setValue("otherAllergies", event?.target?.value || "")
+              }
+              className="cimpar-input focus:outline-none font-sans"
+              type="text"
+              placeholder="Enter other allergies"
             />
           </div>
           <div className="font-primary text-xl pt-4 pb-2">
@@ -380,7 +405,7 @@ const AppointmentForm = () => {
       {showDialog && (
         <CustomModal
           showCloseButton={true}
-          styleClass="w-[30rem] h-[15rem]"
+          styleClass="w-[30rem] h-[15rem] bg-white"
           handleClose={() => {
             setShowDialog(false);
           }}
@@ -388,15 +413,23 @@ const AppointmentForm = () => {
           <AppointmentStatus />
         </CustomModal>
       )}
-      <ConfirmDialog
-        style={{ borderRadius: "16px" }}
-        className="confirm-dialog"
-        acceptClassName="px-5 mx-3 py-2 bg-purple-900 rounded-full text-white"
-        rejectClassName="px-5 mx-3 py-2 border-purple-900 border rounded-full text-purple"
-        maskStyle={{ backdropFilter: "red", background: "#55555530" }}
-        closable={true}
-        dismissableMask
-      />
+      {showConfirmDialog && (
+        <CustomModal
+          header={
+            <div className="font-primary text-2xl w-full py-2 px-2">
+              Appointment Summary
+            </div>
+          }
+          showCloseButton={true}
+          handleClose={() => setShowConfirmDialog(false)}
+          styleClass="md:w-[40rem] md:h-[35rem] bg-white"
+        >
+          <PreviewAppointment
+            details={formData}
+            handleResponse={handleConfirmation}
+          />
+        </CustomModal>
+      )}
     </>
   );
 };
