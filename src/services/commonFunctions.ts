@@ -10,3 +10,10 @@ export const getStatusColors = (status = "") => {
       return "";
   }
 };
+
+export const getTestStatusCoor = (start = 0, end = 0, value = 0) => {
+  if (value < start || value > end) {
+    return "font-bold text-red-500";
+  }
+  return "";
+};

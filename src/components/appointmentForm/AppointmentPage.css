@@ -36,8 +36,13 @@
 }
 
 .confirm-dialog .p-dialog-content {
-  @apply rounded-b-none rounded-t-lg;
+  @apply !rounded-none;
 }
+
+.confirm-dialog .p-dialog-footer {
+  @apply rounded-b-lg;
+}
+
 .panel-header::before {
   content: "Select an option";
   position: absolute;

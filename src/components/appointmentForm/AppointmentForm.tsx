@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import "react-time-picker/dist/TimePicker.css";
 import "./AppointmentPage.css";
 import Button from "../Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
 import { Controller, useForm } from "react-hook-form";
@@ -64,6 +64,7 @@ const AppointmentForm = () => {
   const [showDialog, setShowDialog] = useState(false);
   const multiSelectRef = useRef<MultiSelect>(null);
   const reasonForTest = watch("testReason");
+  const navigate = useNavigate();
 
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
@@ -86,13 +87,13 @@ const AppointmentForm = () => {
     return dateOfBirth + " (" + age + ")";
   };
 
+  //TODO: need to call appointment creation API
   const accept = () => {
     setShowDialog(true);
   };
 
-  const reject = () => {
-    console.log("handle Reject");
-  };
+  //TODO: need to handle the logic if user rejects the form submission
+  const reject = () => {};
 
   const confirm = () => {
     confirmDialog({
@@ -125,6 +126,12 @@ const AppointmentForm = () => {
         />
       </div>
     );
+  };
+
+  const handleEditUser = () => {
+    navigate(PATH_NAME.EDIT_PROFILE, {
+      state: { from: PATH_NAME.HEALTH_RECORDS },
+    });
   };
 
   return (
@@ -345,11 +352,13 @@ const AppointmentForm = () => {
           </div>
           <div className="font-primary text-xl pt-4 pb-2">
             Basic Details
-            <Link to={PATH_NAME.EDIT_PROFILE}>
-              <Button style="link" className="ps-3  text-[#61277F]">
-                <i className="pi pi-pencil px-2" /> Edit
-              </Button>
-            </Link>
+            <Button
+              style="link"
+              className="ps-3  text-[#61277F]"
+              onClick={handleEditUser}
+            >
+              <i className="pi pi-pencil px-2" /> Edit
+            </Button>
           </div>
           <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
             <DetailColumn
@@ -380,6 +389,7 @@ const AppointmentForm = () => {
         </CustomModal>
       )}
       <ConfirmDialog
+        style={{ borderRadius: "16px" }}
         className="confirm-dialog"
         acceptClassName="px-5 mx-3 py-2 bg-purple-900 rounded-full text-white"
         rejectClassName="px-5 mx-3 py-2 border-purple-900 border rounded-full text-purple"

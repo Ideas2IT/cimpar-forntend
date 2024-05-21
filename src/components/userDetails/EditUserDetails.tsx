@@ -13,7 +13,7 @@ import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button as PrimeButton } from "primereact/button";
 import { ERROR, PATH_NAME, PATTERN } from "../../utils/AppConstants";
 import useToast from "../useToast/UseToast";
@@ -34,10 +34,15 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
 
   const { toast, successToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const handleFormSubmit = (data: IUser) => {
     successToast("Data Updated", "Profile updated successfully");
     setTimeout(() => {
-      navigate(PATH_NAME.PROFILE);
+      if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
+        navigate(PATH_NAME.HEALTH_RECORDS);
+      } else {
+        navigate(PATH_NAME.PROFILE);
+      }
     }, 1500);
   };
   return (
