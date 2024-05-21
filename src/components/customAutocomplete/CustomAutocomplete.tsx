@@ -47,7 +47,7 @@ export const CustomAutoComplete = ({
   return (
     <div className="custom-autocomplete">
       <AutoComplete
-        className="w-[90%]"
+        className="w-[90%] min-h-[2.3rem]"
         field="name"
         multiple
         value={selectedItems}

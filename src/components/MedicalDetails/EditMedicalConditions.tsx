@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   IPatientMedicalDetails,
   allergies,
@@ -10,15 +9,16 @@ import { Chips } from "primereact/chips";
 import { RadioButton } from "primereact/radiobutton";
 import { Controller, useForm } from "react-hook-form";
 import BackButton from "../backButton/BackButton";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
 import { PATH_NAME } from "../../utils/AppConstants";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
 
 const EditMedicalConditions = () => {
   const {
-    register,
     control,
     handleSubmit,
     setValue,
@@ -28,9 +28,18 @@ const EditMedicalConditions = () => {
     defaultValues: patientMedicalDetails,
   });
   const areFamilyConditions = watch("areFamilyConditions");
+  const { toast, successToast } = useToast();
+  const navigate = useNavigate();
 
   const handleFormSubmit = (data: IPatientMedicalDetails) => {
-    console.log(data);
+    successToast(
+      "Updated Successfully",
+      "Medical conditions updated successfully"
+    );
+
+    setTimeout(() => {
+      navigate(PATH_NAME.PROFILE);
+    },1500);
   };
   return (
     <>
@@ -208,6 +217,7 @@ const EditMedicalConditions = () => {
           </div>
         </div>
       </form>
+      <Toast ref={toast} />
     </>
   );
 };

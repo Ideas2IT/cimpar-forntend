@@ -24,7 +24,6 @@ const ReportImage = ({
     }
   };
   return (
-    // <div className="relative">
     <CustomModal
       styleClass=""
       handleClose={() => {
