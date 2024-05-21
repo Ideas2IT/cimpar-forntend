@@ -48,6 +48,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
         </div>
         {selectedTest.status === "Available" && (
           <Button
+            title="Download test report"
             label="Download"
             className="text-purple-900 bg-purple-100 rounded-full py-1 px-3 border border-purple-900 me-3 text-sm"
             icon="pi pi-download"
@@ -172,11 +173,6 @@ const ReportColumn = ({
         data.status.toLowerCase() === "available") && (
         <Download onClick={() => handleReports("download", data)} />
       )}
-
-      {/* {(data.status.toLowerCase() === "available" ||
-        data.status.toLowerCase() === "under processing") && (
-        <Share className="ms-2" onClick={() => handleReports("share", data)} />
-      )} */}
     </div>
   );
 };

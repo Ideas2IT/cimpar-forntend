@@ -18,81 +18,69 @@ import LoginForm from "./components/loginForm/LoginForm";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: PATH_NAME.HOME,
     element: <Layout />,
     children: [
       {
         element: <HomePage />,
         index: true,
       },
-      // {
-      //   path: "login",
-      //   element: <LoginForm />,
-      // },
-      // {
-      //   path: "/signup",
-      //   element: <SignUpForm />,
-      // },
-      // {
-      //   path: "/set-password",
-      //   element: <SetPassword />,
-      // },
       {
         path: PATH_NAME.PROFILE,
         element: <UserProfilePage />,
       },
       {
-        path: "editprofile",
+        path: PATH_NAME.EDIT_PROFILE,
         element: <EditUserDetails user={user} />,
       },
       {
-        path: "/editMedications",
+        path: PATH_NAME.EIDT_MEDICATION,
         element: <EditMedicationDetails />,
       },
       {
-        path: "/edit-insurance/:id",
+        path: `${PATH_NAME.EDIT_INSURANCE}/:id`,
         element: <EditInsurance />,
       },
       {
-        path: "/edit-insurance",
+        path: PATH_NAME.EDIT_INSURANCE,
         element: <EditInsurance />,
       },
       {
-        path: "/health-records",
+        path: PATH_NAME.HEALTH_RECORDS,
         element: <AppointmentForm />,
       },
       {
-        path: "/test-result",
+        path: PATH_NAME.TEST_RESULT,
         element: <LabTestResults />,
       },
       {
-        path: "/edit-medical-conditons",
+        path: PATH_NAME.EDIT_MEDICAL_CONDITIONS,
         element: <EditMedicalConditions />,
       },
       {
-        path: "/edit-visit-history/:id",
+        path: `/${PATH_NAME.EDIT_VISIT_HISTORY}/:id`,
         element: <EditVisitHistory />,
       },
       {
-        path: "/edit-visit-history",
+        path: PATH_NAME.EDIT_VISIT_HISTORY,
         element: <EditVisitHistory />,
       },
     ],
   },
   {
-    path: "login",
+    path: PATH_NAME.LOGIN,
     element: <LoginForm />,
   },
   {
-    path: "/signup",
+    path: PATH_NAME.SIGNUP,
     element: <SignUpForm />,
   },
   {
-    path: "/set-password",
+    path: PATH_NAME.SET_PASSWORD,
     element: <SetPassword />,
   },
   {
-    path: "/forgot-password",
+    path: PATH_NAME.FORGOT_PASSWORD,
     element: <ForgotPassword />,
   },
 ]);

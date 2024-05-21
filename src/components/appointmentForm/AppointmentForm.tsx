@@ -1,15 +1,8 @@
-import ReactDatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-clock/dist/Clock.css";
 import { useRef, useState } from "react";
 import "react-time-picker/dist/TimePicker.css";
-import {
-  AutoComplete,
-  AutoCompleteChangeEvent,
-  AutoCompleteCompleteEvent,
-} from "primereact/autocomplete";
-import plus from "../../assets/icons/plus.svg";
 import "./AppointmentPage.css";
 import Button from "../Button";
 import { Link } from "react-router-dom";
@@ -30,7 +23,10 @@ import BackButton from "../backButton/BackButton";
 import { Dropdown } from "primereact/dropdown";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { MESSAGE } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
+import { Calendar } from "primereact/calendar";
+import { Button as PrimeButton } from "primereact/button";
+import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 
 export interface IItem {
   id: number;
@@ -66,7 +62,8 @@ const AppointmentForm = () => {
   >([]);
   const [selectedAllergies, setSelectedAllergies] = useState<IItem[]>([]);
   const [showDialog, setShowDialog] = useState(false);
-  const datePickerRef = useRef<ReactDatePicker<never, undefined>>(null);
+  const multiSelectRef = useRef<MultiSelect>(null);
+  const reasonForTest = watch("testReason");
 
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
@@ -88,7 +85,6 @@ const AppointmentForm = () => {
     const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
     return dateOfBirth + " (" + age + ")";
   };
-  const reasonForTest = watch("testReason");
 
   const accept = () => {
     setShowDialog(true);
@@ -109,6 +105,28 @@ const AppointmentForm = () => {
     });
   };
 
+  const TestFooterFormat = () => {
+    return (
+      <div className="text-end px-4 py-2">
+        <PrimeButton
+          label="Cancel"
+          className="me-3 px-5 py-1 color-primary rounded-md border border-cyan-900"
+          onClick={() => {
+            setValue("testToTake", []);
+            multiSelectRef?.current && multiSelectRef.current.hide();
+          }}
+        />
+        <PrimeButton
+          className="bg-primary py-1 px-5 text-white rounded-md"
+          label="Select"
+          onClick={() => {
+            multiSelectRef?.current && multiSelectRef.current.hide();
+          }}
+        />
+      </div>
+    );
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
@@ -119,12 +137,12 @@ const AppointmentForm = () => {
             backLink="/"
           />
           <div className="flex py-2 justify-between items-center">
-            <Link to="/">
+            <Link to={PATH_NAME.HOME}>
               <Button
                 onClick={() => {}}
                 className="ml-3 font-primary"
                 variant="primary"
-                type="reset"
+                type="button"
                 style="link"
               >
                 <i className="p" />
@@ -144,8 +162,8 @@ const AppointmentForm = () => {
         </div>
         <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%]">
           <div className="font-primary text-xl">Appointment Details</div>
-          <div className="flex flex-wrap mt-1">
-            <div className="test w-full lg:w-1/2 md:w-full sm:w-full pe-4">
+          <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 mt-1 gap-4">
+            <div className="md:col-span-2 test w-full relative">
               <label
                 htmlFor="testToTake"
                 className="block text-sm font-medium input-label"
@@ -162,8 +180,11 @@ const AppointmentForm = () => {
                   <MultiSelect
                     inputId="testToTake"
                     {...field}
+                    ref={multiSelectRef}
                     options={tests}
                     filter
+                    showSelectAll={false}
+                    panelFooterTemplate={<TestFooterFormat />}
                     optionLabel="name"
                     placeholder="Select Tests"
                     className="input-field"
@@ -174,7 +195,7 @@ const AppointmentForm = () => {
                 <ErrorMessage message={errors.testToTake.message} />
               )}
             </div>
-            <div className="lg:w-1/4 md:w-1/2 sm:w-1 d-flex relative">
+            <div className="col-span-1 relative">
               <label htmlFor="appointmentDate" className="block input-label">
                 Date of appointment for test*
               </label>
@@ -187,28 +208,22 @@ const AppointmentForm = () => {
                     required: "Date of appointment is required",
                   }}
                   render={({ field }) => (
-                    <ReactDatePicker
-                      placeholderText="Please pick the date of appointment"
-                      required={true}
-                      ref={datePickerRef}
+                    <Calendar
+                      {...field}
+                      placeholder="Please pick the date of appointment"
+                      inputClassName="rounded-lg"
+                      dateFormat="dd MM, yy"
+                      className="input-field"
+                      icon="pi pi-calendar-minus"
+                      inputStyle={{ borderRadius: "16px" }}
+                      showIcon={true}
                       minDate={new Date()}
-                      wrapperClassName="w-full"
-                      calendarIconClassname="right-0 mt-2"
-                      id="appointmentDate"
-                      dateFormat={"dd MMMM, yyyy"}
-                      onChange={(date) => setValue("dateOfAppointment", date)}
-                      selected={field.value}
-                      className="h-[2.5rem] ps-2 border border-gray-300 px-1 block w-[100%] mt-1 md:text-sm rounded-md right-0 left-0 focus:outline-none"
                     />
                   )}
                 />
-                <span
-                  className="absolute top-[1rem] right-[1rem] pi pi-calendar-minus"
-                  onClick={() => datePickerRef?.current?.setOpen(true)}
-                ></span>
               </div>
             </div>
-            <div className="lg:w-1/4 md:w-1/2 sm:w-1 lg:pe-0 lg:ps-4 md:px-4 relative">
+            <div className="sm:col-span-full md:col-span-2 lg:col-span-1 relative">
               <label htmlFor="scheduleTime" className="block input-label">
                 Scheduled Time*
               </label>
@@ -227,7 +242,7 @@ const AppointmentForm = () => {
                       minutePlaceholder="MM"
                       hourPlaceholder="HH"
                       id="scheduleTime"
-                      className="timePicker w-full h-[2.5rem] mt-1 rounded-md border border-gray-300"
+                      className="timePicker w-full h-[2.5rem] rounded-md border border-gray-300"
                       format="hh:mm a"
                       clearIcon={<i className="hidden" />}
                       closeClock={true}
@@ -241,8 +256,8 @@ const AppointmentForm = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap py-3 mt-2">
-            <div className="lg:w-1/2 pe-4">
+          <div className="grid md:grid-cols-2 grid-cols-1 gap-4 py-3 mt-2">
+            <div className="md:col-span-1 col-span-2">
               <label htmlFor="testReason" className="input-label">
                 Reason for test*
               </label>
@@ -269,7 +284,7 @@ const AppointmentForm = () => {
                 <ErrorMessage message={errors.testReason.message} />
               )}
             </div>
-            <div className="md:w-1/2 min-h-[50px]">
+            <div className="md:col-span-1 col-span-2">
               <label htmlFor="reasonDetails" className="input-label">
                 Other reason
               </label>
@@ -330,13 +345,13 @@ const AppointmentForm = () => {
           </div>
           <div className="font-primary text-xl pt-4 pb-2">
             Basic Details
-            <Link to="/editprofile">
+            <Link to={PATH_NAME.EDIT_PROFILE}>
               <Button style="link" className="ps-3  text-[#61277F]">
                 <i className="pi pi-pencil px-2" /> Edit
               </Button>
             </Link>
           </div>
-          <div className="flex flex-wrap">
+          <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
             <DetailColumn
               label="Name (Gender)"
               content={
@@ -344,11 +359,12 @@ const AppointmentForm = () => {
               }
             />
             <DetailColumn label="DOB (Age)" content={getDobAndAge()} />
-            <DetailColumn
-              styleClass="md:w-1/2"
-              label="insurance provider & number"
-              content={user.insuranceName + " - " + user.insuranceNumber}
-            />
+            <div className="col-span-2">
+              <DetailColumn
+                label="insurance provider & number"
+                content={user.insuranceName + " - " + user.insuranceNumber}
+              />
+            </div>
           </div>
         </div>
       </form>
@@ -385,96 +401,9 @@ const DetailColumn = ({
   styleClass?: string;
 }) => {
   return (
-    <div
-      className={`w-full ${styleClass ? styleClass : "md:w-1/4"}  min-h-[50px]`}
-    >
+    <div className={`w-full ${styleClass && styleClass}  min-h-[50px]`}>
       <label className="uppercase block input-label">{label}</label>
       <div className="w-full text-md">{content}</div>
-    </div>
-  );
-};
-
-export const CustomAutoComplete = ({
-  selectedItems,
-  items,
-  handleSelection,
-  placeholder,
-}: {
-  placeholder?: string;
-  selectedItems: IItem[];
-  items: IItem[];
-  handleSelection: (value: IItem[]) => void;
-}) => {
-  const [suggestions, setSuggestions] = useState<IItem[]>([]);
-
-  const search = (event: AutoCompleteCompleteEvent) => {
-    setTimeout(() => {
-      let filteredItems;
-
-      if (!event.query.trim().length) {
-        filteredItems = [...items];
-      } else {
-        filteredItems = items.filter((item) => {
-          return item.name.toLowerCase().startsWith(event.query.toLowerCase());
-        });
-      }
-      setSuggestions(filteredItems);
-    }, 100);
-  };
-
-  const handleValueSelect = (event: AutoCompleteChangeEvent) => {
-    if (event.value) {
-      handleSelection(event.value);
-    } else {
-      handleSelection([]);
-    }
-  };
-
-  return (
-    <div className="border block border-gray-300 rounded-md flex flex-row justify-between items-center">
-      <AutoComplete
-        className="w-[90%]"
-        field="name"
-        multiple
-        value={selectedItems}
-        suggestions={suggestions}
-        onChange={(event) => handleValueSelect(event)}
-        completeMethod={search}
-        itemTemplate={(option) => <ItemTemplate item={option} />}
-        placeholder={!selectedItems.length && placeholder ? placeholder : ""}
-        emptyMessage="No result found"
-        showEmptyMessage={true}
-        itemProp="py-0"
-        removeTokenIcon={"pi pi-times"}
-        panelClassName={`custom-autocomplete-panel ${suggestions.length && "panel-header"}`}
-        panelStyle={{ paddingTop: "40px" }}
-        inputClassName="w-auto"
-      />
-      {Boolean(selectedItems.length) && (
-        <span
-          className="px-2 text-red-500 text-sm font-tertiary cursor-pointer min-w-[5rem]"
-          onClick={() =>
-            handleValueSelect({ value: [] } as AutoCompleteChangeEvent)
-          }
-        >
-          Clear all
-        </span>
-      )}
-    </div>
-  );
-};
-
-const ItemTemplate = ({ item }: { item: IItem }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <div
-      key={item.id}
-      className="flex align-items-center hover:text-cyan-800 w-full h-full py-4 justify-between"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="capitalize font-secondary">{item.name}</div>
-      {isHovered && <img src={plus} />}
     </div>
   );
 };
@@ -489,7 +418,7 @@ const AppointmentStatus = () => {
         Your Appointment has been Successfully fixed.
       </label>
       <div className="flex justify-center">
-        <Link to="/test-result">
+        <Link to={PATH_NAME.TEST_RESULT}>
           <Button className="font-primary w-[12rem]" style="outline">
             <i className="pi pi-check me-2"></i>Go to Lab Results
           </Button>

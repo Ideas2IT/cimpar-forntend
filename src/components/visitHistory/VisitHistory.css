@@ -12,7 +12,7 @@
 } */
 
 .p-fileupload-buttonbar {
-  @apply bg-white;
+  @apply bg-white ps-0 py-0;
 }
 .p-fileupload-content {
   @apply hidden;

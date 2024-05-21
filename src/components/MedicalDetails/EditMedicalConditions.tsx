@@ -5,7 +5,6 @@ import {
   medicalConditons,
   patientMedicalDetails,
 } from "../../assets/MockData";
-import { CustomAutoComplete, IItem } from "../appointmentForm/AppointmentForm";
 import { InputText } from "primereact/inputtext";
 import { Chips } from "primereact/chips";
 import { RadioButton } from "primereact/radiobutton";
@@ -15,6 +14,7 @@ import { Link } from "react-router-dom";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
 import { PATH_NAME } from "../../utils/AppConstants";
+import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 
 const EditMedicalConditions = () => {
   const {

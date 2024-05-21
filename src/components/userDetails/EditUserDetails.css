@@ -33,3 +33,15 @@ input::-webkit-inner-spin-button {
 .custom-input input {
   @apply rounded-r-lg;
 }
+
+.submit-button {
+  @apply font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none;
+}
+
+.gender {
+  @apply border border-gray-300 rounded-lg h-[2.5rem] !py-[0.4rem];
+}
+
+.race-dropdown {
+  @apply p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none;
+}

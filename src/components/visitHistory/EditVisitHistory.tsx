@@ -6,7 +6,6 @@ import { Controller, useForm } from "react-hook-form";
 import {
   IVisitHistory,
   countryCodes,
-  reportFiles,
   visitHistory,
 } from "../../assets/MockData";
 import { useEffect, useRef, useState } from "react";
@@ -19,6 +18,7 @@ import { FileUpload } from "primereact/fileupload";
 import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
+import ReportImage from "../reportImage/ReportImage";
 
 const EditVisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
@@ -51,6 +51,8 @@ const EditVisitHistory = () => {
   }, [selectedHistory]);
   const uploaderRef = useRef<FileUpload | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [showReport, setShowReport] = useState(false);
+  const [selectedFile, setSelectedFile] = useState({} as File);
 
   //TODO: Need to write the logic to handle API
   const handleFormSubmit = (fromData: IVisitHistory) => {};
@@ -86,6 +88,12 @@ const EditVisitHistory = () => {
       uploaderRef.current.setFiles([...uploadedFiles]);
     }
   }, [uploadedFiles]);
+
+  const viewReport = (index: number) => {
+    setShowReport(true);
+    setSelectedFile(uploadedFiles[index]);
+  };
+
   return (
     <div>
       <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
@@ -123,7 +131,7 @@ const EditVisitHistory = () => {
         <div className="bg-white rounded-lg m-6 p-6">
           <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-4">
             <div className="relative">
-              <label className="input-label block">Visit Location*</label>
+              <label className="input-label block pb-1">Visit Location*</label>
               <Controller
                 name="visitLocation"
                 control={control}
@@ -337,29 +345,16 @@ const EditVisitHistory = () => {
             <label className="input-label pb-2">
               If you have any documents related,Please add them (optional)
             </label>
-            <div className="grid md:grid-cols-4 md:grid-cols-2 gap-x-10 gap-y-5 py-4 max-w-[100%] overflow-wrap">
+            <div className="grid md:grid-cols-4 md:grid-cols-2 gap-x-4 gap-y-5 py-4 max-w-[100%] overflow-wrap">
               {!!uploadedFiles.length &&
-                uploadedFiles.map((reportFile, index) => {
+                uploadedFiles.map((file, index) => {
                   return (
-                    <div
-                      key={reportFile.name}
-                      className="flex flex-row w-[8rem]"
-                    >
-                      <div className="w-[90%] text-[#2D6D80]">
-                        <label
-                          title={reportFile.name}
-                          className="block overflow-hidden whitespace-nowrap overflow-ellipsis"
-                        >
-                          {reportFile.name}
-                        </label>
-                      </div>
-                      <div className="font-bold w-[10%] text-end">
-                        <i
-                          onClick={() => handleRemoveFile(index)}
-                          className="pi pi-trash text-red-500 cursor-pointer"
-                        />
-                      </div>
-                    </div>
+                    <FileTile
+                      handleView={viewReport}
+                      handleRemoveFile={handleRemoveFile}
+                      fileName={file.name}
+                      index={index}
+                    />
                   );
                 })}
             </div>
@@ -372,7 +367,7 @@ const EditVisitHistory = () => {
               chooseOptions={{
                 label: "Add",
                 icon: <i className="pi pi-file-plus pe-2" />,
-                className:'custom-file-uploader'
+                className: "custom-file-uploader",
               }}
               accept="image/*"
               maxFileSize={1000000}
@@ -381,6 +376,46 @@ const EditVisitHistory = () => {
         </div>
       </form>
       <Toast ref={toast} />
+      {showReport && (
+        <ReportImage
+          closeModal={() => setShowReport(false)}
+          file={selectedFile}
+        />
+      )}
+    </div>
+  );
+};
+
+export const FileTile = ({
+  fileName,
+  index,
+  handleRemoveFile,
+  handleView,
+}: {
+  fileName: string;
+  index?: number;
+  handleRemoveFile: (index: number) => void;
+  handleView: (index: number) => void;
+}) => {
+  return (
+    <div key={fileName} className="flex flex-row w-[8rem]">
+      <div
+        className="cursor-pointer w-[90%] text-[#2D6D80]"
+        onClick={() => handleView(index || 0)}
+      >
+        <label
+          title={fileName}
+          className="block overflow-hidden whitespace-nowrap cursor-pointer overflow-ellipsis"
+        >
+          {fileName}
+        </label>
+      </div>
+      <div title="Delete" className="font-bold w-[10%] text-end">
+        <i
+          onClick={() => handleRemoveFile(index || 0)}
+          className="pi pi-trash text-red-500 cursor-pointer"
+        />
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import {
   setSelectedSidebarTab,
 } from "../../store/slices/commonSlice";
 import { AppDispatch } from "../../store/store";
+import { PATH_NAME } from "../../utils/AppConstants";
 export const user: IUser = {
   dob: "11-11-1993",
   ethnicity: "Chinese",
@@ -135,27 +136,29 @@ const UserProfilePage = () => {
   ];
   const dispatch = useDispatch<AppDispatch>();
   const selectedOption = useSelector(selectTab);
-  const [selectedTab, setSelectedTab] = useState(selectedOption?selectedOption :'personal');
+  const [selectedTab, setSelectedTab] = useState(
+    selectedOption ? selectedOption : "personal"
+  );
   const [hideTabs, setHideTabs] = useState(false);
 
   useEffect(() => {
-    console.log(selectedOption)
+    console.log(selectedOption);
     dispatch(setSelectedSidebarTab(selectedTab));
-  }, [selectedTab])
+  }, [selectedTab]);
 
   const handleEdit = () => {
     switch (selectedTab.toLowerCase()) {
       case "personal":
-        navigate("/editprofile");
+        navigate(PATH_NAME.EDIT_PROFILE);
         break;
       case "medications":
-        navigate("/editMedications");
+        navigate(PATH_NAME.EIDT_MEDICATION);
         break;
       case "medical conditions & allergies":
-        navigate("/edit-medical-conditons");
+        navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS);
         break;
       default:
-        navigate("/");
+        navigate(PATH_NAME.HOME);
         break;
     }
   };
@@ -185,7 +188,7 @@ const UserProfilePage = () => {
               className="ml-3"
               variant="primary"
               style="outline"
-              onClick={() => navigate("/edit-insurance")}
+              onClick={() => navigate(PATH_NAME.EDIT_INSURANCE)}
             >
               <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
               Add Insurance
@@ -196,7 +199,7 @@ const UserProfilePage = () => {
               variant="primary"
               style="outline"
               onClick={() => {
-                navigate("/edit-visit-history");
+                navigate(PATH_NAME.EDIT_VISIT_HISTORY);
               }}
             >
               <i className=" pi pi-file-plus stroke-purple-700 mr-2" />

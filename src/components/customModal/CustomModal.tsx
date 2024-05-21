@@ -1,5 +1,6 @@
 import { Dialog } from "primereact/dialog";
 import { ReactElement } from "react";
+
 const CustomModal = ({
   children,
   handleClose,

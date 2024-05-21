@@ -1,0 +1,11 @@
+.icon-wrapper {
+  @apply flex sticky bottom-1 left-0 right-0 flex-row justify-center items-center cursor-pointer gap-x-4;
+}
+
+.close-icon {
+  @apply flex items-center justify-center h-[2rem] w-[2rem] border-2 border-purple-900 rounded-full text-purple-900 font-primary;
+}
+
+.download-icon {
+  @apply flex items-center justify-center h-[2rem] w-[2rem] border-2 border-purple-900 rounded-full text-purple-900 font-primary;
+}

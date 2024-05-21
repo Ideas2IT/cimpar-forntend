@@ -14,7 +14,6 @@ const CustomPaginator = ({
   const [page, setPage] = useState(1);
 
   const onPageChange = (event: any) => {
-    console.log(event);
     setFirst(event.first);
     setPage(event.page + 1);
     handlePageChange(event);

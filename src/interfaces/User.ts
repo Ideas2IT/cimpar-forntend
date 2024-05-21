@@ -50,4 +50,6 @@ export interface IInsurance {
   policyNumber: string;
   groupNumber: string;
   insuranceCompany: string;
+  insuranceCard?: File;
+  insuranceId?: File;
 }
