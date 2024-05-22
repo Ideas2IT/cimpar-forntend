@@ -134,11 +134,6 @@ const ServiceHistory = () => {
   );
 };
 
-// const TestName = ({ name }: { name: String }) => {
-//   return (
-//     <div className="text-purple-800 font-tertiary">{name ? name : "-"}</div>
-//   );
-// };
 
 const TestDetails = ({ value }: { value: string }) => {
   return <div className="font-tertiary">{value ? value : "-"}</div>;

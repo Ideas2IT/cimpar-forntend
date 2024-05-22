@@ -6,7 +6,7 @@ import { Password } from "primereact/password";
 import "./SetPassword.css";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 

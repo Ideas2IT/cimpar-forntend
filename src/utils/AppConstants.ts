@@ -21,7 +21,8 @@ export const PATH_NAME = {
   EDIT_INSURANCE: "/edit-insurance",
   FORGOT_PASSWORD: "/forgot-password",
   TEST_RESULT: "/test-result",
-  HEALTH_RECORDS:"/health-records",
+  HEALTH_RECORDS: "/health-records",
+  APPOINTMENTS: "/appointments",
 };
 
 export const MESSAGE = {

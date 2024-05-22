@@ -1,7 +1,7 @@
 import TimePicker from "react-time-picker";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-clock/dist/Clock.css";
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import "react-time-picker/dist/TimePicker.css";
 import "./AppointmentPage.css";
 import Button from "../Button";
@@ -27,6 +27,7 @@ import { Calendar } from "primereact/calendar";
 import { Button as PrimeButton } from "primereact/button";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
+import HeaderContext from "../../context/HeaderContext";
 
 export interface IItem {
   id: number;
@@ -91,24 +92,6 @@ const AppointmentForm = () => {
     return dateOfBirth + " (" + age + ")";
   };
 
-  //TODO: need to call appointment creation API
-  // const accept = () => {
-  //   setShowDialog(true);
-  // };
-
-  //TODO: need to handle the logic if user rejects the form submission
-  // const reject = () => {};
-
-  // const confirm = () => {
-  //   confirmDialog({
-  //     message: MESSAGE.APPOINTMENT_SUBMIT_WARNING,
-  //     header: "Confirmation",
-  //     icon: "pi pi-info-circle text-yellow-500",
-  //     defaultFocus: "accept",
-  //     accept,
-  //     reject,
-  //   });
-  // };
 
   const TestFooterFormat = () => {
     return (
@@ -452,6 +435,13 @@ const DetailColumn = ({
 };
 
 const AppointmentStatus = () => {
+  const navigate = useNavigate();
+  const { updateHeaderTitle } = useContext(HeaderContext);
+  const handleResponse = () => {
+    navigate(PATH_NAME.TEST_RESULT);
+    updateHeaderTitle("Health Records");
+  };
+  
   return (
     <div className="flex justify-center flex-col">
       <div className="flex justify-center">
@@ -461,11 +451,13 @@ const AppointmentStatus = () => {
         Your Appointment has been Successfully fixed.
       </label>
       <div className="flex justify-center">
-        <Link to={PATH_NAME.TEST_RESULT}>
-          <Button className="font-primary w-[12rem]" style="outline">
-            <i className="pi pi-check me-2"></i>Go to Lab Results
-          </Button>
-        </Link>
+        <Button
+          onClick={handleResponse}
+          className="font-primary w-[12rem]"
+          style="outline"
+        >
+          <i className="pi pi-check me-2"></i>Go to Lab Results
+        </Button>
       </div>
     </div>
   );

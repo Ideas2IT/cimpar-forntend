@@ -37,13 +37,6 @@ const LoginForm = () => {
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" />
           </div>
-          {/* <div className="w-full flex flex-row">
-            <CheckMark />
-            <label className="color-success font-primary px-2">
-              Signup Completed
-            </label>
-          </div> */}
-          {/* <label className="input-label">{MESSAGE.SIGNUP_SUCCESSFUL}</label> */}
           <div className="font-primary text-2xl py-3">Login</div>
           <div className="col-span-2 w-full my-3">
             <label className="input-label" htmlFor="email">
