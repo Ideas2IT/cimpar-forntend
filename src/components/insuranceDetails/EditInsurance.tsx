@@ -265,36 +265,6 @@ const EditInsurance = () => {
                   {errors.policyNumber.message}
                 </span>
               )}
-              {/* <>
-                <label className="input-label my-5 block">
-                  Upload your insurance card
-                </label>
-                {insuranceCard?.name ? (
-                  <FileTile
-                    handleView={() => {
-                      setShowImage(true);
-                      setSelectedReport(insuranceCard);
-                    }}
-                    fileName={insuranceCard?.name || ""}
-                    handleRemoveFile={() =>
-                      setValue("insuranceCard", {} as File)
-                    }
-                  />
-                ) : (
-                  <FileUpload
-                    auto
-                    customUpload
-                    uploadHandler={(e) => setValue("insuranceCard", e.files[0])}
-                    chooseOptions={{
-                      label: "Upload",
-                      icon: <i className="pi pi-file-plus pe-2" />,
-                      className: "custom-file-uploader",
-                    }}
-                    accept="image/*"
-                    maxFileSize={1000000}
-                  />
-                )}
-              </> */}
             </div>
             <div>
               <label className="block input-label pb-1" htmlFor="race">
@@ -332,11 +302,6 @@ const EditInsurance = () => {
             file={selectedReport}
           />
         )
-        // && (
-        //   <CustomModal styleClass="" handleClose={handleCloseModal}>
-        //     <Image src={imageUrl} />
-        //   </CustomModal>
-        // )
       }
     </div>
   );
