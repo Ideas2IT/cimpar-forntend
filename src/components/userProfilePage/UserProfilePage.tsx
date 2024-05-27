@@ -40,16 +40,16 @@ export const user: IUser = {
   insuranceName: "American Family Insurance",
   insuranceNumber: "10*******982",
   medicationTakenBefore: [
-    "Celexa",
-    "Lexapro",
-    "Prozacfluvoxamine",
-    "Paroxetine HCL and Zoloft",
+    { id: 1, name: "Celexa" },
+    { id: 2, name: "Lexapro" },
+    { id: 3, name: "Prozacfluvoxamine" },
+    { id: 4, name: "Paroxetine HCL and Zoloft" },
   ],
   currentMedication: [
-    "Celexa",
-    "Lexapro",
-    "Prozacfluvoxamine",
-    "Paroxetine HCL and Zoloft",
+    { id: 1, name: "Celexa" },
+    { id: 2, name: "Lexapro" },
+    { id: 3, name: "Prozacfluvoxamine" },
+    { id: 4, name: "Paroxetine HCL and Zoloft" },
   ],
   insurance: [
     {
@@ -68,67 +68,68 @@ export const user: IUser = {
       groupNumber: "1-800-MYAMFAM",
       insuranceCompany: "American Automobile Association",
     },
-    {
-      id: 3,
-      insuranceType: "Tertiary",
-      insuranceNumber: "df-1231-tr",
-      policyNumber: "lic-sdfsd-323-c4",
-      groupNumber: "1-800-MYAMFAM",
-      insuranceCompany: "American Family Insurance",
-    },
+    // {
+    //   id: 3,
+    //   insuranceType: "Tertiary",
+    //   insuranceNumber: "df-1231-tr",
+    //   policyNumber: "lic-sdfsd-323-c4",
+    //   groupNumber: "1-800-MYAMFAM",
+    //   insuranceCompany: "American Family Insurance",
+    // },
   ],
   isOnMedicine: "no",
+  hasMedicalConditions: false,
   medicationalHistory: "yes",
 };
+export const tabs: Tab[] = [
+  {
+    key: "Personal",
+    value: "Personal",
+    content: (
+      <div className="px-6 py-1 h-full">
+        <UserDetails patient={user} />
+      </div>
+    ),
+  },
+  {
+    key: "medications",
+    value: "Medications",
+    content: (
+      <div className="px-6 py-1 h-full">
+        <Medication />
+      </div>
+    ),
+  },
+  {
+    key: "insurance",
+    value: "Insurance",
+    content: (
+      <div className="px-6 py-1 h-full">
+        <InsuranceDetails />
+      </div>
+    ),
+  },
+  {
+    key: "MedicalConditions",
+    value: "Medical Conditions & Allergies",
+    content: (
+      <div className="px-6 py-1 h-full">
+        <MedicalConditionDetails />
+      </div>
+    ),
+  },
+  {
+    key: "visitHistory",
+    value: "Visit History",
+    content: (
+      <div className="px-6 py-1 h-full">
+        <VisitHistory />
+      </div>
+    ),
+  },
+];
 const UserProfilePage = () => {
   const navigate = useNavigate();
-  const tabs: Tab[] = [
-    {
-      key: "Personal",
-      value: "Personal",
-      content: (
-        <div className="px-6 py-1 h-full">
-          <UserDetails patient={user} />
-        </div>
-      ),
-    },
-    {
-      key: "medications",
-      value: "Medications",
-      content: (
-        <div className="px-6 py-1 h-full">
-          <Medication />
-        </div>
-      ),
-    },
-    {
-      key: "insurance",
-      value: "Insurance",
-      content: (
-        <div className="px-6 py-1 h-full">
-          <InsuranceDetails />
-        </div>
-      ),
-    },
-    {
-      key: "MedicalConditions",
-      value: "Medical Conditions & Allergies",
-      content: (
-        <div className="px-6 py-1 h-full">
-          <MedicalConditionDetails />
-        </div>
-      ),
-    },
-    {
-      key: "visitHistory",
-      value: "Visit History",
-      content: (
-        <div className="px-6 py-1 h-full">
-          <VisitHistory />
-        </div>
-      ),
-    },
-  ];
   const dispatch = useDispatch<AppDispatch>();
   const selectedOption = useSelector(selectTab);
   const [selectedTab, setSelectedTab] = useState(
@@ -198,6 +199,39 @@ const UserProfilePage = () => {
             >
               <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
               Add Visit History
+            </Button>
+          ) : selectedTab.toLowerCase() === "medications" ? (
+            <Button
+              className="ml-3"
+              variant="primary"
+              style="outline"
+              onClick={() => {
+                navigate(PATH_NAME.EIDT_MEDICATION);
+              }}
+            >
+              <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+              {user.isOnMedicine === "yes" || user.medicationalHistory === "yes"
+                ? "Edit Medication"
+                : "Add Medication"}
+            </Button>
+          ) : selectedTab === "Medical Conditions & Allergies" ? (
+            <Button
+              className="ml-3"
+              variant="primary"
+              style="outline"
+              onClick={() => navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS)}
+            >
+              {!user.hasMedicalConditions ? (
+                <>
+                  <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+                  Add Medical Conditions & Allergies
+                </>
+              ) : (
+                <>
+                  <i className=" pi pi-pencil stroke-purple-700 mr-2" />
+                  Edit Details
+                </>
+              )}
             </Button>
           ) : (
             <Button

@@ -6,25 +6,16 @@ import Eye from "../../assets/icons/eye.svg?react";
 import Download from "../../assets/icons/download.svg?react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { Sidebar } from "primereact/sidebar";
-import { getStatusColors } from "../../services/commonFunctions";
+import { getRowClasses, getStatusColors } from "../../services/commonFunctions";
 import { Button } from "primereact/button";
+import { PaginatorPageChangeEvent } from "primereact/paginator";
 
 const TestResult = ({ results }: { results: LabTestResult[] }) => {
   const [selectedTest, setSelectedTest] = useState({} as LabTestResult);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
-  const tableProps = {
-    selection: selectedTest,
-    value: results,
-    selectionMode: "single" as const,
-    dataKey: "orderId",
-    tableStyle: { minWidth: "50rem" },
-    className: "mt-2 max-h-[90%] rowHoverable",
-    rowClassName: "h-10 border-b",
-    scrollHeight: "40rem",
-  };
   const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
 
-  const handlePageChange = (event: any) => {
+  const handlePageChange = (event: PaginatorPageChangeEvent) => {
     //TODO: Write logic to call api
     console.log(event);
   };
@@ -99,7 +90,16 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
 
   return (
     <>
-      <DataTable {...tableProps}>
+      <DataTable
+        selection={selectedTest}
+        value={results}
+        selectionMode="single"
+        dataKey="orderId"
+        tableStyle={{ minWidth: "50rem" }}
+        className="mt-2 max-h-[90%] rowHoverable"
+        rowClassName={() => getRowClasses("h-10 border-b")}
+        scrollHeight="40rem"
+      >
         {resultColumns.map((column, index) => {
           return (
             <Column
@@ -138,7 +138,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
   );
 };
 
-const TestName = ({ name }: { name: String }) => {
+const TestName = ({ name }: { name: string }) => {
   return (
     <div className="text-purple-800 font-tertiary">{name ? name : "-"}</div>
   );
@@ -151,7 +151,7 @@ const TestStatus = ({ status }: { status: string }) => {
   return (
     <div>
       <span
-        className={`${getStatusColors(status)} rounded-full py-2 px-4 text-sm text-center`}
+        className={`${getStatusColors(status)} rounded-full py-[.4rem] px-4 text-sm text-center`}
       >
         {status ? status : "-"}
       </span>
@@ -198,12 +198,27 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
   );
 
   const Result = () => {
+    const columnFields = [
+      {
+        label: "RESULT",
+        value: "16",
+        highlight: true,
+      },
+      { label: "REFERENCE RANGE", value: "10-13", highlight: false },
+      { label: "UNITS", value: "G/dL", heightlight: false },
+      { label: "FALG", value: "HIGH", highlight: true },
+    ];
     return (
       <div className="flex grid lg:grid-cols-2 gap-3">
-        <TableCell label="RESULT" value="16" highlight={true} />
-        <TableCell label="REFERENCE RANGE" value="10-13" />
-        <TableCell label="UNITS" value="G/dL" />
-        <TableCell label="FALG" value="HIGH" highlight={true} />
+        {columnFields.map((column) => {
+          return (
+            <TableCell
+              label={column.label}
+              value={column.value}
+              highlight={column.highlight}
+            />
+          );
+        })}
       </div>
     );
   };

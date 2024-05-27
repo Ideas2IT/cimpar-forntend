@@ -7,12 +7,9 @@ import { Button } from "primereact/button";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./forgotPassword.css";
+import { IForgotPassword } from "../../interfaces/UserLogin";
 
 const ForgotPassword = () => {
-  interface IForgotPassword {
-    email: string;
-  }
-
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
   const {
@@ -24,6 +21,7 @@ const ForgotPassword = () => {
 
   const handleFormSubmit = (data: IForgotPassword) => {
     setIsSubmitted(true);
+    console.log(data);
   };
 
   const email = watch("email");
@@ -44,7 +42,7 @@ const ForgotPassword = () => {
                 {MESSAGE.PASSOWRD_RESET}
               </label>
               <div className="col-span-2 w-full my-3">
-                <label className="input-label">Email*</label>
+                <label className="input-label" htmlFor="email">Email*</label>
                 <div className="relative h-[2.5rem] my-1">
                   <Controller
                     name="email"
@@ -56,9 +54,9 @@ const ForgotPassword = () => {
                     render={({ field }) => (
                       <InputText
                         {...field}
+                        id="email"
                         keyfilter="email"
                         className="signup-input"
-                        type="email"
                         placeholder="Enter Email"
                       />
                     )}

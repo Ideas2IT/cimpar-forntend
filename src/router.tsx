@@ -16,6 +16,7 @@ import SignUpForm from "./components/loginForm/SignUpForm";
 import SetPassword from "./components/setPassword/SetPassword";
 import LoginForm from "./components/loginForm/LoginForm";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
+import Appointments from "./components/appointments/Appointments";
 const router = createBrowserRouter([
   {
     path: PATH_NAME.HOME,
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
       {
         path: PATH_NAME.EDIT_VISIT_HISTORY,
         element: <EditVisitHistory />,
+      },
+      {
+        path: PATH_NAME.APPOINTMENTS,
+        element: <Appointments />,
       },
     ],
   },

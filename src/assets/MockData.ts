@@ -140,9 +140,9 @@ export const ethnicities = [
 
 export const insuranceCompanies = [
   { id: 1, value: "Medicare" },
-  { name: 2, value: "Cure All" },
-  { name: 3, value: "Health care" },
-  { name: 4, value: "Live long" },
+  { id: 2, value: "Cure All" },
+  { id: 3, value: "Health care" },
+  { id: 4, value: "Live long" },
 ];
 
 export const insurances = [
@@ -191,7 +191,7 @@ export const patientMedicalDetails: IPatientMedicalDetails = {
 
 export interface IService {
   serviceId: number;
-  category: String;
+  category: string;
   serviceFor: string;
   dateOfService: string;
   status: string;
@@ -253,7 +253,7 @@ export interface IVisitHistory {
   primaryCareTeam: string;
   hospitalContact: string;
   phoneNumberCode: string;
-  documents?:File[];
+  documents?: File[];
 }
 export const visitHistory: IVisitHistory[] = [
   {
@@ -310,6 +310,7 @@ export interface IImmunization {
   dosageForm: string;
   lotNumber: string;
   route: string;
+  status: string;
   administeredCode: string;
 }
 
@@ -326,6 +327,7 @@ export const immunizations: IImmunization[] = [
     lotNumber: "EH9899",
     route: "Intramuscular injection",
     administeredCode: "JO7BN01",
+    status: "Icare",
   },
   {
     id: 2,
@@ -339,6 +341,7 @@ export const immunizations: IImmunization[] = [
     lotNumber: "EH9899",
     route: "Intramuscular injection",
     administeredCode: "JO7BN01",
+    status: "vaccinated",
   },
   {
     id: 3,
@@ -352,6 +355,7 @@ export const immunizations: IImmunization[] = [
     lotNumber: "EH9899",
     route: "Intramuscular injection",
     administeredCode: "JO7BN01",
+    status: "Icare",
   },
   {
     id: 4,
@@ -365,6 +369,7 @@ export const immunizations: IImmunization[] = [
     lotNumber: "EH9899",
     route: "Intramuscular injection",
     administeredCode: "JO7BN01",
+    status: "Icare",
   },
   {
     id: 5,
@@ -378,6 +383,7 @@ export const immunizations: IImmunization[] = [
     lotNumber: "EH9899",
     route: "Intramuscular injection",
     administeredCode: "JO7BN01",
+    status: "Vaccinated",
   },
 ];
 
@@ -565,3 +571,183 @@ export const reasonsForTest: IItem[] = [
   { id: 2, name: "Advised by doctor" },
   { id: 3, name: "Other" },
 ];
+
+export const appointments: IAppointment[] = [
+  {
+    id: 1,
+    patientName: "Jhon doe",
+    insurance: "available",
+    dateAndTime: "12 mar,2024 - 02:32",
+    appointmentFor: ["Urine analysis"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+  {
+    id: 2,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/2001",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+  {
+    id: 3,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+  {
+    id: 4,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+  {
+    id: 5,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+
+  {
+    id: 6,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+  {
+    id: 7,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+  {
+    id: 8,
+    patientName: "Rahul david",
+    insurance: "not available",
+    dateAndTime: "12 mar,2024 - 08:32",
+    appointmentFor: ["Thyroid", "EEG", "covid-19"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12-12-1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+];
+
+export interface IAppointment {
+  id: number;
+  patientName: string;
+  insurance: string;
+  dateAndTime: string;
+  appointmentFor: string[];
+  age: number;
+  gender: string;
+  dateOfBirth: string;
+  insuranceProvider: string;
+  insuranceNumber: string;
+  dateOfAppointment: string;
+  medicalConditions: string[];
+  phoneNumber: string;
+  countryCode: string;
+  testReason: string;
+}
+
+export const mockAppointments: IAppointment[] = [
+  {
+    id: 1,
+    patientName: "John Doe",
+    insurance: "available",
+    dateAndTime: "12 Mar, 2024 - 02:32",
+    appointmentFor: ["Urine analysis"],
+    age: 12,
+    gender: "male",
+    dateOfBirth: "12/12/1988",
+    insuranceProvider: "American Family Insurance",
+    insuranceNumber: "10*******982",
+    dateOfAppointment: "12/06/2002",
+    medicalConditions: ["coronaVirus", "cold", "cough"],
+    phoneNumber: "9192900867",
+    countryCode: "91-us",
+    testReason: "Advised by doctor",
+  },
+];
+
+export const _appointments = mockAppointments;

@@ -1,4 +1,4 @@
-import { Paginator } from "primereact/paginator";
+import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 import { useState } from "react";
 
 const CustomPaginator = ({
@@ -6,14 +6,14 @@ const CustomPaginator = ({
   handlePageChange,
   totalRecords,
 }: {
-  handlePageChange: any;
+  handlePageChange: (event:PaginatorPageChangeEvent)=>void;
   totalRecords: number;
   rowLimit?: number;
 }) => {
   const [first, setFirst] = useState(0);
   const [page, setPage] = useState(1);
 
-  const onPageChange = (event: any) => {
+  const onPageChange = (event: PaginatorPageChangeEvent) => {
     setFirst(event.first);
     setPage(event.page + 1);
     handlePageChange(event);
@@ -24,7 +24,7 @@ const CustomPaginator = ({
       first={first}
       rows={rowLimit ? rowLimit : 20}
       totalRecords={totalRecords}
-      onPageChange={(event) => onPageChange(event)}
+      onPageChange={(event:PaginatorPageChangeEvent) => onPageChange(event)}
       prevPageLinkIcon={<i className="pi pi-arrow-left" />}
       nextPageLinkIcon={<i className="pi pi-arrow-right" />}
       template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}

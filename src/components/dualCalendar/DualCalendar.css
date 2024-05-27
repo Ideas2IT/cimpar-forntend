@@ -1,0 +1,7 @@
+.p-datepicker table td > span.p-highlight {
+  @apply bg-[#EAF0F2];
+}
+
+.p-datepicker table td > span {
+  @apply text-[#2D6D80] font-semibold;
+}

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { LabTestResult } from "../LabTestResults";
-import { DataTable ,DataTableProps} from "primereact/datatable";
+import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import Eye from "../../assets/icons/eye.svg?react";
 import Download from "../../assets/icons/download.svg?react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { Sidebar } from "primereact/sidebar";
-import { getStatusColors } from "../../services/commonFunctions";
+import { getRowClasses, getStatusColors } from "../../services/commonFunctions";
 import {
   IService,
   immunizations,
@@ -14,22 +14,13 @@ import {
   serviceData,
 } from "../../assets/MockData";
 import { ImmunizationDetailView } from "../testResult/Immunization";
+import { PaginatorPageChangeEvent } from "primereact/paginator";
 
 const ServiceHistory = () => {
   const [selectedService, setSelectedTest] = useState<IService>({} as IService);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
-  const tableProps:DataTableProps = {
-    selection: selectedService,
-    value: serviceData,
-    selectionMode: "single" as "single" | "multiple",
-    dataKey: "serviceId",
-    tableStyle: { minWidth: "50rem" },
-    className: "mt-2 max-h-[90%] rowHoverable",
-    rowClassName: "h-10 border-b",
-    scrollHeight: "40rem",
-  };
 
-  const handlePageChange = (event: any) => {
+  const handlePageChange = (event: PaginatorPageChangeEvent) => {
     //TODO: Write logic to call api
     console.log(event);
   };
@@ -80,11 +71,20 @@ const ServiceHistory = () => {
 
   return (
     <>
-      <DataTable {...tableProps}>
+      <DataTable
+        selection={selectedService}
+        value={serviceData}
+        selectionMode="single"
+        dataKey="serviceId"
+        tableStyle={{ minWidth: "50rem" }}
+        className="mt-2 max-h-[90%] rowHoverable"
+        rowClassName={() => getRowClasses("h-10 border-b")}
+        scrollHeight="40rem"
+      >
         {serviceColumns.map((column, index) => {
           return (
             <Column
-            bodyClassName="py-4"
+              bodyClassName="py-4"
               key={index}
               field={column.field}
               header={column.header}
@@ -134,7 +134,6 @@ const ServiceHistory = () => {
   );
 };
 
-
 const TestDetails = ({ value }: { value: string }) => {
   return <div className="font-tertiary">{value ? value : "-"}</div>;
 };
@@ -142,7 +141,7 @@ const TestStatus = ({ status }: { status: string }) => {
   return (
     <div>
       <span
-        className={`${getStatusColors(status)} rounded-full py-2 px-4 text-sm text-center`}
+        className={`${getStatusColors(status)} rounded-full py-[.4rem] px-4 text-sm text-center`}
       >
         {status ? status : "-"}
       </span>

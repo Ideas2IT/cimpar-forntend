@@ -63,10 +63,14 @@ const LabTestResults = () => {
   const [selectedTab, setSelectedTab] = useState("Service History");
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
-  const [selectedServices, setSelectedServices] = useState([1,2,3] as number[]);
+  const [selectedServices, setSelectedServices] = useState([
+    1, 2, 3,
+  ] as number[]);
 
   //TODO: Need to call API with search query
-  const handleSearch = (value: String) => {};
+  const handleSearch = (value: string) => {
+    console.log(value);
+  };
 
   const handleServiceFilter = (newService: IItem) => {
     if (
@@ -105,7 +109,7 @@ const LabTestResults = () => {
   const handleFilter = () => {};
 
   const setLabel = () => {
-    if (selectedServices.includes(1)  || !selectedServices.length) {
+    if (selectedServices.includes(1) || !selectedServices.length) {
       return "All Services";
     } else if (selectedServices.includes(2)) {
       return "Lab Tests";

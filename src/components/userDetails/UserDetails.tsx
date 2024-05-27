@@ -1,4 +1,10 @@
+import { useEffect } from "react";
 import { IUser } from "../../interfaces/User";
+import { getFullPhoneNUmber } from "../../services/commonFunctions";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import { getPatinetDetailsThunk } from "../../store/slices/PatientSlice";
+import { format } from "date-fns";
 
 const UserDetails = ({ patient }: { patient: IUser }) => {
   const patientDetails = [
@@ -9,7 +15,7 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
         "" + " " + patient.lastName ||
         "",
     },
-    { label: "DOB", value: new Date(patient.dob).toDateString() },
+    { label: "DOB", value: format(new Date(patient.dob), "dd MMM, yyyy") },
     { label: "GENDER", value: patient.gender },
     { label: "RACE", value: patient.race },
     {
@@ -27,7 +33,10 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
   const contactDetails = [
     {
       label: "PHONE NUMBER",
-      value: patient.countryCode.split("-")[0] + "-" + patient.phoneNumber,
+      value: getFullPhoneNUmber(
+        patient.countryCode,
+        String(patient.phoneNumber)
+      ),
     },
     {
       label: "ALTERNATIVE NUMBER",
@@ -42,6 +51,11 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
     { label: "STATE", value: patient.state },
     { label: "COUNTRY", value: patient.country },
   ];
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(getPatinetDetailsThunk(1));
+  }, []);
 
   return (
     <div className="p-3">
@@ -88,7 +102,7 @@ export const PatientDetails = ({
       </div>
       <div
         title={value.toString()}
-        className="font-primary pb-2 text-[#283956] text-clip"
+        className="font-primary pb-2 text-[#283956] capitalize text-clip"
       >
         {value ? value : "-"}
       </div>

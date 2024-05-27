@@ -16,15 +16,10 @@ import { PATH_NAME } from "../../utils/AppConstants";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
+import { user } from "../userProfilePage/UserProfilePage";
 
 const EditMedicalConditions = () => {
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
+  const { control, handleSubmit, setValue, watch } = useForm({
     defaultValues: patientMedicalDetails,
   });
   const areFamilyConditions = watch("areFamilyConditions");
@@ -32,6 +27,7 @@ const EditMedicalConditions = () => {
   const navigate = useNavigate();
 
   const handleFormSubmit = (data: IPatientMedicalDetails) => {
+    
     successToast(
       "Updated Successfully",
       "Medical conditions updated successfully"
@@ -39,11 +35,21 @@ const EditMedicalConditions = () => {
 
     setTimeout(() => {
       navigate(PATH_NAME.PROFILE);
-    },1500);
+    }, 1500);
+    console.log(data);
   };
   return (
     <>
-      <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
+      <form
+        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            if (document.activeElement?.tagName !== "BUTTON") {
+              event.preventDefault();
+            }
+          }
+        }}
+      >
         <div className="flex flex-col md:flex-row justify-between py-2">
           <BackButton
             backLink={PATH_NAME.PROFILE}
@@ -67,15 +73,21 @@ const EditMedicalConditions = () => {
               outlined
               type="submit"
             >
-              <i className="pi pi-check me-2"></i>Save
+              <i className="pi pi-check me-2"></i>
+              {user.hasMedicalConditions ? "Save" : "Add"}
             </PrimeButton>
           </div>
         </div>
         <div className="p-6 bg-white overflow-auto rounded-lg">
-          <label className="font-primary text-xl pb-6">Medical Conditons</label>
+          <label className="font-primary text-xl pb-6">
+            Medical Conditions
+          </label>
           <div className="pt-4">
-            <label className="input-label pb-1">
-              Please Select the medical conditions you currently have
+            <label
+              className="input-label mb-1 block"
+              htmlFor="medicalConditions"
+            >
+              Please Select the medical conditions you currently have.
             </label>
             <Controller
               name="medicalConditions"
@@ -83,6 +95,7 @@ const EditMedicalConditions = () => {
               defaultValue={patientMedicalDetails.medicalConditions}
               render={({ field }) => (
                 <CustomAutoComplete
+                  inputId="medicalConditions"
                   handleSelection={(data) =>
                     setValue("medicalConditions", data)
                   }
@@ -93,8 +106,11 @@ const EditMedicalConditions = () => {
             />
           </div>
           <div className="pt-6 pb-4">
-            <label className="input-label">
-              Other Medical Conditions (if any)
+            <label
+              className="input-label pb-1 block"
+              htmlFor="otherMedicalConditions"
+            >
+              Other Medical Conditions (if any).
             </label>
             <Controller
               name="otherMedicalConditions"
@@ -103,6 +119,7 @@ const EditMedicalConditions = () => {
               render={({ field }) => (
                 <Chips
                   {...field}
+                  inputId="otherMedicalConditions"
                   className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
                   placeholder={
                     !field.value.length
@@ -119,8 +136,8 @@ const EditMedicalConditions = () => {
           <label className="font-primary text-xl block py-4">Allergies</label>
 
           <div className="py-4">
-            <label className="input-label pb-1">
-              Please Select the allergies you currently have
+            <label className="input-label block pb-1" htmlFor="allergies">
+              Please Select the allergies you currently have.
             </label>
             <Controller
               name="allergies"
@@ -128,6 +145,7 @@ const EditMedicalConditions = () => {
               defaultValue={patientMedicalDetails.allergies}
               render={({ field }) => (
                 <CustomAutoComplete
+                  inputId="allergies"
                   handleSelection={(data) => setValue("allergies", data)}
                   items={allergies}
                   selectedItems={field.value}
@@ -136,7 +154,9 @@ const EditMedicalConditions = () => {
             />
           </div>
           <div className="py-3">
-            <label className="input-label">Other Allergies (if any)</label>
+            <label className="input-label block pb-1" htmlFor="otherAllergies">
+              Other Allergies (if any).
+            </label>
             <Controller
               name="otherAllergies"
               control={control}
@@ -144,6 +164,7 @@ const EditMedicalConditions = () => {
               render={({ field }) => (
                 <Chips
                   {...field}
+                  inputId="otherAllergies"
                   className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
                   placeholder={
                     !field.value.length
@@ -159,7 +180,7 @@ const EditMedicalConditions = () => {
           </div>
           <div className="pt-4">
             <label className="ont-primary text-xl block pb-3">
-              Family Medical Conditions
+              Family Medical Conditions.
             </label>
             <label className="input-label">
               Would you like to add your family history medical conditions?

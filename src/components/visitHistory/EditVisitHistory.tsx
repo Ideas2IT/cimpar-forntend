@@ -14,13 +14,12 @@ import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import "./VisitHistory.css";
 import { InputTextarea } from "primereact/inputtextarea";
-import { FileUpload } from "primereact/fileupload";
+import { FileUpload, FileUploadFilesEvent } from "primereact/fileupload";
 import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 import ReportImage from "../reportImage/ReportImage";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import moment from "moment";
 
 const EditVisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
@@ -59,11 +58,12 @@ const EditVisitHistory = () => {
   }, [selectedHistory]);
 
   //TODO: Need to write the logic to handle API
-  const handleFormSubmit = (fromData: IVisitHistory) => {
+  const handleFormSubmit = (formData: IVisitHistory) => {
     successToast("Updated Successfully", "Visit history updated successfully");
     setTimeout(() => {
       navigate(PATH_NAME.PROFILE);
     }, 1500);
+    console.log(formData);
   };
 
   const handleRemoveFile = (index: number) => {
@@ -73,7 +73,7 @@ const EditVisitHistory = () => {
     successToast(MESSAGE.FILE_DELETE_TOAST_TITLE, MESSAGE.FILE_DELETE_TOAST);
   };
 
-  const handleFileUpload = (event: any) => {
+  const handleFileUpload = (event: FileUploadFilesEvent) => {
     let invalidFile = false;
     !!event.files.length &&
       event.files.map((file: File) => {
@@ -105,13 +105,22 @@ const EditVisitHistory = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
+      <form
+        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            if (document.activeElement?.tagName !== "BUTTON") {
+              event.preventDefault();
+            }
+          }
+        }}
+      >
         <div className="flex flex-row justify-between px-6">
           <BackButton
             backLink={PATH_NAME.PROFILE}
             previousPage="visit History"
             currentPage={
-              !!Object.keys(selectedHistory).length
+              Boolean(Object.keys(selectedHistory).length)
                 ? "Edit Visit History"
                 : "Add Visit History"
             }
@@ -140,7 +149,9 @@ const EditVisitHistory = () => {
         <div className="bg-white rounded-lg m-6 p-6">
           <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-4">
             <div className="relative">
-              <label className="input-label block pb-1">Visit Location*</label>
+              <label className="input-label block pb-1" htmlFor="visitLocation">
+                Visit Location*
+              </label>
               <Controller
                 name="visitLocation"
                 control={control}
@@ -151,6 +162,7 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="visitLocation"
                     placeholder="Enter Hospitan Name"
                     className="input-field w-full"
                   />
@@ -205,6 +217,7 @@ const EditVisitHistory = () => {
                   render={({ field }) => (
                     <InputText
                       {...field}
+                      id="phoneNumber"
                       keyfilter="pint"
                       onChange={(e) =>
                         setValue("hospitalContact", e.target.value)
@@ -222,7 +235,9 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative">
-              <label className="pb-1 input-label">Admission Date*</label>
+              <label className="pb-1 block input-label" htmlFor="admissionDate">
+                Admission Date*
+              </label>
               <Controller
                 name="admissionDate"
                 control={control}
@@ -233,7 +248,12 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <Calendar
                     {...field}
-                    value={new Date(moment(field.value).format("DD MMM, YYYY"))}
+                    onChange={(e) =>
+                      e?.target?.value &&
+                      setValue("admissionDate", e.target.value.toString())
+                    }
+                    value={new Date(field.value)}
+                    inputId="admissionDate"
                     dateFormat="dd MM, yy"
                     className="calander border rounded-lg h-[2.5rem]"
                     showIcon={true}
@@ -249,7 +269,9 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative">
-              <label className="pb-1 input-label">Discharge Date*</label>
+              <label className="pb-1 input-label" htmlFor="dischargeDate">
+                Discharge Date*
+              </label>
               <Controller
                 name="dischargeDate"
                 control={control}
@@ -260,7 +282,12 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <Calendar
                     {...field}
-                    value={new Date(moment(field.value).format("DD MMM, YYYY"))}
+                    onChange={(e) =>
+                      e?.target?.value &&
+                      setValue("dischargeDate", e.target.value.toString())
+                    }
+                    inputId="dischargeDate"
+                    value={new Date(field.value)}
                     dateFormat="dd MM, yy"
                     className="calander input-field"
                     showIcon={true}
@@ -276,7 +303,9 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative col-span-2">
-              <label className="input-label pb-1">Reason for visit*</label>
+              <label className="input-label block pb-1" htmlFor="visitReason">
+                Reason for visit*
+              </label>
               <Controller
                 name="visitReason"
                 control={control}
@@ -287,6 +316,7 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="visitReason"
                     className="input-field w-full"
                     placeholder="Enter reason for visit"
                   />
@@ -297,7 +327,9 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative col-span-2">
-              <label className="input-label pb-1">Primary Care Team*</label>
+              <label className="input-label block pb-1" htmlFor="careTeam">
+                Primary Care Team*
+              </label>
               <Controller
                 name="primaryCareTeam"
                 control={control}
@@ -308,6 +340,7 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="careTeam"
                     placeholder="Enter Names"
                     className="input-field w-full"
                   />
@@ -318,7 +351,12 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative col-span-2">
-              <label className="input-label pb-1">Treatment Summary*</label>
+              <label
+                className="input-label block pb-1"
+                htmlFor="treatmentSummary"
+              >
+                Treatment Summary*
+              </label>
               <Controller
                 name="treatmentSummary"
                 control={control}
@@ -329,6 +367,7 @@ const EditVisitHistory = () => {
                 render={({ field }) => (
                   <InputTextarea
                     {...field}
+                    id="treatmentSummary"
                     placeholder="Enter Treatment Summary"
                     className="large-input pt-2"
                   />
@@ -339,7 +378,9 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative col-span-2">
-              <label className="input-label pb-1">Follow-up Care*</label>
+              <label className="input-label pb-1" htmlFor="followUpCare">
+                Follow-up Care*
+              </label>
               <Controller
                 name="followUpCare"
                 control={control}
@@ -349,6 +390,7 @@ const EditVisitHistory = () => {
                 defaultValue={selectedHistory.followUpCare}
                 render={({ field }) => (
                   <InputTextarea
+                    id="followUpCare"
                     {...field}
                     placeholder="Enter Follow-up care"
                     className="large-input pt-2"
@@ -360,7 +402,9 @@ const EditVisitHistory = () => {
               )}
             </div>
             <div className="relative col-span-2">
-              <label className="input-label pb-1">Activity Notes*</label>
+              <label className="input-label pb-1" htmlFor="activityNotes">
+                Activity Notes*
+              </label>
               <Controller
                 name="patientNotes"
                 control={control}
@@ -370,6 +414,7 @@ const EditVisitHistory = () => {
                 defaultValue={selectedHistory.patientNotes}
                 render={({ field }) => (
                   <InputTextarea
+                    id="activityNotes"
                     {...field}
                     placeholder="Enter activity notes"
                     autoResize={false}

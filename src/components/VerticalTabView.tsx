@@ -23,7 +23,7 @@ const VerticalTabView: React.FC<VerticalTabProps> = ({
 
   useEffect(() => {
     if (location.pathname) {
-      if (location.pathname === PATH_NAME.PROFILE && selectedOption !== "") {
+      if (location.pathname === PATH_NAME.PROFILE && selectedOption !== undefined) {
         setSelectedTab(
           tabs.find((t) => {
             return t.value.toLowerCase() === selectedOption.toLowerCase();

@@ -61,11 +61,21 @@ const EditInsurance = () => {
     setTimeout(() => {
       navigate(PATH_NAME.PROFILE);
     }, 1500);
+    console.log(data);
   };
 
   return (
     <div className="px-6">
-      <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
+      <form
+        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            if (document.activeElement?.tagName !== "BUTTON") {
+              event.preventDefault();
+            }
+          }
+        }}
+      >
         <div className="flex flex-row justify-between pb-6">
           <BackButton
             previousPage="Insurance"
@@ -85,21 +95,23 @@ const EditInsurance = () => {
                 type="button"
                 style="link"
               >
-                <i className="p" />
                 <i className="pi pi-times me-2"></i>Cancel
               </Button>
             </Link>
             <PrimeButton
               className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
               outlined
-              type="submit"
+              onClick={() => handleSubmit}
             >
               <i className="pi pi-check me-2"></i>Save
             </PrimeButton>
           </div>
         </div>
         <div className="min-h-[70vh] bg-white rounded-lg p-6">
-          <label className="font-ternary text-sm">
+          <label
+            className="font-ternary text-sm"
+            htmlFor="insuranceTypeSelector"
+          >
             Select Your Insurance Type based on your priority
           </label>
           <div className="py-4">
@@ -117,6 +129,8 @@ const EditInsurance = () => {
                     onClick={() => setValue("insuranceType", "Primary")}
                   >
                     <RadioButton
+                      {...field}
+                      inputId="insuranceTypeSelector"
                       className="me-2"
                       value="Primary"
                       inputRef={field.ref}
@@ -160,7 +174,10 @@ const EditInsurance = () => {
             )}
           </div>
           <div className="pt-4 lg:w-[50%] sm:w-[100%]">
-            <label className="block input-label pb-1" htmlFor="race">
+            <label
+              className="block input-label pb-1"
+              onClick={() => document.getElementById("company")?.click()}
+            >
               Insurance Company*
             </label>
             <Controller
@@ -173,9 +190,11 @@ const EditInsurance = () => {
               render={({ field }) => (
                 <Dropdown
                   {...field}
+                  id="company"
                   options={insuranceCompanies}
                   optionLabel="value"
                   placeholder="Select Insurance Company"
+                  ariaLabel="Select Insurance Company"
                   className="pe-2 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
                 />
               )}
@@ -188,7 +207,10 @@ const EditInsurance = () => {
           </div>
           <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-3 pt-4 gap-6">
             <div>
-              <label className="block input-label pb-1" htmlFor="race">
+              <label
+                className="block input-label pb-1"
+                htmlFor="insuranceNumber"
+              >
                 Insurance Number*
               </label>
               <Controller
@@ -201,7 +223,9 @@ const EditInsurance = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="insuranceNumber"
                     placeholder="Enter insurance Number"
+                    aria-label="Insurance number"
                     className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
                   />
                 )}
@@ -242,7 +266,7 @@ const EditInsurance = () => {
               </>
             </div>
             <div>
-              <label className="block input-label pb-1" htmlFor="race">
+              <label className="block input-label pb-1" htmlFor="policyNumber">
                 Policy Number*
               </label>
               <Controller
@@ -255,7 +279,9 @@ const EditInsurance = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="policyNumber"
                     placeholder="Enter Policy Number"
+                    aria-label="Policy number"
                     className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
                   />
                 )}
@@ -267,7 +293,7 @@ const EditInsurance = () => {
               )}
             </div>
             <div>
-              <label className="block input-label pb-1" htmlFor="race">
+              <label className="block input-label pb-1" htmlFor="groupNumber">
                 Group Number*
               </label>
               <Controller
@@ -280,7 +306,9 @@ const EditInsurance = () => {
                 render={({ field }) => (
                   <InputText
                     {...field}
+                    id="groupNumber"
                     placeholder="Enter Group Number"
+                    aria-label="Group number"
                     className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
                   />
                 )}
@@ -295,14 +323,12 @@ const EditInsurance = () => {
         </div>
       </form>
       <Toast ref={toast} />
-      {
-        showImage && (
-          <ReportImage
-            closeModal={() => setShowImage(false)}
-            file={selectedReport}
-          />
-        )
-      }
+      {showImage && (
+        <ReportImage
+          closeModal={() => setShowImage(false)}
+          file={selectedReport}
+        />
+      )}
     </div>
   );
 };

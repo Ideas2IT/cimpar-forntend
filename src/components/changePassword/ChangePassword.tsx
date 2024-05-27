@@ -17,7 +17,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
     handleSubmit,
     formState: { errors },
   } = useForm({ defaultValues: {} as IChangePassword });
-  const { errorToast, toast, successToast } = useToast();
+  const { errorToast, toast } = useToast();
 
   //TODO: Handle Password change API call
   const handlePasswordChange = (data: IChangePassword) => {
@@ -53,6 +53,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
             }}
             render={({ field }) => (
               <Password
+                placeholder="Enter Current Password"
                 {...field}
                 inputId="oldPassword"
                 panelStyle={{ display: "none" }}
@@ -86,6 +87,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
             }}
             render={({ field }) => (
               <Password
+                placeholder="Enter New Password"
                 {...field}
                 inputId="newPassword"
                 inputClassName="reset-input"
@@ -118,6 +120,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
             }}
             render={({ field }) => (
               <Password
+                placeholder="Confirm Password"
                 {...field}
                 inputId="confirmPassword"
                 inputClassName="reset-input"

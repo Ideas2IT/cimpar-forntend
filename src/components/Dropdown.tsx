@@ -16,9 +16,9 @@ const Dropdown = () => {
   return (
     <Select
       styles={{
-        control: (baseStyles, state) => ({
+        control: (baseStyles) => ({
           ...baseStyles,
-          borderRadius: '9999px',
+          borderRadius: "9999px",
         }),
       }}
       options={options}

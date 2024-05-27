@@ -1,16 +1,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { SLICE_NAME, THUNK_NAME } from "../../utils/sliceUtil";
+
 interface IUser {
   name: string;
+  role: string;
+  id: number;
 }
 
 const initialState: IUser = {
-  name: "",
+  name: "John",
+  role: "ADMIN",
+  id: 1,
 };
 
 export const getUsersThunk = createAsyncThunk(THUNK_NAME.getUser, async () => {
-  //   const userResponse = await getUsers();
+    // const userResponse = await getUsers();
   //   return userResponse.data;
   return "firnadis";
 });
@@ -27,6 +32,6 @@ const userSlice = createSlice({
 });
 
 const { reducer } = userSlice;
-export const selectUsers = (state: RootState) => state.user.name;
+export const selectUser = (state: RootState) => state.user.name;
 
 export default reducer;

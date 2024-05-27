@@ -5,21 +5,13 @@ import { useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
-import { PATH_NAME } from "../../utils/AppConstants";
+import { PATH_NAME, ROLE } from "../../utils/AppConstants";
+import { useSelector } from "react-redux";
+import { selectedRole } from "../../store/slices/commonSlice";
+import { getRowClasses } from "../../services/commonFunctions";
 
 const VisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
-
-  const tableProps = {
-    selection: selectedHistory,
-    value: visitHistory,
-    selectionMode: "single" as const,
-    dataKey: "id",
-    tableStyle: { minWidth: "50rem" },
-    className: "mt-2 max-h-[90%] rowHoverable",
-    rowClassName: "h-10 border-b",
-    scrollHeight: "40rem",
-  };
   const columnList = [
     {
       id: 1,
@@ -30,13 +22,13 @@ const VisitHistory = () => {
     {
       id: 2,
       field: "admissionDate",
-      header: "ADMISSION DATA",
+      header: "ADMISSION DATE",
       body: (row: IVisitHistory) => <TableCell value={row.admissionDate} />,
     },
     {
       id: 3,
       field: "dischargeDate",
-      header: "DISCHARGE DATA",
+      header: "DISCHARGE DATE",
       body: (row: IVisitHistory) => <TableCell value={row.dischargeDate} />,
     },
     {
@@ -88,7 +80,7 @@ const VisitHistory = () => {
       full: true,
     },
     {
-      field: "FOLLOW UP CARE",
+      field: "FOLLOW-UP CARE",
       value: selectedHistory.followUpCare,
       full: true,
     },
@@ -134,7 +126,7 @@ const VisitHistory = () => {
           >
             <>
               <i className="pi pi-eye px-2" />
-              Medical Report2.pdf
+              Medical Report1.pdf
             </>
           </Button>
         </div>
@@ -144,7 +136,16 @@ const VisitHistory = () => {
 
   return (
     <>
-      <DataTable {...tableProps}>
+      <DataTable
+        selection={selectedHistory}
+        value={visitHistory}
+        selectionMode="single"
+        dataKey="id"
+        tableStyle={{ minWidth: "50rem" }}
+        className="mt-2 max-h-[90%] rowHoverable"
+        rowClassName={() => getRowClasses("h-10 border-b")}
+        scrollHeight="40rem"
+      >
         {columnList.map((column) => {
           return (
             <Column
@@ -177,15 +178,22 @@ const MediaColumn = ({
   data: IVisitHistory;
   handleView: (data: IVisitHistory) => void;
 }) => {
+  const role = useSelector(selectedRole);
   const navigate = useNavigate();
   return (
-    <div className="flex flex-row font-bold justify-between font-bold max-w-[5rem] text-purple-800">
-      <i className="pi pi-eye" onClick={() => handleView(data)} />
+    <div className="flex flex-row font-bold justify-between items-center font-bold max-w-[5rem] text-purple-800">
+      <button className="flex items-center" onClick={() => handleView(data)}>
+        <i className="pi pi-eye" />
+      </button>
+      <button className="items-center p-0 m-0" disabled={role === ROLE.ADMIN}>
+        <i
+          className={`pi pi-pen-to-square px-3 ${role === ROLE.ADMIN && "cursor-not-allowed	"}`}
+          onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}/${data.id}`)}
+        />
+      </button>
       <i
-        className="pi pi-pen-to-square px-3"
-        onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}/${data.id}`)}
+        className={`pi pi-trash text-red-500 me-2 ${role === ROLE.ADMIN && "cursor-not-allowed"}`}
       />
-      <i className="pi pi-trash text-red-500 me-2" />
     </div>
   );
 };

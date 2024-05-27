@@ -6,19 +6,13 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
+import { useSelector } from "react-redux";
+import { selectedRole } from "../../store/slices/commonSlice";
+import { ROLE } from "../../utils/AppConstants";
+import { getRowClasses } from "../../services/commonFunctions";
 
 const InsuranceDetails = () => {
-  const [selectedPolicy, setSelectedPolicy] = useState({} as IInsurance);
-  const tableProps = {
-    selection: selectedPolicy,
-    value: user.insurance,
-    selectionMode: "single" as const,
-    dataKey: "id",
-    tableStyle: { minWidth: "50rem" },
-    className: "mt-2 max-h-[50%] rowHoverable",
-    rowClassName: "h-10 border-b",
-    scrollHeight: "30rem",
-  };
+  const [selectedPolicy] = useState({} as IInsurance);
 
   const columns = [
     {
@@ -63,7 +57,16 @@ const InsuranceDetails = () => {
     },
   ];
   return (
-    <DataTable {...tableProps}>
+    <DataTable
+      selection={selectedPolicy}
+      value={user.insurance}
+      selectionMode="single"
+      dataKey="id"
+      tableStyle={{ minWidth: "50rem" }}
+      className="mt-2 max-h-[50%] rowHoverable"
+      rowClassName={() => getRowClasses("h-10 border-b")}
+      scrollHeight="30rem"
+    >
       {columns.map((column, index) => {
         return (
           <Column
@@ -71,7 +74,7 @@ const InsuranceDetails = () => {
             field={column.field}
             bodyClassName="py-4"
             header={column.header}
-            headerClassName="text-sm font-secondary py-6 border-b bg-white"
+            headerClassName="text-sm font-secondary py-1 border-b bg-white"
             body={column.body}
           />
         );
@@ -80,26 +83,37 @@ const InsuranceDetails = () => {
   );
 };
 
-const PolicyColumn = ({ value }: { value: String }) => {
+const PolicyColumn = ({ value }: { value: string }) => {
   return <div className="font-tertiary">{value ? value : "-"}</div>;
 };
 
 const PolicyHandler = ({ data }: { data: IInsurance }) => {
-  const { toast, successToast, errorToast } = useToast();
+  const role = useSelector(selectedRole);
+  const { toast, successToast } = useToast();
   return (
     <div className="flex flex-row max-w-[4rem] items-center justify-between">
       <NavLink to={`/edit-insurance/${data.id}`}>
-        <i className="pi pi-pen-to-square text-purple-800" />
+        <button
+          disabled={role === ROLE.ADMIN}
+          className={`${role === ROLE.ADMIN && "cursor-not-allowed"}`}
+        >
+          <i className="pi pi-pen-to-square text-purple-800" />
+        </button>
       </NavLink>
-      <i
-        className="pi pi-trash  mx-2 text-red-500"
-        onClick={() => {
-          successToast(
-            "Deleted Successfully",
-            "Your insurance has been deleted successfully"
-          );
-        }}
-      />
+      <button
+        disabled={role === ROLE.ADMIN}
+        className={`${role === ROLE.ADMIN && "cursor-not-allowed"}`}
+      >
+        <i
+          className="pi pi-trash  mx-2 text-red-500"
+          onClick={() => {
+            successToast(
+              "Deleted Successfully",
+              "Your insurance has been deleted successfully"
+            );
+          }}
+        />
+      </button>
       <Toast ref={toast} />
     </div>
   );
