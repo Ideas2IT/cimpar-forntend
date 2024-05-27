@@ -34,7 +34,7 @@ const CustomModal = ({
 
 interface IModalProps {
   handleClose: () => void;
-  handleResponse?: (data: any) => void;
+  handleResponse?: (data: boolean) => void;
   closeButton?: boolean;
   children: ReactElement;
   styleClass: string;

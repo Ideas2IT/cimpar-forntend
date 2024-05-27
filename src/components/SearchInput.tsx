@@ -3,7 +3,9 @@ import { useRef } from "react";
 
 const SearchInput = ({
   handleSearch,
+  placeholder,
 }: {
+  placeholder?: string;
   handleSearch?: (value: string) => void;
 }) => {
   const searchRef = useRef<HTMLInputElement>(null);
@@ -11,11 +13,12 @@ const SearchInput = ({
     <span>
       <div className="relative h-[2.5rem] w-[15rem]">
         <InputText
+          aria-label={placeholder}
           tooltip="Type text to search"
           tooltipOptions={{ position: "bottom" }}
           onChange={(event) => handleSearch && handleSearch(event.target.value)}
           ref={searchRef}
-          placeholder="Search"
+          placeholder={placeholder ? placeholder : "Search"}
           style={{ paddingInlineStart: "1rem" }}
           className="h-full w-full rounded-full border border-gray-300 font-tertiary"
         />

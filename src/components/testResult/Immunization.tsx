@@ -5,20 +5,12 @@ import { Sidebar } from "primereact/sidebar";
 import { useState } from "react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { IImmunization, immunizations } from "../../assets/MockData";
+import { getRowClasses } from "../../services/commonFunctions";
+import { PaginatorPageChangeEvent } from "primereact/paginator";
 
 const TestResult = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedPatient, setSelectedpatient] = useState({} as IImmunization);
-  const tableProps = {
-    selection: selectedPatient,
-    value: immunizations,
-    selectionMode: "single" as const,
-    dataKey: "id",
-    tableStyle: { minWidth: "50rem" },
-    className: "mt-2 max-h-[50%] rowHoverable",
-    rowClassName: "h-10 border-b",
-    scrollHeight: "30rem",
-  };
 
   const columnsConfig = [
     {
@@ -37,10 +29,6 @@ const TestResult = () => {
       field: "administrator",
       header: "ADMINISTRATOR",
     },
-    {
-      field: "site",
-      header: "SITE",
-    },
   ];
 
   const handleViewRecord = (data: IImmunization) => {
@@ -48,13 +36,48 @@ const TestResult = () => {
     setIsSidebarOpen(true);
   };
 
-  const handlePageChange = (event: any) => {
+  const handlePageChange = (event: PaginatorPageChangeEvent) => {
     console.log("page changed", event);
+  };
+
+  const ImmunizationHeader = () => {
+    return (
+      <div>
+        <label className="pe-3">"Immunization Details"</label>
+        <span
+          className={`sidebar-header ${getStatusColor(selectedPatient.status)}`}
+        >
+          {selectedPatient.status}
+        </span>
+      </div>
+    );
+  };
+
+  const getStatusColor = (value: string) => {
+    if (value) {
+      switch (value.toLowerCase()) {
+        case "vaccinated":
+          return "bg-[#FCEBDB]";
+        case "icare":
+          return "bg-[#D3EADD]";
+        default:
+          return "bg-white";
+      }
+    } else return "bg-white";
   };
 
   return (
     <>
-      <DataTable {...tableProps}>
+      <DataTable
+        selection={selectedPatient}
+        value={immunizations}
+        selectionMode="single"
+        dataKey="id"
+        tableStyle={{ minWidth: "50rem" }}
+        className="mt-2 max-h-[50%] rowHoverable"
+        rowClassName={() => getRowClasses("h-10 border-b")}
+        scrollHeight="30rem"
+      >
         {!!columnsConfig.length &&
           columnsConfig.map((column) => {
             return (
@@ -71,9 +94,22 @@ const TestResult = () => {
             );
           })}
         <Column
+          field="status"
+          header="Status"
+          bodyClassName="py-4"
+          headerClassName="text-sm font-secondary py-1 border-b bg-white"
+          body={(rowData) => (
+            <span
+              className={`sidebar-header ${getStatusColor(rowData.status)}`}
+            >
+              {rowData.status}
+            </span>
+          )}
+        />
+        <Column
           field="view"
           header=""
-          bodyClassName="py-5  max-w-[2rem]"
+          bodyClassName="py-5  max-w-[3rem]"
           headerClassName="text-sm font-secondary py-1 border-b bg-white"
           body={(rowData) => (
             <ViewColumn
@@ -95,7 +131,7 @@ const TestResult = () => {
       }
       <Sidebar
         className="detailed-view w-[28rem]"
-        header={"Immunization Details"}
+        header={<ImmunizationHeader />}
         visible={isSidebarOpen}
         position="right"
         onHide={() => {
@@ -193,10 +229,6 @@ const ViewColumn = ({
 }) => {
   const handleView = (data: IImmunization) => {
     handleViewRecord(data);
-  };
-
-  const handleShare = (data: IImmunization) => {
-    console.log("share", data);
   };
 
   return (

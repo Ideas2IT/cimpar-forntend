@@ -18,7 +18,7 @@
 }
 
 .custom-autocomplete-panel {
-  @apply !min-w-[25rem] !left-[10rem];
+  @apply !min-w-[27rem];
 }
 
 .p-autocomplete-multiple-container {
@@ -62,5 +62,5 @@
 }
 
 .custom-autocomplete {
-  @apply border block border-gray-300 rounded-md flex min-h-[2.5rem] flex-row justify-between items-center;
+  @apply border relative block border-gray-300 rounded-md flex min-h-[2.5rem] flex-row justify-between items-center;
 }

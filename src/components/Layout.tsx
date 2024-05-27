@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HeaderContext from ".././context/HeaderContext";
 import Main from "./Main";
 import Sidebar from "./Sidebar";
@@ -7,8 +7,16 @@ import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../store/slices/commonSlice";
 import { useLocation } from "react-router-dom";
 import SetPassword from "./setPassword/SetPassword";
+import { selectUser } from "../store/slices/UserSlice";
 const Layout = () => {
-  const [value, setValue] = useState("Home");
+  const user = useSelector(selectUser);
+
+  const [value, setValue] = useState(user);
+
+  useEffect(() => {
+    setValue(user);
+  }, [user]);
+
   const updateHeaderTitle = (newValue: string) => {
     setValue(newValue);
   };

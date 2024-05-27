@@ -1,31 +1,25 @@
 import { InputText } from "primereact/inputtext";
 import ReyaIcon from "../../assets/reya-logo.svg?react";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
 import { PATH_NAME, PATTERN } from "../../utils/AppConstants";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Controller, useForm } from "react-hook-form";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import "./SignUp.css";
+import { ISignUp } from "../../interfaces/UserLogin";
 
 const SignUpForm = () => {
-  interface ISignUp {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-  }
-
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm({ defaultValues: {} as ISignUp });
+
   const navigate = useNavigate();
 
   const handleSignUp = (data: ISignUp) => {
     navigate(PATH_NAME.SET_PASSWORD);
+    console.log(data);
   };
   return (
     <div className="form-wrapper">
@@ -37,7 +31,9 @@ const SignUpForm = () => {
           <div className="block font-primary text-xl">Signup</div>
           <div className="md:grid grid-cols-2 gap-4">
             <div className="pt-4">
-              <label className="input-label">First Name*</label>
+              <label className="input-label" htmlFor="firstName">
+                First Name*
+              </label>
               <div className=" h-[2.5rem] relative">
                 <Controller
                   name="firstName"
@@ -49,8 +45,10 @@ const SignUpForm = () => {
                   render={({ field }) => (
                     <InputText
                       {...field}
+                      id="firstName"
                       className="signup-input"
-                      placeholder="First Name"
+                      placeholder="Enter First Name"
+                      aria-label="First Name"
                     />
                   )}
                 />
@@ -61,7 +59,9 @@ const SignUpForm = () => {
               </div>
             </div>
             <div className="pt-4">
-              <label className="input-label">Last Name*</label>
+              <label className="input-label" htmlFor="lastName">
+                Last Name*
+              </label>
               <div className=" h-[2.5rem] relative">
                 <Controller
                   name="lastName"
@@ -72,10 +72,12 @@ const SignUpForm = () => {
                   }}
                   render={({ field }) => (
                     <InputText
+                      id="lastName"
                       tooltip="Name should contain only space and letters"
                       {...field}
                       className="signup-input"
-                      placeholder="Last Name"
+                      placeholder="Enter Last Name"
+                      aria-label="Last Name"
                     />
                   )}
                 />
@@ -86,7 +88,9 @@ const SignUpForm = () => {
               </div>
             </div>
             <div className="col-span-2 w-full my-1">
-              <label className="input-label">Email*</label>
+              <label className="input-label" htmlFor="email">
+                Email*
+              </label>
               <div className="relative h-[2.5rem] my-1">
                 <Controller
                   name="email"
@@ -97,11 +101,12 @@ const SignUpForm = () => {
                   }}
                   render={({ field }) => (
                     <InputText
+                      id="email"
                       {...field}
                       keyfilter="email"
                       className="signup-input"
-                      type="email"
-                      placeholder="Email Address"
+                      placeholder="Enter Email Address"
+                      arial-label="Email Address"
                     />
                   )}
                 />
@@ -110,7 +115,9 @@ const SignUpForm = () => {
               </div>
             </div>
             <div className="col-span-2 w-full">
-              <label className="input-label">Contact Number*</label>
+              <label className="input-label" htmlFor="phoneNumber">
+                Contact Number*
+              </label>
               <div className="relative h-[2.5rem]">
                 <Controller
                   name="phoneNumber"
@@ -121,6 +128,7 @@ const SignUpForm = () => {
                   }}
                   render={({ field }) => (
                     <InputText
+                      id="phoneNumber"
                       {...field}
                       className="signup-input"
                       placeholder="Contact Number"

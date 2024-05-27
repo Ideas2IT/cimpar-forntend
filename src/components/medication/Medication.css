@@ -14,3 +14,6 @@
 .chips .p-chips-token {
   @apply mb-1;
 }
+.p-chips-multiple-container {
+  @apply rounded-lg;
+}

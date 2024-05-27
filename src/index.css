@@ -95,7 +95,12 @@ body {
 
 .p-inputtext {
   box-shadow: none !important;
+  color: #000;
   @apply border-gray-300 ps-2;
+}
+
+label, li, input, div {
+  @apply text-[#283956];
 }
 
 .cimpar-input {
@@ -123,7 +128,11 @@ body {
 }
 
 .bg-primary {
-  @apply bg-[#2d6d80;];
+  @apply bg-[#2d6d80];
+}
+
+.border-primary {
+  @apply border border-[#2d6d80];
 }
 
 .p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
@@ -151,7 +160,7 @@ body {
 }
 
 .p-dialog-content {
-  @apply rounded-b-lg;
+  @apply rounded-b-xl;
 }
 
 .p-dialog-header {

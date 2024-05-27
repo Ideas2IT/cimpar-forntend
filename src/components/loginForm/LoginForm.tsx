@@ -1,23 +1,28 @@
 import ReyaIcon from "../../assets/reya-logo.svg?react";
-import { MESSAGE, PATH_NAME, PATTERN } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME, PATTERN, ROLE } from "../../utils/AppConstants";
 import { InputText } from "primereact/inputtext";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store/store";
-import { setIsLoggedIn } from "../../store/slices/commonSlice";
+import {
+  selectedRole,
+  setIsLoggedIn,
+  setUserRole,
+} from "../../store/slices/commonSlice";
+import { useEffect } from "react";
+import { ILogin } from "../../interfaces/UserLogin";
+import { loginUserThunk } from "../../store/slices/loginSlice";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
 
 const LoginForm = () => {
-  interface ILogin {
-    email: string;
-    password: string;
-  }
-
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const role = useSelector(selectedRole);
 
   const {
     control,
@@ -26,9 +31,36 @@ const LoginForm = () => {
   } = useForm({ defaultValues: {} as ILogin });
 
   const handleLogin = (data: ILogin) => {
-    dispatch(setIsLoggedIn(true));
-    navigate(PATH_NAME.HOME);
+    if (
+      (data.email && data.email.split("@")[0].toLowerCase() === "patient") ||
+      data.email.split("@")[0].toLowerCase() === "admin"
+    ) {
+      dispatch(setUserRole(data.email));
+    } else {
+      errorToast("Login Failed", "Invalid Username or Password");
+      return;
+    }
+    setTimeout(() => {
+      dispatch(
+        setIsLoggedIn({ status: true, email: data.email.toLowerCase() })
+      );
+      dispatch(
+        loginUserThunk({ username: data.email, password: data.password })
+      );
+    }, 300);
   };
+
+  const { toast, errorToast } = useToast();
+
+  useEffect(() => {
+    if (role === ROLE.ADMIN) {
+      navigate(PATH_NAME.APPOINTMENTS);
+    } else if (role === ROLE.PATIENT) {
+      navigate(PATH_NAME.HOME);
+    } else {
+      errorToast("Login Failed", "Invalid Email or Password");
+    }
+  }, [role]);
 
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
@@ -56,8 +88,8 @@ const LoginForm = () => {
                     id="email"
                     keyfilter="email"
                     className="signup-input"
-                    type="email"
                     placeholder="Enter Email Address"
+                    aria-label="Enter Email Address"
                   />
                 )}
               />
@@ -104,8 +136,8 @@ const LoginForm = () => {
           </Link>
           <div className="col-span-2 flex justify-between items-center pt-2">
             <label className="text-sm">
-              Don't have an accoutn?
-              <Link to={PATH_NAME.SIGNUP} className="text-purple-800">
+              Don't have an account?
+              <Link to={PATH_NAME.SIGNUP} className="text-purple-800 ps-1">
                 Signup
               </Link>
             </label>
@@ -118,6 +150,7 @@ const LoginForm = () => {
           </div>
         </div>
       </form>
+      <Toast ref={toast} />
     </div>
   );
 };

@@ -9,12 +9,9 @@ import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
+import { ISetPassword } from "../../interfaces/UserLogin";
 
 const SetPassword = () => {
-  interface ISetPassword {
-    newPassword: string;
-    confirmPassword: string;
-  }
   const navigate = useNavigate();
   const { errorToast, toast } = useToast();
 
@@ -87,7 +84,7 @@ const SetPassword = () => {
                     value: 8,
                     message: MESSAGE.PASSWORD_LENGTH_ERROR,
                   },
-                  required: " Confirm Password can't be empty",
+                  required: "Confirm Password can't be empty",
                 }}
                 render={({ field }) => (
                   <Password

@@ -1,4 +1,3 @@
-import TimePicker from "react-time-picker";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-clock/dist/Clock.css";
 import { useContext, useRef, useState } from "react";
@@ -18,7 +17,7 @@ import {
 } from "../../assets/MockData";
 import { MultiSelect } from "primereact/multiselect";
 import { user } from "../userProfilePage/UserProfilePage";
-import moment from "moment";
+import { format } from "date-fns";
 import BackButton from "../backButton/BackButton";
 import { Dropdown } from "primereact/dropdown";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -37,7 +36,7 @@ export interface IItem {
 export interface IFormData {
   testToTake: ITest[];
   dateOfAppointment: Date;
-  scheduledTime: string;
+  scheduledTime: Date;
   reasonForTest: string;
   testReason: IItem;
   otherReasonForTest: string;
@@ -69,9 +68,9 @@ const AppointmentForm = () => {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formData, setFormData] = useState({} as IFormData);
-
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
+    console.log(data);
     setShowConfirmDialog(true);
     setFormData(data);
   };
@@ -87,11 +86,10 @@ const AppointmentForm = () => {
   };
 
   const getDobAndAge = () => {
-    const dateOfBirth = moment(user.dob, "DD-MM-YYYY").format("DD MMMM, YYYY");
+    const dateOfBirth = format(user.dob, "dd MMMM, yyyy");
     const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
     return dateOfBirth + " (" + age + ")";
   };
-
 
   const TestFooterFormat = () => {
     return (
@@ -128,7 +126,16 @@ const AppointmentForm = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
+      <form
+        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            if (document.activeElement?.tagName !== "BUTTON") {
+              event.preventDefault();
+            }
+          }
+        }}
+      >
         <div className="flex mx-4 justify-between items-center bg-gray-100">
           <BackButton
             previousPage="Home"
@@ -186,6 +193,7 @@ const AppointmentForm = () => {
                     panelFooterTemplate={<TestFooterFormat />}
                     optionLabel="name"
                     placeholder="Select Tests"
+                    alt="Select tests"
                     className="input-field"
                   />
                 )}
@@ -209,7 +217,13 @@ const AppointmentForm = () => {
                   render={({ field }) => (
                     <Calendar
                       {...field}
+                      onChange={(e) =>
+                        e?.target?.value &&
+                        setValue("dateOfAppointment", e.target.value)
+                      }
+                      inputId="appointmentDate"
                       placeholder="Please pick the date of appointment"
+                      aria-label="Please pick the date of appointment"
                       inputClassName="rounded-lg"
                       dateFormat="dd MM, yy"
                       className="input-field"
@@ -230,25 +244,43 @@ const AppointmentForm = () => {
                 <Controller
                   name="scheduledTime"
                   control={control}
-                  defaultValue={""}
+                  defaultValue={new Date()}
                   rules={{
                     required: "Date of appointment is required",
                   }}
                   render={({ field }) => (
-                    <TimePicker
+                    <Calendar
                       {...field}
-                      disableClock={true}
-                      minutePlaceholder="MM"
-                      hourPlaceholder="HH"
-                      id="scheduleTime"
-                      className="timePicker w-full h-[2.5rem] rounded-md border border-gray-300"
-                      format="hh:mm a"
-                      clearIcon={<i className="hidden" />}
-                      closeClock={true}
+                      onChange={(e) =>
+                        e?.target?.value &&
+                        setValue("scheduledTime", e.target.value)
+                      }
+                      inputId="scheduleTime"
+                      showIcon={true}
+                      placeholder="Pick the appointment time"
+                      icon="pi pi-clock"
+                      hourFormat="12"
+                      className="input-field"
+                      inputClassName="rounded-lg"
+                      inputStyle={{ borderRadius: "16px" }}
+                      timeOnly
+                      showTime
                     />
+
+                    // <TimePicker
+                    //   {...field}
+                    //   disableClock={true}
+                    //   minutePlaceholder="MM"
+                    //   hourPlaceholder="HH"
+                    //   id="scheduleTime"
+                    //   className="timePicker w-full h-[2.5rem] rounded-md border border-gray-300"
+                    //   format="hh:mm a"
+                    //   clearIcon={<i className="hidden" />}
+                    //   closeClock={true}
+                    // />
                   )}
                 />
-                <span className="absolute pi pi-clock top-[1rem] right-[1rem]" />
+                {/* <span className="absolute pi pi-clock top-[1rem] right-[1rem]" /> */}
                 {errors.scheduledTime && (
                   <ErrorMessage message={errors.scheduledTime.message} />
                 )}
@@ -274,7 +306,8 @@ const AppointmentForm = () => {
                       options={reasonsForTest}
                       optionLabel="name"
                       placeholder="Select test reason"
-                      className="w-full border border-gray-300 rounded-lg px-2 h-[2.8rem]"
+                      aria-label="Select test reason"
+                      className="w-full border border-gray-300 rounded-lg px-2 h-[2.5rem]"
                     />
                   )}
                 />
@@ -294,7 +327,7 @@ const AppointmentForm = () => {
                 name={`otherReasonForTest`}
                 onChange={(e) => setValue("otherReasonForTest", e.target.value)}
                 type="text"
-                className="cimpar-input py-[.6rem] focus:outline-none font-tertiary"
+                className="cimpar-input py-[.6rem] h-[2.5rem] focus:outline-none font-tertiary"
                 placeholder="Type the reason here (optional)"
               />
             </div>
@@ -305,6 +338,7 @@ const AppointmentForm = () => {
               Please select the medical conditions you currently have.
             </label>
             <CustomAutoComplete
+              inputId="medicalConditions"
               placeholder="Add one or more medical conditions"
               handleSelection={handleSelectMedicalConditons}
               items={medicalConditons}
@@ -336,6 +370,7 @@ const AppointmentForm = () => {
               Please select the allergies you currently have.
             </label>
             <CustomAutoComplete
+              inputId="allergies"
               placeholder="Add one or more allergies"
               items={allergies}
               selectedItems={selectedAllergies}
@@ -441,7 +476,7 @@ const AppointmentStatus = () => {
     navigate(PATH_NAME.TEST_RESULT);
     updateHeaderTitle("Health Records");
   };
-  
+
   return (
     <div className="flex justify-center flex-col">
       <div className="flex justify-center">

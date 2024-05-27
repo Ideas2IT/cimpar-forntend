@@ -67,10 +67,10 @@ const HomePage = () => {
   return (
     <>
       <div className="px-6 color-primary font-primary text-xl">
-        Our services
+        Our Services
         <div className="mt-4 flex grid lg:grid-cols-4 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
           {cards.map((card: ICard) => {
-            return <Card card={card} />;
+            return <Card card={card} key={card.id} />;
           })}
         </div>
       </div>
@@ -82,12 +82,12 @@ const Card = ({ card }: { card: ICard }) => {
   return (
     <NavLink to={!card.disabled ? card.link : ""}>
       <div
-        className={`${card.color} md:h-[10rem] h-[5rem] rounded-xl ${!card.disabled ? "cursor-pointer" : "text-gray-300"}`}
+        className={`${card.color} md:h-[10rem] h-[5rem] rounded-xl ${!card.disabled ? "cursor-pointer" : "cursor-not-allowed"}`}
       >
         <div className="p-6">
           <img src={card.icon} alt={card.title} className="h-[2rem] w-[2rem]" />
         </div>
-        <div className="px-6">
+        <div className={`${card.disabled && "text-gray-300"} px-4`}>
           <span>{card.title}</span>
           {card.disabled && (
             <span className="px-2 text-md font-light">(coming soon)</span>

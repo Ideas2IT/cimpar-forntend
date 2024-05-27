@@ -1,3 +1,5 @@
+import { IItem } from "../components/appointmentForm/AppointmentForm";
+
 export interface IUserBasicDetails {}
 export interface IUserContactDetails {}
 
@@ -22,18 +24,19 @@ export interface IUser {
   alternateNumberCode: string;
   insuranceName: string;
   insuranceNumber: string;
-  medicationTakenBefore: string[];
-  currentMedication: string[];
+  medicationTakenBefore: IItem[];
+  currentMedication: IItem[];
   insurance?: IInsurance[];
   isOnMedicine: "yes" | "no";
   medicationalHistory: "yes" | "no";
+  hasMedicalConditions: boolean;
 }
 interface IHeight {
   feet: number;
   inches: number;
 }
 
-interface country {
+export interface country {
   name: string;
   value: string;
 }
@@ -52,4 +55,14 @@ export interface IInsurance {
   insuranceCompany: string;
   insuranceCard?: File;
   insuranceId?: File;
+}
+
+export interface IRole {
+  id: number;
+  role_name: string;
+}
+
+export interface ILoginPayload {
+  username: string;
+  password: string;
 }

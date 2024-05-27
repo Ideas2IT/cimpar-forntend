@@ -5,10 +5,14 @@ import AddRecord from "../assets/icons/addrecord.svg?react";
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import HeaderContext from "../context/HeaderContext";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
-import { setSelectedSidebarTab } from "../store/slices/commonSlice";
+import {
+  selectedRole,
+  setSelectedSidebarTab,
+} from "../store/slices/commonSlice";
 import { PATH_NAME } from "../utils/AppConstants";
+import { selectUser } from "../store/slices/UserSlice";
 
 interface Tab {
   key: string;
@@ -18,34 +22,56 @@ interface Tab {
 }
 
 const Sidebar = () => {
-  const tabs: Tab[] = [
-    {
-      header: "Home",
-      key: "home",
-      icon: <Home />,
-      routerLink: "/",
-    },
-    {
-      header: "Health Records",
-      key: "labTestResults",
-      icon: <AddRecord />,
-      routerLink: "/test-result",
-    },
-    {
-      header: "Profile",
-      key: "profile",
-      icon: <Profile />,
-      routerLink: PATH_NAME.PROFILE,
-    },
-  ];
+  const tabs = {
+    PATIENT: [
+      {
+        header: "Home",
+        key: "home",
+        icon: <Home />,
+        routerLink: "/",
+      },
+      {
+        header: "Health Records",
+        key: "labTestResults",
+        icon: <AddRecord />,
+        routerLink: "/test-result",
+      },
+      {
+        header: "Profile",
+        key: "profile",
+        icon: <Profile />,
+        routerLink: PATH_NAME.PROFILE,
+      },
+    ],
+    ADMIN: [
+      {
+        header: "Appointments",
+        key: "appointment",
+        icon: <i className="pi pi-calendar-minus text-2xl" />,
+        // icon: <Calendar />,
+        routerLink: PATH_NAME.APPOINTMENTS,
+      },
+    ],
+  };
+
+  const role = useSelector(selectedRole);
   const dispatch = useDispatch<AppDispatch>();
-  const [selectedTab, setSelectedTab] = useState<Tab>(tabs[0]);
+  const [selectedTab, setSelectedTab] = useState<Tab>(tabs[role][0]);
   const { updateHeaderTitle } = useContext(HeaderContext);
   const location = useLocation();
+  const user = useSelector(selectUser);
+
+  useEffect(() => {
+    updateHeaderTitle("Hi, " + user);
+  }, [user]);
 
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);
-    updateHeaderTitle(tab.header);
+    if (tab.header.toLowerCase() === "home") {
+      updateHeaderTitle("Hi, " + user);
+    } else {
+      updateHeaderTitle(tab.header);
+    }
     dispatch(setSelectedSidebarTab("personal"));
   };
 
@@ -57,21 +83,21 @@ const Sidebar = () => {
       pathname === "editMedication" ||
       pathname === "editInsurance"
     ) {
-      setSelectedTab(tabs[2]);
+      setSelectedTab(tabs[role][2]);
     } else if (pathname === "") {
-      setSelectedTab(tabs[0]);
+      setSelectedTab(tabs[role][0]);
     } else if (pathname === "test-result") {
-      setSelectedTab(tabs[1]);
+      setSelectedTab(tabs[role][1]);
     }
   }, [location.pathname]);
 
   return (
-    <div className="w-20 flex flex-col">
+    <div className="w-20 flex flex-col bg-white">
       <div className="pt-7 pb-10 px-1">
         <ReyaLogo />
       </div>
       <div className="flex-grow m-3">
-        {tabs.map((tab) => (
+        {tabs[role].map((tab) => (
           <NavLink to={tab.routerLink} key={tab.key}>
             <button
               key={tab.key}
@@ -79,7 +105,7 @@ const Sidebar = () => {
               onClick={() => handleOnTabClick(tab)}
             >
               <span
-                className={`${selectedTab.key === tab.key ? "stroke-white" : "stroke-gray-500"}`}
+                className={`${selectedTab.key === tab.key ? "stroke-white text-white" : "stroke-gray-500 text-gray-500"}`}
               >
                 {tab.icon}
               </span>

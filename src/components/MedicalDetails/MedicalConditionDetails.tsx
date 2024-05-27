@@ -1,16 +1,8 @@
 import { patientMedicalDetails } from "../../assets/MockData";
-import { IItem } from "../appointmentForm/AppointmentForm";
+import { processString } from "../../services/commonFunctions";
 import { PatientDetails } from "../userDetails/UserDetails";
 
 const MedicalConditionDetails = () => {
-  const processString = (data: IItem[]) => {
-    const medicalIssues = data.map((medicine) => medicine.name).join(", ");
-    if (medicalIssues.length > 0) {
-      return medicalIssues;
-    } else {
-      return "None";
-    }
-  };
   return (
     <div className="p-6 flex flex-col gap-6 ">
       <PatientDetails
@@ -19,7 +11,7 @@ const MedicalConditionDetails = () => {
       />
       <PatientDetails
         label="OTHER MEDICAL CONDITIONS"
-        value={(patientMedicalDetails.otherMedicalConditions).join(", ")}
+        value={patientMedicalDetails.otherMedicalConditions.join(", ")}
       />
       <PatientDetails
         label="ALLERGIES YOU HAVE"

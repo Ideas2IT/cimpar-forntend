@@ -9,8 +9,8 @@ import {
   raceList,
   states,
 } from "../../assets/MockData";
-import { Dropdown } from "primereact/dropdown";
-import { InputNumber } from "primereact/inputnumber";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
+import { InputNumber, InputNumberChangeEvent } from "primereact/inputnumber";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -44,10 +44,20 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
         navigate(PATH_NAME.PROFILE);
       }
     }, 1500);
+    console.log(data);
   };
   return (
     <div className="px-6 ">
-      <form onSubmit={handleSubmit((data) => handleFormSubmit(data))}>
+      <form
+        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            if (document.activeElement?.tagName !== "BUTTON") {
+              event.preventDefault();
+            }
+          }
+        }}
+      >
         <div className="flex flex-row justify-between pb-6">
           <BackButton
             previousPage="Personal"
@@ -161,7 +171,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               )}
             </div>
             <div className="pt-4">
-              <label className="block input-label" htmlFor="gender">
+              <label
+                className="block input-label"
+                htmlFor="gender"
+                onClick={() => document.getElementById("gender")?.click()}
+              >
                 Gender*
               </label>
               <Controller
@@ -173,7 +187,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 }}
                 render={({ field }) => (
                   <Dropdown
-                    inputId="gender"
+                    id="gender"
                     {...field}
                     onChange={(e) => setValue("gender", e.target.value)}
                     options={genders}
@@ -190,7 +204,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               )}
             </div>
             <div className="pt-4 d-flex relative">
-              <label htmlFor="dob" className="block input-label">
+              <label htmlFor="dob" className="block input-label pb-1">
                 Date of Birth*
               </label>
               <div className="absolute left-0 right-0">
@@ -204,6 +218,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   render={({ field }) => (
                     <Calendar
                       {...field}
+                      onChange={(e) => {
+                        e?.target?.value &&
+                          setValue("dob", e.target.value.toString());
+                      }}
+                      inputId="dob"
                       placeholder="Select date of birth"
                       showIcon
                       icon="pi pi-calendar-minus"
@@ -243,7 +262,9 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     }}
                     render={({ field }) => (
                       <InputNumber
-                        onChange={(event: any) =>
+                        inputId="height"
+                        max={10}
+                        onChange={(event: InputNumberChangeEvent) =>
                           event.value && setValue("height.feet", event.value)
                         }
                         placeholder="Feet"
@@ -271,6 +292,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     }}
                     render={({ field }) => (
                       <InputNumber
+                        max={11}
                         onChange={(e) => {
                           e.value && setValue("height.inches", e.value);
                         }}
@@ -314,7 +336,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <span className="absolute right-2 top-[3rem] z-100">Lbs</span>
             </div>
             <div className="pt-4">
-              <label className="block input-label pb-1" htmlFor="race">
+              <label
+                className="block input-label pb-1"
+                htmlFor="race"
+                onClick={() => document.getElementById("race")?.click()}
+              >
                 Race*
               </label>
               <Controller
@@ -328,7 +354,9 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   <Dropdown
                     id="race"
                     value={field.value}
-                    onChange={(e: any) => e.value && setValue("race", e.value)}
+                    onChange={(e: DropdownChangeEvent) =>
+                      e.value && setValue("race", e.value)
+                    }
                     options={raceList}
                     optionLabel="name"
                     placeholder="Select"
@@ -343,7 +371,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               )}
             </div>
             <div className="pt-4  relative">
-              <label className="block input-label pb-1" htmlFor="ethnicity">
+              <label
+                className="block input-label pb-1"
+                htmlFor="ethnicity"
+                onClick={() => document.getElementById("ethnicity")?.click()}
+              >
                 Ethnicity*
               </label>
               <Controller
@@ -356,6 +388,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 render={({ field }) => (
                   <Dropdown
                     {...field}
+                    id="ethnicity"
                     value={field.value}
                     options={ethnicities}
                     placeholder="Select"
@@ -376,7 +409,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <label className="block input-label pb-1" htmlFor="phoneNumber">
                 Phone Number*
               </label>
-              <div className="p-inputgroup buttonGroup px-2">
+              <div className="p-inputgroup buttonGroup">
                 <span className="country-code w-[50%] h-[2.5rem] align-middle">
                   <Controller
                     name="countryCode"
@@ -388,7 +421,6 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     render={({ field }) => (
                       <Dropdown
                         {...field}
-                        inputId="phoneNumber"
                         value={field.value}
                         options={countryCodes}
                         optionLabel="name"
@@ -437,7 +469,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 Alternate Number
               </label>
               <div className="p-inputgroup buttonGroup  flex-1 w-full h-[2.5rem]">
-                <span className="country-code w-[50%] p-inputgroup-addon">
+                <span className="country-code w-[50%] align-middle">
                   <Controller
                     name="alternateNumberCode"
                     control={control}
@@ -445,7 +477,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     render={({ field }) => (
                       <Dropdown
                         {...field}
-                        onChange={(e: any) =>
+                        onChange={(e: DropdownChangeEvent) =>
                           e.value && setValue("alternateNumberCode", e.value)
                         }
                         options={countryCodes}
@@ -465,6 +497,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   }}
                   render={({ field }) => (
                     <InputNumber
+                      inputId="alternateNumberCode"
                       value={Number(field.value)}
                       onChange={(e) =>
                         e.value && setValue("alternativeNumber", e.value)
@@ -511,7 +544,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   required: "ZipCode can not be empty",
                 }}
                 render={({ field }) => (
-                  <InputText {...field} className="input-field w-full" />
+                  <InputText
+                    {...field}
+                    id="zipCode"
+                    className="input-field w-full"
+                  />
                 )}
               />
               {errors.zipCode && (
@@ -544,7 +581,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               )}
             </div>
             <div className="pt-4">
-              <label className="block input-label pb-1" htmlFor="state">
+              <label
+                className="block input-label pb-1"
+                htmlFor="state"
+                onClick={() => document.getElementById("state")?.click()}
+              >
                 State*
               </label>
               <Controller
@@ -557,6 +598,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 render={({ field }) => (
                   <Dropdown
                     {...field}
+                    id="state"
                     onChange={(e) => setValue("state", e.target.value)}
                     options={states}
                     optionLabel="value"
@@ -572,7 +614,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               )}
             </div>
             <div className="pt-4">
-              <label className="block input-label pb-1" htmlFor="country">
+              <label
+                className="block input-label pb-1"
+                htmlFor="country"
+                onClick={() => document.getElementById("country")?.click()}
+              >
                 Country*
               </label>
               <Controller
@@ -584,6 +630,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 }}
                 render={({ field }) => (
                   <Dropdown
+                    id="country"
                     onChange={(e) => setValue("country", e.target.value)}
                     options={countries}
                     optionLabel="name"
