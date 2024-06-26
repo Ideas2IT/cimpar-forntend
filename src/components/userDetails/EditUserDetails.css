@@ -7,6 +7,10 @@ input::-webkit-inner-spin-button {
   padding: 0 0.4rem;
 }
 
+.weight .p-inputtext {
+  @apply ps-0 w-[60%]
+}
+
 .p-dropdown .p-dropdown-trigger {
   @apply w-auto pe-1;
 }

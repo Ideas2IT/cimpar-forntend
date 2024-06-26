@@ -3,11 +3,7 @@ import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
 import { Controller, useForm } from "react-hook-form";
-import {
-  IVisitHistory,
-  countryCodes,
-  visitHistory,
-} from "../../assets/MockData";
+import { countryCodes } from "../../assets/MockData";
 import { useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
@@ -15,11 +11,28 @@ import { Calendar } from "primereact/calendar";
 import "./VisitHistory.css";
 import { InputTextarea } from "primereact/inputtextarea";
 import { FileUpload, FileUploadFilesEvent } from "primereact/fileupload";
-import { MESSAGE, PATH_NAME } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 import ReportImage from "../reportImage/ReportImage";
 import ErrorMessage from "../errorMessage/ErrorMessage";
+import {
+  handleKeyPress,
+  splitCodeWithPhoneNumber,
+} from "../../services/commonFunctions";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import {
+  createVistiHistoryThunk,
+  selectSelectedPatient,
+  updateVisitHistoryByIdThunk,
+} from "../../store/slices/PatientSlice";
+import {
+  ICreateVisitHistoryPayload,
+  IUpdateVisitHistoryPayload,
+  IVisitHistory,
+} from "../../interfaces/visitHistory";
+import { dateFormatter } from "../../utils/Date";
 
 const EditVisitHistory = () => {
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
@@ -30,11 +43,13 @@ const EditVisitHistory = () => {
   const [showReport, setShowReport] = useState(false);
   const [selectedFile, setSelectedFile] = useState({} as File);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedpatient = useSelector(selectSelectedPatient);
 
   useEffect(() => {
-    if (visitHistory.length) {
-      const visit = visitHistory.find(
-        (vst) => vst.id == Number(location.pathname.split("/")[2])
+    if (selectedpatient?.visitHistory.length) {
+      const visit = selectedpatient?.visitHistory.find(
+        (vst) => vst.id == location.pathname.split("/")[2]
       );
       if (visit !== undefined) {
         setSelectedHistory(visit);
@@ -48,6 +63,7 @@ const EditVisitHistory = () => {
     reset,
     setValue,
     formState: { errors },
+    trigger,
   } = useForm({
     defaultValues: selectedHistory,
   });
@@ -59,11 +75,47 @@ const EditVisitHistory = () => {
 
   //TODO: Need to write the logic to handle API
   const handleFormSubmit = (formData: IVisitHistory) => {
-    successToast("Updated Successfully", "Visit history updated successfully");
-    setTimeout(() => {
-      navigate(PATH_NAME.PROFILE);
-    }, 1500);
-    console.log(formData);
+    const payload: ICreateVisitHistoryPayload = {
+      admission_date: dateFormatter(formData?.admissionDate, "yyyy-MM-dd"),
+      class_code: "R",
+      discharge_date: dateFormatter(formData?.dischargeDate, "yyyy-MM-dd"),
+      location: formData.visitLocation,
+      patient_id: selectedpatient?.basicDetails?.id,
+      phone_number: "+1" + formData.hospitalContact,
+      primary_care_team: formData.primaryCareTeam,
+      reason: formData.visitReason,
+      status: "in-progress",
+      treatment_summary: formData.treatmentSummary,
+    };
+    if (!Object.keys(selectedHistory).length) {
+      dispatch(
+        createVistiHistoryThunk(payload as ICreateVisitHistoryPayload)
+      ).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "Created Successfully",
+            "Visit history is added successfully"
+          );
+        }
+      });
+    } else {
+      const updationPayload: IUpdateVisitHistoryPayload = {
+        ...payload,
+        id: selectedHistory.id,
+      };
+      dispatch(updateVisitHistoryByIdThunk(updationPayload)).then(
+        ({ meta }) => {
+          if (meta.requestStatus === RESPONSE.FULFILLED) {
+            successToast(
+              "Updated Successfully",
+              "Visit history has been updated successfully"
+            );
+          } else {
+            errorToast("Updation failed", "Visit history updation failed");
+          }
+        }
+      );
+    }
   };
 
   const handleRemoveFile = (index: number) => {
@@ -107,13 +159,7 @@ const EditVisitHistory = () => {
     <div>
       <form
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            if (document.activeElement?.tagName !== "BUTTON") {
-              event.preventDefault();
-            }
-          }
-        }}
+        onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-row justify-between px-6">
           <BackButton
@@ -180,10 +226,10 @@ const EditVisitHistory = () => {
               </label>
               <div className="p-inputgroup buttonGroup  flex-1 w-full">
                 <span className="country-code w-[40%] p-inputgroup-addon h-[2.5rem]">
-                  <Controller
-                    name="phoneNumberCode"
+                  {/* <Controller
+                    name="phoneCode"
                     control={control}
-                    defaultValue={selectedHistory.phoneNumberCode}
+                    defaultValue={selectedHistory?.hospitalContact}
                     rules={{
                       required: "Country code is required",
                       minLength: {
@@ -191,17 +237,15 @@ const EditVisitHistory = () => {
                         message: "Country code can't be empty",
                       },
                     }}
-                    render={({ field }) => (
-                      <Dropdown
-                        {...field}
-                        value={field.value}
-                        options={countryCodes}
-                        optionLabel="name"
-                        placeholder="Select"
-                        className="border p-0 w-full h-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
-                      />
-                    )}
+                    render={({ field }) => ( */}
+                  <Dropdown
+                    value="+!"
+                    placeholder="+1-US"
+                    disabled
+                    className="border p-0 w-full h-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                   />
+                  {/* )}
+                  /> */}
                 </span>
                 <Controller
                   name="hospitalContact"
@@ -219,9 +263,10 @@ const EditVisitHistory = () => {
                       {...field}
                       id="phoneNumber"
                       keyfilter="pint"
-                      onChange={(e) =>
-                        setValue("hospitalContact", e.target.value)
-                      }
+                      onChange={(e) => {
+                        setValue("hospitalContact", e.target.value);
+                        trigger("hospitalContact");
+                      }}
                       placeholder="Phone Number"
                       className="border border-gray-300  rounded-r-lg w-[60%]"
                     />
@@ -461,7 +506,7 @@ const EditVisitHistory = () => {
           </div>
         </div>
       </form>
-      <Toast ref={toast} />
+      <Toast ref={toast} onHide={() => navigate(PATH_NAME.PROFILE)} />
       {showReport && (
         <ReportImage
           closeModal={() => setShowReport(false)}

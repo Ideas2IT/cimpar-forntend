@@ -1,17 +1,50 @@
 import { DataTable } from "primereact/datatable";
-import { IVisitHistory, visitHistory } from "../../assets/MockData";
 import { Column } from "primereact/column";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
 import { PATH_NAME, ROLE } from "../../utils/AppConstants";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectedRole } from "../../store/slices/commonSlice";
 import { getRowClasses } from "../../services/commonFunctions";
+import {
+  deleteVisitHistoryByIdThunk,
+  getVisitHistoryByPatientIdThunk,
+  selectSelectedPatient,
+} from "../../store/slices/PatientSlice";
+import { AppDispatch } from "../../store/store";
+import {
+  IDeleteVisitHistoryPayload,
+  IVisitHistory,
+} from "../../interfaces/visitHistory";
+import { dateFormatter } from "../../utils/Date";
 
 const VisitHistory = () => {
+  const selectedPatinet = useSelector(selectSelectedPatient);
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
+  const dispatch = useDispatch<AppDispatch>();
+  const initialRender = useRef(true);
+
+  useEffect(() => {
+    if (initialRender?.current) {
+      initialRender.current = false;
+      return;
+    }
+    dispatch(
+      getVisitHistoryByPatientIdThunk(selectedPatinet?.basicDetails?.id)
+    );
+  }, []);
+
+  const handleDeleteEncounter = (id: string) => {
+    if (selectedPatinet?.basicDetails?.id && id) {
+      const payload: IDeleteVisitHistoryPayload = {
+        patinetId: selectedPatinet.basicDetails.id,
+        visitHistoryId: id,
+      };
+      dispatch(deleteVisitHistoryByIdThunk(payload));
+    }
+  };
   const columnList = [
     {
       id: 1,
@@ -23,13 +56,17 @@ const VisitHistory = () => {
       id: 2,
       field: "admissionDate",
       header: "ADMISSION DATE",
-      body: (row: IVisitHistory) => <TableCell value={row.admissionDate} />,
+      body: (row: IVisitHistory) => (
+        <TableCell value={dateFormatter(row.admissionDate, "dd MMM,yyyy")} />
+      ),
     },
     {
       id: 3,
       field: "dischargeDate",
       header: "DISCHARGE DATE",
-      body: (row: IVisitHistory) => <TableCell value={row.dischargeDate} />,
+      body: (row: IVisitHistory) => (
+        <TableCell value={dateFormatter(row.dischargeDate, "dd MMM,yyyy")} />
+      ),
     },
     {
       id: 4,
@@ -42,7 +79,11 @@ const VisitHistory = () => {
       field: "",
       header: "",
       body: (row: IVisitHistory) => (
-        <MediaColumn handleView={viewRecord} data={row} />
+        <MediaColumn
+          handleView={viewRecord}
+          data={row}
+          handleDelete={handleDeleteEncounter}
+        />
       ),
     },
   ];
@@ -138,7 +179,10 @@ const VisitHistory = () => {
     <>
       <DataTable
         selection={selectedHistory}
-        value={visitHistory}
+        emptyMessage={
+          <div className="flex justify-center">No visit history to show!</div>
+        }
+        value={selectedPatinet.visitHistory}
         selectionMode="single"
         dataKey="id"
         tableStyle={{ minWidth: "50rem" }}
@@ -174,9 +218,11 @@ const VisitHistory = () => {
 const MediaColumn = ({
   data,
   handleView,
+  handleDelete,
 }: {
   data: IVisitHistory;
   handleView: (data: IVisitHistory) => void;
+  handleDelete: (encounterId: string) => void;
 }) => {
   const role = useSelector(selectedRole);
   const navigate = useNavigate();
@@ -192,6 +238,7 @@ const MediaColumn = ({
         />
       </button>
       <i
+        onClick={() => handleDelete(data?.id || "")}
         className={`pi pi-trash text-red-500 me-2 ${role === ROLE.ADMIN && "cursor-not-allowed"}`}
       />
     </div>

@@ -8,13 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import CustomModal from "../customModal/CustomModal";
 import checkmark from "../../assets/icons/checkmark.svg";
 import { Controller, useForm } from "react-hook-form";
-import {
-  ITest,
-  allergies,
-  medicalConditons,
-  reasonsForTest,
-  tests,
-} from "../../assets/MockData";
+import { ITest, reasonsForTest, tests } from "../../assets/MockData";
 import { MultiSelect } from "primereact/multiselect";
 import { user } from "../userProfilePage/UserProfilePage";
 import { format } from "date-fns";
@@ -27,6 +21,16 @@ import { Button as PrimeButton } from "primereact/button";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
 import HeaderContext from "../../context/HeaderContext";
+import { handleKeyPress } from "../../services/commonFunctions";
+import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import {
+  getAllergiesByQueryThunk,
+  getMedicalConditionsByQueryThunk,
+  selectAllergies,
+  selectConditions,
+} from "../../store/slices/masterTableSlice";
 
 export interface IItem {
   id: number;
@@ -40,9 +44,9 @@ export interface IFormData {
   reasonForTest: string;
   testReason: IItem;
   otherReasonForTest: string;
-  medicalConditions: IItem[];
+  medicalConditions: string[];
   otherMedicalConditon: string;
-  allergies: IItem[];
+  allergies: string[];
   otherAllergies: string;
 }
 
@@ -54,33 +58,51 @@ const AppointmentForm = () => {
     setValue,
     watch,
     formState: { errors },
+    trigger,
   } = useForm({
     defaultValues: {} as IFormData,
   });
 
   const [selectedMedicalConditions, setSelectedMedicalConditons] = useState<
-    IItem[]
+    string[]
   >([]);
-  const [selectedAllergies, setSelectedAllergies] = useState<IItem[]>([]);
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const multiSelectRef = useRef<MultiSelect>(null);
   const reasonForTest = watch("testReason");
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formData, setFormData] = useState({} as IFormData);
+  const dispatch = useDispatch<AppDispatch>();
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
-    console.log(data);
     setShowConfirmDialog(true);
     setFormData(data);
   };
 
-  const handleSelectMedicalConditons = (values: IItem[]) => {
+  const filteredAllergies = useSelector(selectAllergies);
+  const filteredConditions = useSelector(selectConditions);
+
+  const searchAllergies = (event: AutoCompleteCompleteEvent) => {
+    if (event.query.trim().length > 1) {
+      dispatch(getAllergiesByQueryThunk(event.query));
+    }
+  };
+
+  const searchMedicalConditions = (event: AutoCompleteCompleteEvent) => {
+    setTimeout(() => {
+      if (event.query.trim().length > 1) {
+        dispatch(getMedicalConditionsByQueryThunk(event.query));
+      }
+    }, 300);
+  };
+
+  const handleSelectMedicalConditons = (values: string[]) => {
     setSelectedMedicalConditons(values);
     setValue("medicalConditions", values);
   };
 
-  const handleSelectedAllergies = (values: IItem[]) => {
+  const handleSelectedAllergies = (values: string[]) => {
     setSelectedAllergies(values);
     setValue("allergies", values);
   };
@@ -96,14 +118,14 @@ const AppointmentForm = () => {
       <div className="text-end px-4 py-2">
         <PrimeButton
           label="Cancel"
-          className="me-3 px-5 py-1 color-primary rounded-md border border-cyan-900"
+          className="me-3 px-5 py-1 font-secondary color-primary rounded-md border border-cyan-900"
           onClick={() => {
             setValue("testToTake", []);
             multiSelectRef?.current && multiSelectRef.current.hide();
           }}
         />
         <PrimeButton
-          className="bg-primary py-1 px-5 text-white rounded-md"
+          className="bg-primary font-secondary py-1 px-5 text-white rounded-md"
           label="Select"
           onClick={() => {
             multiSelectRef?.current && multiSelectRef.current.hide();
@@ -129,11 +151,7 @@ const AppointmentForm = () => {
       <form
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
         onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            if (document.activeElement?.tagName !== "BUTTON") {
-              event.preventDefault();
-            }
-          }
+          handleKeyPress(event);
         }}
       >
         <div className="flex mx-4 justify-between items-center bg-gray-100">
@@ -193,7 +211,7 @@ const AppointmentForm = () => {
                     panelFooterTemplate={<TestFooterFormat />}
                     optionLabel="name"
                     placeholder="Select Tests"
-                    alt="Select tests"
+                    data-testid="select-tests"
                     className="input-field"
                   />
                 )}
@@ -244,17 +262,17 @@ const AppointmentForm = () => {
                 <Controller
                   name="scheduledTime"
                   control={control}
-                  defaultValue={new Date()}
                   rules={{
                     required: "Date of appointment is required",
                   }}
                   render={({ field }) => (
                     <Calendar
                       {...field}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         e?.target?.value &&
-                        setValue("scheduledTime", e.target.value)
-                      }
+                          setValue("scheduledTime", e.target.value);
+                        trigger("scheduledTime");
+                      }}
                       inputId="scheduleTime"
                       showIcon={true}
                       placeholder="Pick the appointment time"
@@ -266,21 +284,8 @@ const AppointmentForm = () => {
                       timeOnly
                       showTime
                     />
-
-                    // <TimePicker
-                    //   {...field}
-                    //   disableClock={true}
-                    //   minutePlaceholder="MM"
-                    //   hourPlaceholder="HH"
-                    //   id="scheduleTime"
-                    //   className="timePicker w-full h-[2.5rem] rounded-md border border-gray-300"
-                    //   format="hh:mm a"
-                    //   clearIcon={<i className="hidden" />}
-                    //   closeClock={true}
-                    // />
                   )}
                 />
-                {/* <span className="absolute pi pi-clock top-[1rem] right-[1rem]" /> */}
                 {errors.scheduledTime && (
                   <ErrorMessage message={errors.scheduledTime.message} />
                 )}
@@ -307,7 +312,7 @@ const AppointmentForm = () => {
                       optionLabel="name"
                       placeholder="Select test reason"
                       aria-label="Select test reason"
-                      className="w-full border border-gray-300 rounded-lg px-2 h-[2.5rem]"
+                      className="w-full border border-gray-300 rounded-lg pe-2 h-[2.5rem]"
                     />
                   )}
                 />
@@ -338,10 +343,11 @@ const AppointmentForm = () => {
               Please select the medical conditions you currently have.
             </label>
             <CustomAutoComplete
+              handleSearch={searchMedicalConditions}
               inputId="medicalConditions"
               placeholder="Add one or more medical conditions"
               handleSelection={handleSelectMedicalConditons}
-              items={medicalConditons}
+              items={filteredConditions}
               selectedItems={selectedMedicalConditions}
             />
           </>
@@ -370,9 +376,10 @@ const AppointmentForm = () => {
               Please select the allergies you currently have.
             </label>
             <CustomAutoComplete
+              handleSearch={searchAllergies}
               inputId="allergies"
               placeholder="Add one or more allergies"
-              items={allergies}
+              items={filteredAllergies ? filteredAllergies : ([] as string[])}
               selectedItems={selectedAllergies}
               handleSelection={handleSelectedAllergies}
             />

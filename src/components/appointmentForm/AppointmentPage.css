@@ -50,7 +50,7 @@
   .p-autocomplete-multiple-container
   .p-autocomplete-input-token
   input {
-  @apply min-w-[17rem];
+  @apply min-w-[17rem] max-w-[17rem] overflow-auto;
 }
 
 .p-multiselect-item .p-checkbox {

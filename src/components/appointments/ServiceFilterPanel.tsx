@@ -3,6 +3,8 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { Checkbox } from "primereact/checkbox";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
+import ActiveFilterIcon from "../../assets/icons/ServiceFilterIcon.svg?react";
+import InactiveFilterIcon from "../../assets/icons/filter.svg?react";
 
 const services: string[] = [
   "Blood count",
@@ -53,7 +55,13 @@ const ServiceFilterPanel = () => {
         <Button
           type="button"
           label="All Services"
-          icon="pi pi-filter"
+          icon={
+            isOpen ? (
+              <ActiveFilterIcon className="me-3" />
+            ) : (
+              <InactiveFilterIcon className="me-3" />
+            )
+          }
           onClick={(e) => {
             op?.current?.toggle(e);
             setIsOpen(true);
@@ -62,7 +70,7 @@ const ServiceFilterPanel = () => {
         />
         <span
           className={`absolute right-[1rem] top-[.7rem] pi ${isOpen ? "pi-chevron-up" : "pi-chevron-down"}`}
-        ></span>
+        />
       </div>
       <OverlayPanel
         ref={op}

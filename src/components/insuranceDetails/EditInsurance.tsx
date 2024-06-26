@@ -4,7 +4,6 @@ import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
 import { RadioButton } from "primereact/radiobutton";
 import { Controller, useForm } from "react-hook-form";
-import { user } from "../userProfilePage/UserProfilePage";
 import { IInsurance } from "../../interfaces/User";
 import { useEffect, useState } from "react";
 import { insuranceCompanies } from "../../assets/MockData";
@@ -12,15 +11,29 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
-import { PATH_NAME } from "../../utils/AppConstants";
+import { INSURANCE_TYPE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import { FileUpload } from "primereact/fileupload";
 import { FileTile } from "../visitHistory/EditVisitHistory";
 import ReportImage from "../reportImage/ReportImage";
+import { handleKeyPress } from "../../services/commonFunctions";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import {
+  INewInsurancePayload,
+  IUpdateInsurancePayload,
+} from "../../interfaces/insurance";
+import {
+  addInsuranceThunk,
+  selectSelectedPatient,
+  updateInsuranceByIdThunk,
+} from "../../store/slices/PatientSlice";
+import "./Insurance.css";
 
 const EditInsurance = () => {
   const location = useLocation();
+  const selectedPatinet = useSelector(selectSelectedPatient);
   const [selectedInsurance, setSelectedInsurance] = useState({} as IInsurance);
-  const { successToast, toast } = useToast();
+  const { successToast, toast, errorToast } = useToast();
   const [showImage, setShowImage] = useState(false);
   const [selectedReport, setSelectedReport] = useState({} as File);
   const {
@@ -37,11 +50,13 @@ const EditInsurance = () => {
   const insuranceId = watch("insuranceId");
   // const insuranceCard = watch("insuranceCard");
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
 
   useEffect(() => {
-    if (user.insurance?.length) {
-      const insurance = user.insurance.find(
-        (ins) => ins.id == Number(location.pathname.split("/")[2])
+    if (selectedPatinet?.InsuranceDetails?.length) {
+      const insurance = selectedPatinet.InsuranceDetails.find(
+        (ins) => ins.id == location.pathname.split("/")[2]
       );
       if (insurance !== undefined) {
         setSelectedInsurance(insurance);
@@ -54,27 +69,48 @@ const EditInsurance = () => {
   }, [selectedInsurance]);
 
   const handleFormSubmit = (data: IInsurance) => {
-    successToast(
-      "Insurance updated",
-      "Insurance details has been updated successfully"
-    );
-    setTimeout(() => {
-      navigate(PATH_NAME.PROFILE);
-    }, 1500);
-    console.log(data);
+    const payload: INewInsurancePayload = {
+      status: "active",
+      beneficiary_id: patientId,
+      group_number: data.groupNumber,
+      insurance_type: data.insuranceType,
+      policy_number: data.policyNumber,
+      provider_name: data.insuranceCompany,
+    };
+    if (!Object.keys(selectedInsurance).length) {
+      dispatch(addInsuranceThunk(payload)).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "Insurance Added",
+            "Insurance details has been added successfully"
+          );
+        } else {
+          errorToast("Insurance failed", "Could not add insurance");
+        }
+      });
+    } else {
+      const updationPayload: IUpdateInsurancePayload = {
+        ...payload,
+        insurance_id: selectedInsurance.id,
+      };
+      dispatch(updateInsuranceByIdThunk(updationPayload)).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "Updation Successful",
+            "Insurance has been updated successfully"
+          );
+        } else {
+          errorToast("Updation Failed", "Insurance updation failed");
+        }
+      });
+    }
   };
 
   return (
     <div className="px-6">
       <form
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            if (document.activeElement?.tagName !== "BUTTON") {
-              event.preventDefault();
-            }
-          }
-        }}
+        onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-row justify-between pb-6">
           <BackButton
@@ -125,42 +161,51 @@ const EditInsurance = () => {
               render={({ field }) => (
                 <div className="font-primary text-xl flex flex-row items-center">
                   <label
-                    className={`${field.value === "Primary" ? "active" : "in-active"} pe-4 flex items-center`}
-                    onClick={() => setValue("insuranceType", "Primary")}
+                    className={`${field.value === INSURANCE_TYPE.PRIMARY ? "active" : "in-active"} type-label`}
+                    onClick={() =>
+                      setValue("insuranceType", INSURANCE_TYPE.PRIMARY)
+                    }
                   >
                     <RadioButton
                       {...field}
                       inputId="insuranceTypeSelector"
                       className="me-2"
-                      value="Primary"
+                      value={INSURANCE_TYPE.PRIMARY}
                       inputRef={field.ref}
-                      checked={control._formValues.insuranceType === "Primary"}
+                      checked={
+                        control._formValues.insuranceType ===
+                        INSURANCE_TYPE.PRIMARY
+                      }
                     />
                     Primary
                   </label>
                   <label
-                    className={`${field.value === "Secondary" ? "active" : "in-active"} pe-4 flex items-center`}
-                    onClick={() => setValue("insuranceType", "Secondary")}
+                    className={`${field.value === INSURANCE_TYPE.SECONDARY ? "active" : "in-active"} type-label`}
+                    onClick={() =>
+                      setValue("insuranceType", INSURANCE_TYPE.SECONDARY)
+                    }
                   >
                     <RadioButton
                       className="me-2 h-full w-full"
                       inputRef={field.ref}
                       {...field}
-                      value="Secondary"
-                      checked={field.value === "Secondary"}
+                      value={INSURANCE_TYPE.SECONDARY}
+                      checked={field.value === INSURANCE_TYPE.SECONDARY}
                     />
                     Secondary
                   </label>
                   <label
-                    className={`${control._formValues.insuranceType === "Tertiary" ? "active" : "in-active"} pe-4 flex items-center`}
-                    onClick={() => setValue("insuranceType", "Tertiary")}
+                    className={`${control._formValues.insuranceType === INSURANCE_TYPE.TERTIARY ? "active" : "in-active"} type-label`}
+                    onClick={() =>
+                      setValue("insuranceType", INSURANCE_TYPE.TERTIARY)
+                    }
                   >
                     <RadioButton
                       className="me-2"
                       inputRef={field.ref}
                       {...field}
-                      value="Tertiary"
-                      checked={field.value === "Tertiary"}
+                      value={INSURANCE_TYPE.TERTIARY}
+                      checked={field.value === INSURANCE_TYPE.TERTIARY}
                     />
                     Tertiary
                   </label>
@@ -195,7 +240,7 @@ const EditInsurance = () => {
                   optionLabel="value"
                   placeholder="Select Insurance Company"
                   ariaLabel="Select Insurance Company"
-                  className="pe-2 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
+                  className="pe-2 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none items-center"
                 />
               )}
             />
@@ -207,7 +252,7 @@ const EditInsurance = () => {
           </div>
           <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-3 pt-4 gap-6">
             <div>
-              <label
+              {/* <label
                 className="block input-label pb-1"
                 htmlFor="insuranceNumber"
               >
@@ -233,6 +278,31 @@ const EditInsurance = () => {
               {errors.insuranceNumber && (
                 <span className="text-red-500 text-xs">
                   {errors.insuranceNumber.message}
+                </span>
+              )} */}
+              <label className="block input-label pb-1" htmlFor="policyNumber">
+                Policy Number*
+              </label>
+              <Controller
+                name="policyNumber"
+                control={control}
+                defaultValue={selectedInsurance.policyNumber}
+                rules={{
+                  required: "Policy number can't be empty",
+                }}
+                render={({ field }) => (
+                  <InputText
+                    {...field}
+                    id="policyNumber"
+                    placeholder="Enter Policy Number"
+                    aria-label="Policy number"
+                    className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
+                  />
+                )}
+              />
+              {errors.policyNumber && (
+                <span className="text-red-500 text-xs">
+                  {errors.policyNumber.message}
                 </span>
               )}
               <>
@@ -265,7 +335,7 @@ const EditInsurance = () => {
                 )}
               </>
             </div>
-            <div>
+            {/* <div>
               <label className="block input-label pb-1" htmlFor="policyNumber">
                 Policy Number*
               </label>
@@ -291,7 +361,7 @@ const EditInsurance = () => {
                   {errors.policyNumber.message}
                 </span>
               )}
-            </div>
+            </div> */}
             <div>
               <label className="block input-label pb-1" htmlFor="groupNumber">
                 Group Number*
@@ -322,7 +392,7 @@ const EditInsurance = () => {
           </div>
         </div>
       </form>
-      <Toast ref={toast} />
+      <Toast ref={toast} onHide={() => navigate(PATH_NAME.PROFILE)} />
       {showImage && (
         <ReportImage
           closeModal={() => setShowImage(false)}

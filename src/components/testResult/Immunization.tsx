@@ -2,15 +2,40 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import "./Immunization.css";
 import { Sidebar } from "primereact/sidebar";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
-import { IImmunization, immunizations } from "../../assets/MockData";
 import { getRowClasses } from "../../services/commonFunctions";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
+import EyeIcon from "../../assets/icons/eye.svg?react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectSelectedPatient } from "../../store/slices/PatientSlice";
+import { AppDispatch } from "../../store/store";
+import {
+  getImmunizationsByPatientIdThunk,
+  selectImmunizations,
+} from "../../store/slices/serviceHistorySlice";
+import { IImmunization } from "../../interfaces/immunization";
+import { dateFormatter } from "../../utils/Date";
 
 const TestResult = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedPatient, setSelectedpatient] = useState({} as IImmunization);
+  const [selectedImmunization, setSelectedImmunization] = useState(
+    {} as IImmunization
+  );
+  const selectedPatient = useSelector(selectSelectedPatient);
+  const dispatch = useDispatch<AppDispatch>();
+  const initialRender = useRef(true);
+  useEffect(() => {
+    if (initialRender?.current) {
+      initialRender.current = false;
+      return;
+    }
+    if (selectedPatient?.basicDetails?.id)
+      dispatch(
+        getImmunizationsByPatientIdThunk(selectedPatient.basicDetails.id)
+      );
+  }, [selectedPatient]);
+  const immunizations = useSelector(selectImmunizations);
 
   const columnsConfig = [
     {
@@ -18,7 +43,7 @@ const TestResult = () => {
       header: "VACCINE NAME",
     },
     {
-      field: "adminDate",
+      field: "administrationDate",
       header: "ADMINISTRATION DATE",
     },
     {
@@ -32,7 +57,7 @@ const TestResult = () => {
   ];
 
   const handleViewRecord = (data: IImmunization) => {
-    setSelectedpatient(data);
+    setSelectedImmunization(data);
     setIsSidebarOpen(true);
   };
 
@@ -45,9 +70,9 @@ const TestResult = () => {
       <div>
         <label className="pe-3">"Immunization Details"</label>
         <span
-          className={`sidebar-header ${getStatusColor(selectedPatient.status)}`}
+          className={`sidebar-header ${getStatusColor(selectedImmunization.status)}`}
         >
-          {selectedPatient.status}
+          {selectedImmunization.status}
         </span>
       </div>
     );
@@ -69,8 +94,13 @@ const TestResult = () => {
   return (
     <>
       <DataTable
-        selection={selectedPatient}
+        selection={selectedImmunization}
         value={immunizations}
+        emptyMessage={
+          <div className="flex justify-center font-secondary">
+            No data to display
+          </div>
+        }
         selectionMode="single"
         dataKey="id"
         tableStyle={{ minWidth: "50rem" }}
@@ -87,9 +117,18 @@ const TestResult = () => {
                 header={column.header}
                 bodyClassName="py-4"
                 headerClassName="text-sm font-secondary py-1 border-b bg-white"
-                body={(rowData) => (
-                  <ColumnData content={rowData[column.field]} />
-                )}
+                body={(rowData) =>
+                  column.header === "ADMINISTRATION DATE" ? (
+                    <ColumnData
+                      content={dateFormatter(
+                        rowData[column.field],
+                        "dd MMM, yyyy"
+                      )}
+                    />
+                  ) : (
+                    <ColumnData content={rowData[column.field]} />
+                  )
+                }
               />
             );
           })}
@@ -102,7 +141,7 @@ const TestResult = () => {
             <span
               className={`sidebar-header ${getStatusColor(rowData.status)}`}
             >
-              {rowData.status}
+              {rowData.status || "-"}
             </span>
           )}
         />
@@ -136,10 +175,10 @@ const TestResult = () => {
         position="right"
         onHide={() => {
           setIsSidebarOpen(false);
-          setSelectedpatient({} as IImmunization);
+          setSelectedImmunization({} as IImmunization);
         }}
       >
-        <ImmunizationDetailView data={selectedPatient} />
+        <ImmunizationDetailView data={selectedImmunization} />
       </Sidebar>
     </>
   );
@@ -170,10 +209,10 @@ export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
     switch (title) {
       case "ADMINISTRATOR":
         return data["administrator"];
-      case "ADMINISTRATION DATE":
-        return data["adminDate"];
+      case "ADMINISTRATION DATE" || "-":
+        return dateFormatter(data["administrationDate"], "dd MMM,yyyy") || "-";
       case "DOSE NUMBER":
-        return data["doseNumber"];
+        return data["doseNumber"] || "-";
       case "DOSAGE FORM":
         return data["dosageForm"];
       case "ADMINISTERED CODE":
@@ -205,7 +244,7 @@ export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="border-b">
           <div className="input-label font-secondary pt-4">
-            VMANUFACTURER NAME
+            MANUFACTURER NAME
           </div>
           <label className="font-primary">{data.vaccineName}</label>
         </div>
@@ -232,9 +271,11 @@ const ViewColumn = ({
   };
 
   return (
-    <div className="flex flex-row gap-2 text-purple-800">
-      <i className="pi pi-eye" onClick={() => handleView(data)} />
-      {/* <i className="pi pi-share-alt" onClick={() => handleShare(data)} /> */}
+    <div
+      className="flex flex-row gap-2 text-purple-800"
+      onClick={() => handleView(data)}
+    >
+      <EyeIcon className="stroke-purple-800" />
     </div>
   );
 };

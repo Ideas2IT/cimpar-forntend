@@ -9,7 +9,6 @@ export const spinnerSlice = createSlice({
   initialState,
   reducers: {
     showSpinner: (state) => {
-      console.log("got call to enable spinner");
       state.isLoading = true;
     },
     hideSpinner: (state) => {

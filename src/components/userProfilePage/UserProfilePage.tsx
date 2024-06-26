@@ -18,6 +18,7 @@ import {
 } from "../../store/slices/commonSlice";
 import { AppDispatch } from "../../store/store";
 import { PATH_NAME } from "../../utils/AppConstants";
+import { selectSelectedPatient } from "../../store/slices/PatientSlice";
 
 export const user: IUser = {
   dob: "11-11-1993",
@@ -40,43 +41,18 @@ export const user: IUser = {
   insuranceName: "American Family Insurance",
   insuranceNumber: "10*******982",
   medicationTakenBefore: [
-    { id: 1, name: "Celexa" },
-    { id: 2, name: "Lexapro" },
-    { id: 3, name: "Prozacfluvoxamine" },
-    { id: 4, name: "Paroxetine HCL and Zoloft" },
+    "Celexa",
+    "Lexapro",
+    "Prozacfluvoxamine",
+    "Paroxetine HCL and Zoloft",
   ],
   currentMedication: [
-    { id: 1, name: "Celexa" },
-    { id: 2, name: "Lexapro" },
-    { id: 3, name: "Prozacfluvoxamine" },
-    { id: 4, name: "Paroxetine HCL and Zoloft" },
+    "Celexa",
+    "Lexapro",
+    "Prozacfluvoxamine",
+    "Paroxetine HCL and Zoloft",
   ],
-  insurance: [
-    {
-      id: 1,
-      insuranceType: "Primary",
-      insuranceNumber: "df-1231-tr",
-      policyNumber: "lic-sdfsd-323-c4",
-      groupNumber: "1-800-MYAMFAM",
-      insuranceCompany: "Medicare",
-    },
-    {
-      id: 2,
-      insuranceType: "Secondary",
-      insuranceNumber: "df-1231-tr",
-      policyNumber: "lic-sdfsd-323-c4",
-      groupNumber: "1-800-MYAMFAM",
-      insuranceCompany: "American Automobile Association",
-    },
-    // {
-    //   id: 3,
-    //   insuranceType: "Tertiary",
-    //   insuranceNumber: "df-1231-tr",
-    //   policyNumber: "lic-sdfsd-323-c4",
-    //   groupNumber: "1-800-MYAMFAM",
-    //   insuranceCompany: "American Family Insurance",
-    // },
-  ],
+  insurance: [],
   isOnMedicine: "no",
   hasMedicalConditions: false,
   medicationalHistory: "yes",
@@ -129,6 +105,8 @@ export const tabs: Tab[] = [
   },
 ];
 const UserProfilePage = () => {
+  const patinetInsuranceCount = useSelector(selectSelectedPatient)
+    ?.InsuranceDetails?.length;
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const selectedOption = useSelector(selectTab);
@@ -176,7 +154,7 @@ const UserProfilePage = () => {
           {selectedTab.toLowerCase() === "insurance" ? (
             <Button
               disabled={
-                user.insurance?.length && user.insurance?.length >= 3
+                patinetInsuranceCount && patinetInsuranceCount >= 3
                   ? true
                   : false
               }

@@ -1,10 +1,10 @@
 import { createContext } from "react";
 interface IHeader {
-  value: string;
+  username: string;
   updateHeaderTitle: (newValue: string) => void;
 }
 const HeaderContext = createContext<IHeader>({
-  value: "",
+  username: "",
   updateHeaderTitle: (value: string) => {
     return value;
   },

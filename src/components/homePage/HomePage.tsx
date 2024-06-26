@@ -5,6 +5,9 @@ import imagingIcon from "../../assets/icons/imagingicon.svg";
 import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
 import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
 import { NavLink } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../store/store";
+
 interface ICard {
   id: number;
   title: string;
@@ -64,6 +67,7 @@ const HomePage = () => {
       link: "",
     },
   ];
+
   return (
     <>
       <div className="px-6 color-primary font-primary text-xl">
@@ -82,7 +86,7 @@ const Card = ({ card }: { card: ICard }) => {
   return (
     <NavLink to={!card.disabled ? card.link : ""}>
       <div
-        className={`${card.color} md:h-[10rem] h-[5rem] rounded-xl ${!card.disabled ? "cursor-pointer" : "cursor-not-allowed"}`}
+        className={`${card.color} md:h-[10rem] h-[5rem] md:flex-col flex-row rounded-xl ${!card.disabled ? "cursor-pointer" : "cursor-not-allowed"}`}
       >
         <div className="p-6">
           <img src={card.icon} alt={card.title} className="h-[2rem] w-[2rem]" />
@@ -90,7 +94,7 @@ const Card = ({ card }: { card: ICard }) => {
         <div className={`${card.disabled && "text-gray-300"} px-4`}>
           <span>{card.title}</span>
           {card.disabled && (
-            <span className="px-2 text-md font-light">(coming soon)</span>
+            <span className="px-2 text-xl font-light">(coming soon)</span>
           )}
         </div>
       </div>

@@ -124,7 +124,7 @@ label, li, input, div {
 }
 
 .color-primary {
-  @apply text-[#2d6d80;];
+  @apply text-[#2d6d80];
 }
 
 .bg-primary {

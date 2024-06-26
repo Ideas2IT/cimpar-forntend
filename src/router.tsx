@@ -81,7 +81,7 @@ const router = createBrowserRouter([
     element: <SignUpForm />,
   },
   {
-    path: PATH_NAME.SET_PASSWORD,
+    path: `${PATH_NAME.SET_PASSWORD}/:id`,
     element: <SetPassword />,
   },
   {

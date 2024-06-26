@@ -7,13 +7,14 @@ import { NavLink, useLocation } from "react-router-dom";
 import HeaderContext from "../context/HeaderContext";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
-import {
-  selectedRole,
-  setSelectedSidebarTab,
-} from "../store/slices/commonSlice";
+import { setSelectedSidebarTab } from "../store/slices/commonSlice";
 import { PATH_NAME } from "../utils/AppConstants";
-import { selectUser } from "../store/slices/UserSlice";
-
+import {
+  selectProfileName,
+  selectUserProfile,
+} from "../store/slices/UserSlice";
+import { getPatientDetailsThunk } from "../store/slices/PatientSlice";
+import { selectRole } from "../store/slices/loginSlice";
 interface Tab {
   key: string;
   icon: React.ReactNode;
@@ -23,7 +24,7 @@ interface Tab {
 
 const Sidebar = () => {
   const tabs = {
-    PATIENT: [
+    patient: [
       {
         header: "Home",
         key: "home",
@@ -43,32 +44,33 @@ const Sidebar = () => {
         routerLink: PATH_NAME.PROFILE,
       },
     ],
-    ADMIN: [
+    admin: [
       {
         header: "Appointments",
         key: "appointment",
         icon: <i className="pi pi-calendar-minus text-2xl" />,
-        // icon: <Calendar />,
         routerLink: PATH_NAME.APPOINTMENTS,
       },
     ],
+    other: [],
   };
 
-  const role = useSelector(selectedRole);
+  const role = useSelector(selectRole);
   const dispatch = useDispatch<AppDispatch>();
   const [selectedTab, setSelectedTab] = useState<Tab>(tabs[role][0]);
   const { updateHeaderTitle } = useContext(HeaderContext);
   const location = useLocation();
-  const user = useSelector(selectUser);
+  const username = useSelector(selectProfileName);
+  const profileId = useSelector(selectUserProfile).id;
 
   useEffect(() => {
-    updateHeaderTitle("Hi, " + user);
-  }, [user]);
+    updateHeaderTitle("Hi, " + username);
+  }, [username]);
 
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);
-    if (tab.header.toLowerCase() === "home") {
-      updateHeaderTitle("Hi, " + user);
+    if (tab.header === "Home") {
+      updateHeaderTitle("Hi, " + username);
     } else {
       updateHeaderTitle(tab.header);
     }
@@ -76,20 +78,32 @@ const Sidebar = () => {
   };
 
   useEffect(() => {
-    const pathname = location.pathname.split("/")[1];
-    if (
-      pathname === "profile" ||
-      pathname === "editProfile" ||
-      pathname === "editMedication" ||
-      pathname === "editInsurance"
-    ) {
-      setSelectedTab(tabs[role][2]);
-    } else if (pathname === "") {
-      setSelectedTab(tabs[role][0]);
-    } else if (pathname === "test-result") {
-      setSelectedTab(tabs[role][1]);
-    }
+    changeMenuOption();
   }, [location.pathname]);
+
+  const changeMenuOption = () => {
+    const pathname = location.pathname.split("/")[1];
+    let tabIndex;
+    switch (pathname) {
+      case "profile":
+      case "editProfile":
+      case "editMedication":
+      case "editInsurance":
+        tabIndex = 2;
+        break;
+      case "":
+        tabIndex = 0;
+        break;
+      case "test-result":
+        tabIndex = 1;
+        break;
+      default:
+        tabIndex = null;
+    }
+    if (tabIndex) {
+      setSelectedTab(tabs[role][tabIndex]);
+    }
+  };
 
   return (
     <div className="w-20 flex flex-col bg-white">

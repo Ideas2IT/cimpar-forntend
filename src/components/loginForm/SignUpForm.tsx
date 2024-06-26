@@ -7,6 +7,9 @@ import { Controller, useForm } from "react-hook-form";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import "./SignUp.css";
 import { ISignUp } from "../../interfaces/UserLogin";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import { signupThunk } from "../../store/slices/loginSlice";
 
 const SignUpForm = () => {
   const {
@@ -16,10 +19,11 @@ const SignUpForm = () => {
   } = useForm({ defaultValues: {} as ISignUp });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSignUp = (data: ISignUp) => {
+    dispatch(signupThunk(data));
     navigate(PATH_NAME.SET_PASSWORD);
-    console.log(data);
   };
   return (
     <div className="form-wrapper">
@@ -144,7 +148,7 @@ const SignUpForm = () => {
             <div className="col-span-2 flex justify-between items-center pt-2">
               <label className="text-sm">
                 Have an account already?{" "}
-                <Link to={PATH_NAME.LOGIN} className="text-purple-800">
+                <Link to={PATH_NAME.HOME} className="text-purple-800">
                   Login
                 </Link>
               </label>

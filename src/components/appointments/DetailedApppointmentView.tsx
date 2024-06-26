@@ -1,5 +1,5 @@
 import { IAppointment } from "../../assets/MockData";
-import { getFullPhoneNUmber } from "../../services/commonFunctions";
+import { getFullPhoneNumber } from "../../services/commonFunctions";
 import { PatientDetails } from "../userDetails/UserDetails";
 import { format } from "date-fns";
 
@@ -14,7 +14,7 @@ const DetailedAppointmentView = ({ details }: { details: IAppointment }) => {
     },
     {
       label: "CONTACT NUMBER",
-      value: getFullPhoneNUmber(details.countryCode, details.phoneNumber),
+      value: getFullPhoneNumber(details.countryCode, details.phoneNumber),
     },
     {
       label: "INSURANCE PROVIDER & NUMBER",

@@ -5,4 +5,6 @@ export const THUNK_NAME = {
 export const SLICE_NAME = {
   userSlice: "user",
   commonSlice: "commonSlice",
+  patinetSlice: "patient",
+  immunizationSlice: "immunizationSlice",
 };

@@ -1,5 +1,3 @@
-import { IItem } from "../components/appointmentForm/AppointmentForm";
-
 export interface IUserBasicDetails {}
 export interface IUserContactDetails {}
 
@@ -24,13 +22,14 @@ export interface IUser {
   alternateNumberCode: string;
   insuranceName: string;
   insuranceNumber: string;
-  medicationTakenBefore: IItem[];
-  currentMedication: IItem[];
+  medicationTakenBefore: string[];
+  currentMedication: string[];
   insurance?: IInsurance[];
   isOnMedicine: "yes" | "no";
   medicationalHistory: "yes" | "no";
   hasMedicalConditions: boolean;
 }
+
 interface IHeight {
   feet: number;
   inches: number;
@@ -47,8 +46,8 @@ export interface IMedication {
 }
 
 export interface IInsurance {
-  id: number;
-  insuranceType: string;
+  id: string;
+  insuranceType: number;
   insuranceNumber: string;
   policyNumber: string;
   groupNumber: string;
@@ -56,13 +55,58 @@ export interface IInsurance {
   insuranceCard?: File;
   insuranceId?: File;
 }
-
-export interface IRole {
-  id: number;
-  role_name: string;
+export interface ISignupPayload {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
 }
 
-export interface ILoginPayload {
-  username: string;
-  password: string;
+export interface ISetPasswordPayload {
+  newPassword: string;
+  confirmPassword: string;
+  token: string;
+}
+
+export interface IProfile {
+  id: string;
+  dob: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: string;
+  address: string;
+  zipCode: string;
+  city: string;
+  country: string;
+  state: string;
+  phoneNo: string;
+  email: string;
+  lastUpdated: string;
+}
+
+export interface IEditProfile {
+  id: string;
+  dob: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: string;
+  zipCode: string;
+  city: string;
+  country: string;
+  state: string;
+  phoneNo: number | null;
+  phoneCode: string;
+  alternateNo: number;
+  alternateCode: string;
+  email: string;
+  height: {
+    inches: number;
+    feet: number;
+  };
+  weight: number;
+  race: string;
+  ethnicity: string;
+  fullAddress: string;
 }

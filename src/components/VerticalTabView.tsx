@@ -22,14 +22,16 @@ const VerticalTabView: React.FC<VerticalTabProps> = ({
   const location = useLocation();
 
   useEffect(() => {
-    if (location.pathname) {
-      if (location.pathname === PATH_NAME.PROFILE && selectedOption !== undefined) {
-        setSelectedTab(
-          tabs.find((t) => {
-            return t.value.toLowerCase() === selectedOption.toLowerCase();
-          }) || tabs[0]
-        );
-      }
+    if (
+      location.pathname &&
+      location.pathname === PATH_NAME.PROFILE &&
+      selectedOption !== undefined
+    ) {
+      setSelectedTab(
+        tabs.find((t) => {
+          return t.value.toLowerCase() === selectedOption.toLowerCase();
+        }) || tabs[0]
+      );
     }
   }, [location.pathname]);
 

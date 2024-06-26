@@ -4,12 +4,16 @@ import patinetReducer from "./slices/PatientSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import loggedInUserReducer from "./slices/loginSlice";
 import spinnerReducer from "./slices/spinnerSlice";
+import masterTableReducer from "./slices/masterTableSlice";
+import serviceHistoryReducer from "./slices/serviceHistorySlice";
 const reducer = {
   user: userReducer,
   common: commonReducer,
   patient: patinetReducer,
   loggedInUser: loggedInUserReducer,
   spinner: spinnerReducer,
+  masterTable: masterTableReducer,
+  serviceHistory: serviceHistoryReducer,
 };
 
 const store = configureStore({

@@ -1,28 +1,30 @@
 import ReyaIcon from "../../assets/reya-logo.svg?react";
-import { MESSAGE, PATH_NAME, PATTERN, ROLE } from "../../utils/AppConstants";
+import {
+  CLIENT_ID,
+  GRANT_TYPE,
+  MESSAGE,
+  PATH_NAME,
+  PATTERN,
+  RESPONSE,
+} from "../../utils/AppConstants";
 import { InputText } from "primereact/inputtext";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
-import {
-  selectedRole,
-  setIsLoggedIn,
-  setUserRole,
-} from "../../store/slices/commonSlice";
-import { useEffect } from "react";
-import { ILogin } from "../../interfaces/UserLogin";
+import { ILogin, ILoginPayload } from "../../interfaces/UserLogin";
 import { loginUserThunk } from "../../store/slices/loginSlice";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
+import { handleKeyPress } from "../../services/commonFunctions";
+import { getUserProfileThunk } from "../../store/slices/UserSlice";
 
 const LoginForm = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
-  const role = useSelector(selectedRole);
+  const { toast, errorToast } = useToast();
 
   const {
     control,
@@ -31,40 +33,26 @@ const LoginForm = () => {
   } = useForm({ defaultValues: {} as ILogin });
 
   const handleLogin = (data: ILogin) => {
-    if (
-      (data.email && data.email.split("@")[0].toLowerCase() === "patient") ||
-      data.email.split("@")[0].toLowerCase() === "admin"
-    ) {
-      dispatch(setUserRole(data.email));
-    } else {
-      errorToast("Login Failed", "Invalid Username or Password");
-      return;
-    }
-    setTimeout(() => {
-      dispatch(
-        setIsLoggedIn({ status: true, email: data.email.toLowerCase() })
-      );
-      dispatch(
-        loginUserThunk({ username: data.email, password: data.password })
-      );
-    }, 300);
+    const payload: ILoginPayload = {
+      client_id: CLIENT_ID,
+      grant_type: GRANT_TYPE,
+      password: data.password,
+      username: data.email,
+    };
+    dispatch(loginUserThunk(payload)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        dispatch(getUserProfileThunk());
+      } else if (response?.meta.requestStatus === RESPONSE.REJECTED) {
+        errorToast("Login Failed", "Invalid username or password");
+      }
+    });
   };
-
-  const { toast, errorToast } = useToast();
-
-  useEffect(() => {
-    if (role === ROLE.ADMIN) {
-      navigate(PATH_NAME.APPOINTMENTS);
-    } else if (role === ROLE.PATIENT) {
-      navigate(PATH_NAME.HOME);
-    } else {
-      errorToast("Login Failed", "Invalid Email or Password");
-    }
-  }, [role]);
-
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
-      <form onSubmit={handleSubmit((data) => handleLogin(data))}>
+      <form
+        onSubmit={handleSubmit((data) => handleLogin(data))}
+        onKeyDown={(e) => handleKeyPress(e)}
+      >
         <div className="rounded-xl bg-white md:w-[30rem] md:min-h-[25rem] p-6">
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" />

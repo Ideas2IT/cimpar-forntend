@@ -5,20 +5,19 @@ interface IUser {
   name: string;
   email: string;
   id: number;
-  role: "ADMIN" | "PATIENT";
 }
 
 type tabInitialState = {
   selectedSidebarTab: string;
   isLoggedIn: boolean;
-  role: "ADMIN" | "PATIENT";
+  role: "admin" | "patient" | "other";
   user: IUser;
 };
 
 const initialState: tabInitialState = {
   selectedSidebarTab: "personal",
   isLoggedIn: false,
-  role: "ADMIN",
+  role: "patient",
   user: {} as IUser,
 };
 
@@ -37,8 +36,7 @@ const commonSlice = createSlice({
     },
     setUserRole: (state, action) => {
       if (action.payload) {
-        const role = action.payload.split("@")[0];
-        state.role = role.toUpperCase();
+        state.role = "patient";
       }
     },
   },

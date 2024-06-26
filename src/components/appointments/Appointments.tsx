@@ -16,6 +16,15 @@ import DualCalendar from "../dualCalendar/DualCalendar";
 import { OverlayPanel } from "primereact/overlaypanel";
 import HeaderContext from "../../context/HeaderContext";
 import { getRowClasses } from "../../services/commonFunctions";
+interface IHandlers {
+  viewAppointment: (value: IAppointment) => void;
+  viewPatient: (value: boolean, appoinement: IAppointment) => void;
+}
+
+export interface IDualCalendarReponse {
+  onApply: (range: Date[]) => void;
+  onCancel: () => void;
+}
 
 const Appointments = () => {
   const { updateHeaderTitle } = useContext(HeaderContext);
@@ -286,15 +295,5 @@ const ViewAppointment = ({
     </div>
   );
 };
-
-interface IHandlers {
-  viewAppointment: (value: IAppointment) => void;
-  viewPatient: (value: boolean, appoinement: IAppointment) => void;
-}
-
-export interface IDualCalendarReponse {
-  onApply: (range: Date[]) => void;
-  onCancel: () => void;
-}
 
 export default Appointments;

@@ -141,7 +141,7 @@ const TestStatus = ({ status }: { status: string }) => {
   return (
     <div>
       <span
-        className={`${getStatusColors(status)} rounded-full py-[.4rem] px-4 text-sm text-center`}
+        className={`${getStatusColors(status)} font-tertiary rounded-full py-[.4rem] px-4 text-sm text-center`}
       >
         {status ? status : "-"}
       </span>

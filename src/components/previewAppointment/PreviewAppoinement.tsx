@@ -33,7 +33,7 @@ const PreviewAppointment = ({
     },
     {
       header: "TIME OF TEST",
-      value: format(details.dateOfAppointment, "hh:mm a"),
+      value: format(details.scheduledTime, "hh:mm a"),
     },
     {
       header: "REASON FOR TEST",
@@ -41,20 +41,59 @@ const PreviewAppointment = ({
       full: true,
     },
     {
-      header: "MEDICAL CONDITIONSS",
+      header: "MEDICAL CONDITIONS",
       value: details?.medicalConditions?.length
         ? getStringFromObjects(details?.medicalConditions)
         : "",
       full: true,
     },
+    {
+      header: "OTHER MEDICAL CONDITIONS",
+      value: details?.otherMedicalConditon,
+      full: true,
+    },
+    {
+      header: "ALLERGIES",
+      value: details?.allergies,
+      full: true,
+    },
+    {
+      header: "NAME(GENDER)",
+      value: "David WARNER (MALE)",
+      full: false,
+    },
+    {
+      header: "DOB(AGE)",
+      value: "12 june, 1922(82)",
+      full: false,
+    },
+    {
+      header: "INSURANCE PROVIDER & NUMBER",
+      value: "Medcicare 123123********24",
+      full: true,
+    },
   ];
+
   return (
     <div className="h-full relative flex flex-col">
-      <label className="font-primary text-lg py-5 block h-[10%]">
-        Test Details
-      </label>
-      <div className="grid md:grid-cols-2 grid-cols-1 gap-x-4 max-h-[75%] overflow-scroll">
-        {fields.map((field) => {
+      <div className="grid md:grid-cols-2 grid-cols-1 gap-x-4 max-h-[85%] overflow-scroll">
+        <label className="font-primary text-lg py-5 block h-[10%]">
+          Test Details
+        </label>
+        {fields.slice(0, 7).map((field) => {
+          return (
+            <div
+              key={field.header}
+              className={`${field?.full && "col-span-2"}`}
+            >
+              <PatientDetails label={field.header} value={field.value} />
+            </div>
+          );
+        })}
+        <label className="font-primary text-lg py-5 col-span-2 h-[10%]">
+          Basic Details
+        </label>
+        {fields.slice(7, 10).map((field) => {
           return (
             <div
               key={field.header}

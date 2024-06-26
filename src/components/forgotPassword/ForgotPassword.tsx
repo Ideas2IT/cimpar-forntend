@@ -80,7 +80,7 @@ const ForgotPassword = () => {
             </>
           )}
 
-          <div className="flex absolute bottom-[1rem] left-[1rem] right-[1rem] items-end h-[10rem] justify-end pb-3">
+          <div className="flex absolute bottom-[1rem] left-[1.5rem] right-[1rem] items-end h-[10rem] justify-end pb-3">
             {!isSubmitted ? (
               <>
                 <Button

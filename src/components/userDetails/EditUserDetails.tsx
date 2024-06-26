@@ -1,5 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
-import { IUser } from "../../interfaces/User";
+import { IEditProfile, IUser } from "../../interfaces/User";
 import "./EditUserDetails.css";
 import {
   countries,
@@ -15,48 +15,130 @@ import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button as PrimeButton } from "primereact/button";
-import { ERROR, PATH_NAME, PATTERN } from "../../utils/AppConstants";
+import { ERROR, PATH_NAME, PATTERN, RESPONSE } from "../../utils/AppConstants";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
 import { InputText } from "primereact/inputtext";
+import {
+  combineHeight,
+  getFractionalPart,
+  getFullPhoneNumber,
+  handleKeyPress,
+  splitCodeWithPhoneNumber,
+} from "../../services/commonFunctions";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectSelectedPatient,
+  updatePatientProfileThunk,
+} from "../../store/slices/PatientSlice";
+import { IUpdatePatientPayload } from "../../interfaces/patient";
+import { AppDispatch } from "../../store/store";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import { useEffect } from "react";
 
 const EditUserDetails = ({ user }: { user: IUser }) => {
+  const userDetails = useSelector(selectSelectedPatient).basicDetails;
   const {
     register,
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
+    trigger,
   } = useForm({
-    defaultValues: user,
+    defaultValues: {} as IEditProfile,
   });
 
-  const { toast, successToast } = useToast();
+  useEffect(() => {
+    if (userDetails && Object.keys(userDetails).length) {
+      resetForm();
+    }
+  }, [userDetails]);
+
+  const resetForm = () => {
+    const patient: IEditProfile = {
+      city: userDetails.city,
+      country: userDetails.country,
+      dob: userDetails.dob,
+      email: userDetails.email,
+      ethnicity: userDetails.ethnicity,
+      firstName: userDetails.firstName,
+      gender: userDetails.gender,
+      fullAddress: userDetails.address,
+      height: {
+        inches: Number(Math.floor(userDetails.height)),
+        feet: getFractionalPart(userDetails.height),
+      },
+      id: "",
+      lastName: userDetails.lastName,
+      middleName: userDetails.middleName,
+      phoneCode: userDetails.phoneCode,
+      alternateCode: userDetails.alternateCode,
+      phoneNo: Number(splitCodeWithPhoneNumber(userDetails.phoneNo).phone) || 0,
+      race: userDetails.race,
+      state: userDetails.state,
+      weight: userDetails.weight,
+      zipCode: userDetails.zipCode,
+      alternateNo: Number(userDetails.alternateNo),
+    };
+    reset({ ...patient });
+  };
+
+  const { toast, successToast, errorToast } = useToast();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
-  const handleFormSubmit = (data: IUser) => {
-    successToast("Data Updated", "Profile updated successfully");
-    setTimeout(() => {
-      if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
-        navigate(PATH_NAME.HEALTH_RECORDS);
-      } else {
-        navigate(PATH_NAME.PROFILE);
+  const handleFormSubmit = (data: IEditProfile) => {
+    const payload: IUpdatePatientPayload = {
+      city: data.city,
+      country: data.country,
+      date_of_birth: data.dob,
+      email: data.email,
+      first_name: data.firstName,
+      middle_name: data.middleName,
+      last_name: data.lastName,
+      full_address: data.fullAddress,
+      gender: data.gender,
+      patient_id: userDetails.id,
+      phone_number: getFullPhoneNumber("+1", data.phoneNo),
+      state: data.state,
+      zip_code: data.zipCode,
+      weight: data.weight,
+      height: combineHeight(data.height.feet, data.height.inches),
+    };
+    dispatch(updatePatientProfileThunk(payload)).then(({ meta }) => {
+      if (meta.requestStatus === RESPONSE.FULFILLED) {
+        successToast("Data Updated", "Profile updated successfully");
+        if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
+          navigate(PATH_NAME.HEALTH_RECORDS);
+        } else {
+          navigate(PATH_NAME.PROFILE);
+        }
+      } else if (RESPONSE.REJECTED) {
+        errorToast("Failed", "Profile updation unsuccessful");
       }
-    }, 1500);
-    console.log(data);
+    });
+  };
+
+  const validateHeight = (height: number) => {
+    if (height > 20 || height < 1) {
+      return "Invalid height";
+    }
+    return true;
+  };
+
+  const validatePhoneNumber = (value: number | null) => {
+    if (value == null || value.toString().length < 6) {
+      return "Phone number must be at least 6 digits";
+    } else return true;
   };
   return (
     <div className="px-6 ">
       <form
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            if (document.activeElement?.tagName !== "BUTTON") {
-              event.preventDefault();
-            }
-          }
-        }}
+        onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-row justify-between pb-6">
           <BackButton
@@ -104,18 +186,13 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   },
                 })}
                 name={`firstName`}
-                onChange={(event) =>
-                  setValue("firstName", event?.target?.value || "")
-                }
                 className="cimpar-input focus:outline-none"
                 type="text"
                 id="firstName"
                 placeholder="First name"
               />
               {errors.firstName && (
-                <span className="text-red-700 text-xs">
-                  {errors.firstName.message}
-                </span>
+                <ErrorMessage message={errors.firstName.message} />
               )}
             </div>
             <div className="pt-4">
@@ -130,18 +207,13 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   },
                 })}
                 name={`middleName`}
-                onChange={(event) =>
-                  setValue("middleName", event?.target?.value || "")
-                }
                 className="cimpar-input focus:outline-none"
                 type="text"
                 id="middleName"
                 placeholder="Middle Name"
               />
               {errors.middleName && (
-                <span className="text-red-700 text-xs">
-                  {errors.middleName.message}
-                </span>
+                <ErrorMessage message={errors.middleName.message} />
               )}
             </div>
             <div className="pt-4">
@@ -156,18 +228,13 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   },
                 })}
                 name={`lastName`}
-                onChange={(event) =>
-                  setValue("lastName", event?.target?.value || "")
-                }
                 className="cimpar-input focus:outline-none"
                 type="text"
                 id="lastName"
                 placeholder="Last name"
               />
               {errors.lastName && (
-                <span className="text-red-700 text-xs">
-                  {errors.lastName.message}
-                </span>
+                <ErrorMessage message={errors.lastName.message} />
               )}
             </div>
             <div className="pt-4">
@@ -198,12 +265,10 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 )}
               />
               {errors.gender && (
-                <span className="text-red-700 text-xs">
-                  {errors.gender.message}
-                </span>
+                <ErrorMessage message={errors.gender.message} />
               )}
             </div>
-            <div className="pt-4 d-flex relative">
+            <div className="pt-4 relative">
               <label htmlFor="dob" className="block input-label pb-1">
                 Date of Birth*
               </label>
@@ -233,11 +298,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   )}
                 />
               </div>
-              {errors.dob && (
-                <span className="text-red-700 text-xs">
-                  {errors.dob.message}
-                </span>
-              )}
+              {errors.dob && <ErrorMessage message={errors.dob.message} />}
             </div>
             <div className="pt-4 relative">
               <label htmlFor="height" className="block input-label pb-1">
@@ -248,38 +309,30 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   <Controller
                     name="height.feet"
                     control={control}
-                    defaultValue={user.height.feet}
                     rules={{
                       required: "Height is required",
-                      min: {
-                        value: 1,
-                        message: "Invalid height",
-                      },
-                      max: {
-                        value: 10,
-                        message: "Invalid height",
-                      },
+                      validate: validateHeight,
                     }}
                     render={({ field }) => (
                       <InputNumber
                         inputId="height"
-                        max={10}
-                        onChange={(event: InputNumberChangeEvent) =>
-                          event.value && setValue("height.feet", event.value)
-                        }
+                        onChange={(event: InputNumberChangeEvent) => {
+                          event.value && setValue("height.feet", event.value);
+                          trigger("height.feet");
+                        }}
                         placeholder="Feet"
-                        value={field.value}
+                        value={Number(field.value) || 0}
                         className="w-full h-full"
+                        useGrouping={false}
                       />
                     )}
                   />
-                  <span className="absolute top-[.5rem] right-5">ft</span>
+                  <span className="absolute top-[.5rem] right-5 bg-white">ft</span>
                 </span>
                 <span className="p-inputgroup-addon w-[48%] px-1 relative">
                   <Controller
                     name="height.inches"
                     control={control}
-                    defaultValue={user.height.inches}
                     rules={{
                       min: {
                         value: 0,
@@ -296,7 +349,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                         onChange={(e) => {
                           e.value && setValue("height.inches", e.value);
                         }}
-                        value={field.value}
+                        value={Number(field.value) || 0}
                         placeholder="inches"
                       />
                     )}
@@ -307,14 +360,10 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 </span>
               </div>
               {errors.height?.feet ? (
-                <span className="text-red-700 text-xs">
-                  {errors.height.feet.message}
-                </span>
+                <ErrorMessage message={errors.height.feet.message} />
               ) : (
                 errors.height?.inches && (
-                  <span className="text-red-700 text-xs">
-                    {errors.height.inches.message}
-                  </span>
+                  <ErrorMessage message={errors.height.inches.message} />
                 )
               )}
             </div>
@@ -322,18 +371,37 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <label className="block input-label pb-1" htmlFor="weight">
                 Weight*
               </label>
-              <input
-                {...register("weight")}
-                name={`weight`}
-                onChange={(event) =>
-                  setValue("weight", Number(event?.target?.value) || 0)
-                }
-                className="cimpar-input focus:outline-none"
-                type="number"
-                id="weight"
-                placeholder="weight"
+              <Controller
+                name="weight"
+                control={control}
+                rules={{
+                  required: "Weight is required",
+                }}
+                render={({ field }) => (
+                  <>
+                    <InputNumber
+                      mode="decimal"
+                      value={field.value}
+                      onChange={(event) => {
+                        event.value ? setValue("weight", event?.value) : 0;
+                        trigger("weight");
+                      }}
+                      className="cimpar-input weight focus:outline-none"
+                      minFractionDigits={1}
+                      maxFractionDigits={2}
+                      id="weight"
+                      placeholder="weight"
+                      useGrouping={false}
+                    />
+                    <span className="absolute right-2 top-[3rem] z-100">
+                      Lbs
+                    </span>
+                  </>
+                )}
               />
-              <span className="absolute right-2 top-[3rem] z-100">Lbs</span>
+              {errors.weight && (
+                <ErrorMessage message={errors.weight.message} />
+              )}
             </div>
             <div className="pt-4">
               <label
@@ -364,11 +432,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   />
                 )}
               />
-              {errors.race && (
-                <span className="text-red-700 text-xs">
-                  {errors.race.message}
-                </span>
-              )}
+              {errors.race && <ErrorMessage message={errors.race.message} />}
             </div>
             <div className="pt-4  relative">
               <label
@@ -397,9 +461,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 )}
               />
               {errors.ethnicity && (
-                <span className="text-red-700 text-xs">
-                  {errors.ethnicity.message}
-                </span>
+                <ErrorMessage message={errors.ethnicity.message} />
               )}
             </div>
           </div>
@@ -411,43 +473,27 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </label>
               <div className="p-inputgroup buttonGroup">
                 <span className="country-code w-[50%] h-[2.5rem] align-middle">
-                  <Controller
-                    name="countryCode"
-                    control={control}
-                    defaultValue={user.countryCode}
-                    rules={{
-                      required: "Country code is required",
-                    }}
-                    render={({ field }) => (
-                      <Dropdown
-                        {...field}
-                        value={field.value}
-                        options={countryCodes}
-                        optionLabel="name"
-                        placeholder="Select"
-                        className="border p-0 w-full h-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
-                      />
-                    )}
+                  <Dropdown
+                    value="+1"
+                    disabled={true}
+                    placeholder="+1-US"
+                    className="border p-0 w-full h-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                   />
                 </span>
                 <Controller
-                  name="phoneNumber"
+                  name="phoneNo"
                   control={control}
-                  defaultValue={user.phoneNumber}
                   rules={{
-                    required: "Phone number is required",
-                    minLength: {
-                      value: 6,
-                      message: "Phone number can't be less than 6 digits",
-                    },
+                    validate: validatePhoneNumber,
                   }}
                   render={({ field }) => (
                     <InputNumber
                       {...field}
                       inputId="phoneNumber"
-                      onChange={(e) =>
-                        e.value && setValue("phoneNumber", e.value)
-                      }
+                      onChange={(e) => {
+                        setValue("phoneNo", e?.value ? e.value : null);
+                        trigger("phoneNo");
+                      }}
                       placeholder="Phone Number"
                       useGrouping={false}
                       className="border custom-input border-gray-300 rounded-r-lg w-[50%]"
@@ -455,10 +501,8 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   )}
                 />
               </div>
-              {errors.phoneNumber && (
-                <span className="text-red-700 text-xs">
-                  {errors.phoneNumber.message}
-                </span>
+              {errors.phoneNo && (
+                <ErrorMessage message={errors.phoneNo.message} />
               )}
             </div>
             <div className="pt-4">
@@ -470,37 +514,22 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </label>
               <div className="p-inputgroup buttonGroup  flex-1 w-full h-[2.5rem]">
                 <span className="country-code w-[50%] align-middle">
-                  <Controller
-                    name="alternateNumberCode"
-                    control={control}
-                    defaultValue={user.alternateNumberCode}
-                    render={({ field }) => (
-                      <Dropdown
-                        {...field}
-                        onChange={(e: DropdownChangeEvent) =>
-                          e.value && setValue("alternateNumberCode", e.value)
-                        }
-                        options={countryCodes}
-                        optionLabel="name"
-                        placeholder="Select"
-                        className="border rounded-r-lg p-0 h-full w-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
-                      />
-                    )}
+                  <Dropdown
+                    value="+1"
+                    placeholder="+1-US"
+                    disabled
+                    className="border rounded-r-lg p-0 h-full w-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                   />
                 </span>
                 <Controller
-                  name="alternativeNumber"
+                  name="alternateNo"
                   control={control}
-                  defaultValue={user.alternativeNumber}
-                  rules={{
-                    required: "Phone number is required",
-                  }}
                   render={({ field }) => (
                     <InputNumber
                       inputId="alternateNumberCode"
-                      value={Number(field.value)}
+                      value={(field.value && Number(field.value)) || 0}
                       onChange={(e) =>
-                        e.value && setValue("alternativeNumber", e.value)
+                        e.value && setValue("alternateNo", e.value)
                       }
                       placeholder="Phone Number"
                       useGrouping={false}
@@ -520,17 +549,12 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   required: "City can not be empty.",
                 })}
                 name={`city`}
-                onChange={(event) => setValue("city", event?.target?.value)}
                 className="cimpar-input focus:outline-none"
                 type="text"
                 id="city"
                 placeholder="City"
               />
-              {errors.city && (
-                <span className="text-red-700 text-xs">
-                  {errors.city.message}
-                </span>
-              )}
+              {errors.city && <ErrorMessage message={errors.city.message} />}
             </div>
             <div className="pt-4">
               <label className="block input-label pb-1" htmlFor="zipCode">
@@ -552,9 +576,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 )}
               />
               {errors.zipCode && (
-                <span className="text-red-700 text-xs">
-                  {errors.zipCode.message}
-                </span>
+                <ErrorMessage message={errors.zipCode.message} />
               )}
             </div>
             <div className="pt-4 col-span-2">
@@ -563,21 +585,16 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </label>
               <input
                 {...register("fullAddress", {
-                  required: "Address can not be empty.",
+                  required: "Address can't be empty.",
                 })}
                 name={`fullAddress`}
-                onChange={(event) =>
-                  setValue("fullAddress", event?.target?.value)
-                }
                 className="cimpar-input focus:outline-none"
                 type="text"
                 id="fullAddress"
                 placeholder="Full address"
               />
               {errors.fullAddress && (
-                <span className="text-red-700 text-xs">
-                  {errors.fullAddress.message}
-                </span>
+                <ErrorMessage message={errors.fullAddress.message} />
               )}
             </div>
             <div className="pt-4">
@@ -593,7 +610,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 control={control}
                 defaultValue={user.state}
                 rules={{
-                  required: "State can not be empty",
+                  required: "State can't be empty",
                 }}
                 render={({ field }) => (
                   <Dropdown
@@ -607,11 +624,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   />
                 )}
               />
-              {errors.state && (
-                <span className="text-red-700 text-xs">
-                  {errors.state.message}
-                </span>
-              )}
+              {errors.state && <ErrorMessage message={errors.state.message} />}
             </div>
             <div className="pt-4">
               <label
@@ -621,29 +634,26 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               >
                 Country*
               </label>
-              <Controller
+              {/* <Controller
                 name="country"
                 control={control}
                 defaultValue={user.country}
                 rules={{
                   required: "Country can not be empty",
                 }}
-                render={({ field }) => (
-                  <Dropdown
-                    id="country"
-                    onChange={(e) => setValue("country", e.target.value)}
-                    options={countries}
-                    optionLabel="name"
-                    placeholder="Select a Country"
-                    className="dropdown w-full md:w-14rem border border-gray-300  rounded-lg !py-[0.4rem]"
-                    value={field.value}
-                  />
-                )}
+                render={({ field }) => ( */}
+              <Dropdown
+                id="country"
+                value="USA"
+                onChange={(e) => setValue("country", e.target.value)}
+                placeholder="USA"
+                disabled
+                className="dropdown w-full md:w-14rem border border-gray-300  rounded-lg !py-[0.4rem]"
               />
+              {/* )}
+              /> */}
               {errors.country && (
-                <span className="text-red-700 text-xs">
-                  {errors.country.message}
-                </span>
+                <ErrorMessage message={errors.country.message} />
               )}
             </div>
           </div>

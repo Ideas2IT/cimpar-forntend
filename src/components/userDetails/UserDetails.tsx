@@ -1,61 +1,80 @@
-import { useEffect } from "react";
 import { IUser } from "../../interfaces/User";
-import { getFullPhoneNUmber } from "../../services/commonFunctions";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { getPatinetDetailsThunk } from "../../store/slices/PatientSlice";
-import { format } from "date-fns";
+import {
+  convertToFeetAndInches,
+  createFullName,
+  getFullPhoneNumber,
+} from "../../services/commonFunctions";
+import { useSelector } from "react-redux";
+import { selectSelectedPatient } from "../../store/slices/PatientSlice";
+import { dateFormatter } from "../../utils/Date";
+import React from "react";
 
-const UserDetails = ({ patient }: { patient: IUser }) => {
-  const patientDetails = [
-    {
-      label: "NAME",
-      value:
-        patient.firstName + " " + patient.middleName ||
-        "" + " " + patient.lastName ||
-        "",
-    },
-    { label: "DOB", value: format(new Date(patient.dob), "dd MMM, yyyy") },
-    { label: "GENDER", value: patient.gender },
-    { label: "RACE", value: patient.race },
-    {
-      label: "HEIGHT",
-      value:
-        patient.height.feet +
-        " feet, " +
-        patient.height.inches.toString().padStart(2, "0") +
-        " inches ",
-    },
-    { label: "WEIGHT", value: patient.weight + " Pounds" },
-    { label: "ETHNICITY", value: patient.ethnicity },
-  ];
+const UserDetails = () => {
+  const selectedPatient = useSelector(selectSelectedPatient);
 
-  const contactDetails = [
-    {
-      label: "PHONE NUMBER",
-      value: getFullPhoneNUmber(
-        patient.countryCode,
-        String(patient.phoneNumber)
-      ),
-    },
-    {
-      label: "ALTERNATIVE NUMBER",
-      value: patient.alternativeNumber ? patient.alternativeNumber : "None",
-    },
-    {
-      label: "FULL ADDRESS",
-      value: patient.fullAddress,
-    },
-    { label: "ZIP CODE", value: patient.zipCode },
-    { label: "CITY", value: patient.city },
-    { label: "STATE", value: patient.state },
-    { label: "COUNTRY", value: patient.country },
-  ];
-  const dispatch = useDispatch<AppDispatch>();
+  const patientDetails = React.useMemo(
+    () => [
+      {
+        label: "NAME",
+        value: createFullName(
+          selectedPatient?.basicDetails?.firstName || "",
+          selectedPatient?.basicDetails?.middleName || "",
+          selectedPatient?.basicDetails?.lastName || ""
+        ),
+      },
+      {
+        label: "DOB",
+        value: dateFormatter(selectedPatient?.basicDetails?.dob) || "",
+      },
+      { label: "GENDER", value: selectedPatient?.basicDetails?.gender || "" },
+      //TODO: need to wait until backend response will return this parameter
+      { label: "RACE", value: selectedPatient?.basicDetails?.race || "" },
+      {
+        label: "HEIGHT",
+        value:
+          convertToFeetAndInches(selectedPatient?.basicDetails?.height).feet +
+          " feet, " +
+          convertToFeetAndInches(selectedPatient?.basicDetails?.height).inches +
+          " inches ",
+      },
+      {
+        label: "WEIGHT",
+        value: selectedPatient?.basicDetails?.weight || "0" + " Pounds",
+      },
+      {
+        label: "ETHNICITY",
+        value: selectedPatient?.basicDetails?.ethnicity || "",
+      },
+    ],
+    [selectedPatient]
+  );
 
-  useEffect(() => {
-    dispatch(getPatinetDetailsThunk(1));
-  }, []);
+  const contactDetails = React.useMemo(
+    () => [
+      {
+        label: "PHONE NUMBER",
+        value: selectedPatient.basicDetails?.phoneNo,
+      },
+      {
+        label: "ALTERNATIVE NUMBER",
+        value: selectedPatient?.basicDetails?.alternateNo
+          ? getFullPhoneNumber(
+              selectedPatient?.basicDetails?.alternateCode,
+              selectedPatient.basicDetails?.alternateNo.toString()
+            )
+          : "None",
+      },
+      {
+        label: "FULL ADDRESS",
+        value: selectedPatient?.basicDetails?.address,
+      },
+      { label: "ZIP CODE", value: selectedPatient?.basicDetails?.zipCode },
+      { label: "CITY", value: selectedPatient?.basicDetails?.city },
+      { label: "STATE", value: selectedPatient?.basicDetails?.state },
+      { label: "COUNTRY", value: selectedPatient?.basicDetails?.country },
+    ],
+    [selectedPatient]
+  );
 
   return (
     <div className="p-3">
@@ -66,7 +85,7 @@ const UserDetails = ({ patient }: { patient: IUser }) => {
             <PatientDetails
               key={detail.label}
               label={detail.label}
-              value={detail.value}
+              value={String(detail.value) || ""}
             />
           );
         })}
@@ -92,16 +111,16 @@ export const PatientDetails = ({
   label,
   value,
 }: {
-  value: string | number;
+  value: string;
   label: string;
 }) => {
   return (
     <div className="border-b border-gray-100">
-      <div className="font-secondary text-sm text-gray-500 py-2 max-w-[100%] text-ellipsis overflow-hidden">
+      <div className="font-secondary text-sm text-[#283956] opacity-65 py-2 max-w-[100%] text-ellipsis overflow-hidden">
         {label ? label : "-"}
       </div>
       <div
-        title={value.toString()}
+        title={value}
         className="font-primary pb-2 text-[#283956] capitalize text-clip"
       >
         {value ? value : "-"}

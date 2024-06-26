@@ -63,9 +63,7 @@ const LabTestResults = () => {
   const [selectedTab, setSelectedTab] = useState("Service History");
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
-  const [selectedServices, setSelectedServices] = useState([
-    1, 2, 3,
-  ] as number[]);
+  const [selectedServices, setSelectedServices] = useState<number[]>([1, 2, 3]);
 
   //TODO: Need to call API with search query
   const handleSearch = (value: string) => {
@@ -134,7 +132,7 @@ const LabTestResults = () => {
         </div>
         <div className="flex items-center">
           <div
-            className={`${selectedTab === "Service History" ? "rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center cursor-pointer" : "hidden"}`}
+            className={`${selectedTab === "Service History" ? "rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center bg-white cursor-pointer" : "hidden"}`}
             onClick={(event) => {
               op.current?.toggle(event);
               setIsOpen((prev) => !prev);

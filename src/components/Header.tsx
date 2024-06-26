@@ -6,13 +6,14 @@ import HeaderContext from "../context/HeaderContext";
 import localStorageService from "../services/localStorageService";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
-import { selectedUser, setIsLoggedIn } from "../store/slices/commonSlice";
 import CustomModal from "./customModal/CustomModal";
 import ChangePassword from "./changePassword/ChangePassword";
+import { logoutThunk, signOut } from "../store/slices/loginSlice";
+import { selectUserProfile } from "../store/slices/UserSlice";
 const Header = () => {
-  const { value } = useContext(HeaderContext);
+  const { username } = useContext(HeaderContext);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const loggedInUser = useSelector(selectedUser);
+  const selectedUserProfile = useSelector(selectUserProfile);
 
   const op = useRef<OverlayPanel>(null);
   const [toggleButton, setToggleButton] = useState(false);
@@ -22,7 +23,9 @@ const Header = () => {
   };
   return (
     <div className="flex text-black justify-between items-center mb-6 mx-6">
-      <p className="font-bold text-2xl font-primary text-gray-700">{value}</p>
+      <p className="font-bold text-2xl font-primary text-gray-700">
+        {username}
+      </p>
       <div
         onClick={(event) => {
           op?.current?.toggle(event);
@@ -32,19 +35,18 @@ const Header = () => {
       >
         <Button
           unstyled
-          title={loggedInUser.email}
-          label={loggedInUser.email}
+          title={selectedUserProfile.email}
+          label={selectedUserProfile.email}
           className=" max-w-[90%] truncate"
           severity="info"
           text
           raised
           outlined={false}
-        ></Button>
-        {toggleButton ? (
-          <i className="px-1 pi pi-sort-up-fill px-3" />
-        ) : (
-          <i className="px-1 pi pi-sort-down-fill px-3" />
-        )}
+        />
+
+        <i
+          className={`px-1 pi px-3 ${toggleButton ? "pi-sort-up-fill" : "pi-sort-down-fill"}`}
+        />
       </div>
       <OverlayPanel
         unstyled
@@ -77,13 +79,15 @@ export const LogoutPopover = ({
 
   //TODO: Need to write the logic to delete all the credentials from storage
   const handleLogout = () => {
-    localStorageService.clearTokens();
-    dispatch(setIsLoggedIn({ emial: "", status: false }));
+    localStorageService.logout();
+    location.pathname = "/";
+    dispatch(signOut());
+    dispatch(logoutThunk());
   };
   return (
     <ul>
       <li
-        className="py-3 cursor-pointer px-8 border-bottom hover:bg-pink-50"
+        className="py-3 cursor-pointer px-8 border-bottom hover:bg-[#EEF1F4] hover:text-[#2D6D80]"
         onClick={() => handleChangePassword()}
       >
         Change Password

@@ -1,7 +1,5 @@
 import {
   IPatientMedicalDetails,
-  allergies,
-  medicalConditons,
   patientMedicalDetails,
 } from "../../assets/MockData";
 import { InputText } from "primereact/inputtext";
@@ -17,6 +15,16 @@ import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 import { user } from "../userProfilePage/UserProfilePage";
+import { handleKeyPress } from "../../services/commonFunctions";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import {
+  getAllergiesByQueryThunk,
+  getMedicalConditionsByQueryThunk,
+  selectAllergies,
+  selectConditions,
+} from "../../store/slices/masterTableSlice";
 
 const EditMedicalConditions = () => {
   const { control, handleSubmit, setValue, watch } = useForm({
@@ -25,9 +33,10 @@ const EditMedicalConditions = () => {
   const areFamilyConditions = watch("areFamilyConditions");
   const { toast, successToast } = useToast();
   const navigate = useNavigate();
-
+  const dispatch = useDispatch<AppDispatch>();
+  const filteredAllergies = useSelector(selectAllergies);
+  const filteredConditions = useSelector(selectConditions);
   const handleFormSubmit = (data: IPatientMedicalDetails) => {
-    
     successToast(
       "Updated Successfully",
       "Medical conditions updated successfully"
@@ -38,17 +47,26 @@ const EditMedicalConditions = () => {
     }, 1500);
     console.log(data);
   };
+
+  const searchMedicalConditions = (event: AutoCompleteCompleteEvent) => {
+    setTimeout(() => {
+      if (event.query.trim().length > 1) {
+        dispatch(getMedicalConditionsByQueryThunk(event.query));
+      }
+    }, 300);
+  };
+  const searchAllergies = (event: AutoCompleteCompleteEvent) => {
+    setTimeout(() => {
+      if (event.query.trim().length > 1) {
+        dispatch(getAllergiesByQueryThunk(event.query));
+      }
+    }, 300);
+  };
   return (
     <>
       <form
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            if (document.activeElement?.tagName !== "BUTTON") {
-              event.preventDefault();
-            }
-          }
-        }}
+        onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-col md:flex-row justify-between py-2">
           <BackButton
@@ -95,11 +113,12 @@ const EditMedicalConditions = () => {
               defaultValue={patientMedicalDetails.medicalConditions}
               render={({ field }) => (
                 <CustomAutoComplete
+                  handleSearch={searchMedicalConditions}
                   inputId="medicalConditions"
                   handleSelection={(data) =>
                     setValue("medicalConditions", data)
                   }
-                  items={medicalConditons}
+                  items={filteredConditions}
                   selectedItems={field.value}
                 />
               )}
@@ -145,9 +164,10 @@ const EditMedicalConditions = () => {
               defaultValue={patientMedicalDetails.allergies}
               render={({ field }) => (
                 <CustomAutoComplete
+                  handleSearch={searchAllergies}
                   inputId="allergies"
                   handleSelection={(data) => setValue("allergies", data)}
-                  items={allergies}
+                  items={filteredAllergies}
                   selectedItems={field.value}
                 />
               )}

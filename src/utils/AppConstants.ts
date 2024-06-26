@@ -3,8 +3,8 @@ export const ERROR = {
 };
 
 export const ROLE = {
-  ADMIN: "ADMIN",
-  PATIENT: "PATIENT",
+  ADMIN: "admin",
+  PATIENT: "patient",
 };
 
 export const PATTERN = {
@@ -30,6 +30,12 @@ export const PATH_NAME = {
   APPOINTMENTS: "/appointments",
 };
 
+export const RESPONSE = {
+  FULFILLED: "fulfilled",
+  REJECTED: "rejected",
+  PENDING: "pending",
+};
+
 export const MESSAGE = {
   PASSWORD_VERIFIED: "Your Email address has been verified successfully.",
   SIGNUP_SUCCESSFUL:
@@ -50,3 +56,12 @@ export const MESSAGE = {
   PASSWORD_UPDATE_FAILED_MESSAGE:
     "New password does not match with confirm password.",
 };
+
+export const INSURANCE_TYPE = {
+  PRIMARY: 1,
+  SECONDARY: 2,
+  TERTIARY: 3,
+};
+export const CLIENT_ID = "cimpar-client-jwt";
+export const GRANT_TYPE = "password";
+export const SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";

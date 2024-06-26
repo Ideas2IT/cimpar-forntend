@@ -1,1 +1,1 @@
-module.exports = 'svgMock';
+module.exports = 'test-file-stub';
