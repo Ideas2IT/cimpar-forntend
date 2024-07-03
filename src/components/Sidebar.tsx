@@ -9,11 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
 import { setSelectedSidebarTab } from "../store/slices/commonSlice";
 import { PATH_NAME } from "../utils/AppConstants";
-import {
-  selectProfileName,
-  selectUserProfile,
-} from "../store/slices/UserSlice";
-import { getPatientDetailsThunk } from "../store/slices/PatientSlice";
+import { selectProfileName } from "../store/slices/UserSlice";
 import { selectRole } from "../store/slices/loginSlice";
 interface Tab {
   key: string;
@@ -54,14 +50,12 @@ const Sidebar = () => {
     ],
     other: [],
   };
-
   const role = useSelector(selectRole);
   const dispatch = useDispatch<AppDispatch>();
   const [selectedTab, setSelectedTab] = useState<Tab>(tabs[role][0]);
   const { updateHeaderTitle } = useContext(HeaderContext);
   const location = useLocation();
   const username = useSelector(selectProfileName);
-  const profileId = useSelector(selectUserProfile).id;
 
   useEffect(() => {
     updateHeaderTitle("Hi, " + username);

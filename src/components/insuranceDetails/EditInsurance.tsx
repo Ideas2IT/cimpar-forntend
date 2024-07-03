@@ -131,15 +131,17 @@ const EditInsurance = () => {
                 type="button"
                 style="link"
               >
-                <i className="pi pi-times me-2"></i>Cancel
+                <i className="pi pi-times me-2" />
+                Cancel
               </Button>
             </Link>
             <PrimeButton
-              className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
+              className="ml-3 font-primary button-purple border px-4 py-2 h-[40px] rounded-full border-purple shadow-none"
               outlined
               onClick={() => handleSubmit}
             >
-              <i className="pi pi-check me-2"></i>Save
+              <i className="pi pi-check me-2" />
+              Save
             </PrimeButton>
           </div>
         </div>

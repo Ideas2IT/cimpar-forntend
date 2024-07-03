@@ -1,4 +1,3 @@
-import { IUser } from "../../interfaces/User";
 import {
   convertToFeetAndInches,
   createFullName,
@@ -27,7 +26,6 @@ const UserDetails = () => {
         value: dateFormatter(selectedPatient?.basicDetails?.dob) || "",
       },
       { label: "GENDER", value: selectedPatient?.basicDetails?.gender || "" },
-      //TODO: need to wait until backend response will return this parameter
       { label: "RACE", value: selectedPatient?.basicDetails?.race || "" },
       {
         label: "HEIGHT",

@@ -3,6 +3,7 @@ import { RootState } from "../store";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import {
   addInsurance,
+  addMedicationDetails,
   addVisitHistory,
   deleteInsurance,
   deleteVisitHistoryById,
@@ -31,7 +32,8 @@ import {
   deleteInsurancePayload,
 } from "../../interfaces/insurance";
 import {
-  IMedicaine,
+  ICreateMedication,
+  IMedicine,
   IMedicationDetails,
   IUpdateMedicationPayload,
 } from "../../interfaces/medication";
@@ -76,7 +78,7 @@ function transformVisitHistory(data: any) {
         visitLocation: resource.location[0].location.display || "",
         admissionDate: resource.period.start || "",
         dischargeDate: resource.period.end || "",
-        followUpCare: "",
+        followUpCare: resource?.type?.[0]?.coding?.[0]?.display || "",
         hospitalContact: "",
         id: resource.id,
         patientNotes: "",
@@ -90,40 +92,72 @@ function transformVisitHistory(data: any) {
 function transformMedication(data: any) {
   let medicationResponse: IMedicationDetails = {} as IMedicationDetails;
   if (data?.medication_request?.total) {
-    const currentMedication = data.medication_request.entry.map(
+    medicationResponse.requestId =
+      data?.medication_request?.entry[0]?.resource?.id || "";
+    const currentMedication = data?.medication_request?.entry?.map(
       (entity: any) => {
         const resource = entity.resource;
-        return resource.medicationCodeableConcept.coding.map(
-          (medicine: any) => {
-            return { ...medicine, id: resource.id };
+        return resource?.medicationCodeableConcept?.coding?.map(
+          (medicine: IMedicine) => {
+            return { ...medicine };
           }
         );
       }
     );
-    const filteredResponse = currentMedication.flatMap((item: IMedicaine) => {
+    const filteredResponse = currentMedication.flatMap((item: IMedicine) => {
       return item;
     });
     medicationResponse.currentTakingMedication = filteredResponse;
   }
   if (data?.medication_statement?.total) {
+    medicationResponse.statementId =
+      data?.medication_statement?.entry[0]?.resource?.id || "";
     const medicationTakenBefore = data.medication_statement.entry.map(
       (entity: any) => {
         const resource = entity.resource;
         return resource.medicationCodeableConcept.coding.map(
           (medicine: any) => {
-            return { ...medicine, id: resource.id };
+            return { ...medicine};
           }
         );
       }
     );
     const filteredResponse = medicationTakenBefore.flatMap(
-      (item: IMedicaine) => {
+      (item: IMedicine) => {
         return item;
       }
     );
     medicationResponse.medicationTakenBefore = filteredResponse;
   }
   return medicationResponse;
+}
+
+interface AllergiesAndCondtions {
+  medicalConditions: string[];
+  allergies: string[];
+}
+
+function transformMedicalCondtions(data: any) {
+  let conditionsAndAllergies: AllergiesAndCondtions =
+    {} as AllergiesAndCondtions;
+  if (data?.length) {
+    if (data[0]?.total) {
+      const copyCondtions = data[0].entry.map((entity: any) => {
+        const resource = entity.resource;
+        return resource?.code?.coding[0]?.display || "";
+      });
+      conditionsAndAllergies.medicalConditions = copyCondtions;
+    }
+    if (data[1]?.total) {
+      const allergies = data[1]?.entry?.map((entity: any) => {
+        const resource = entity?.resource;
+        return resource?.code?.coding[0]?.display;
+      });
+      conditionsAndAllergies.allergies = allergies;
+    }
+  } else {
+    return { medicalConditions: [] as string[], allergies: [] as string[] };
+  }
 }
 
 export const getPatientDetailsThunk = createAsyncThunk(
@@ -170,17 +204,6 @@ export const updatePatientProfileThunk = createAsyncThunk(
   }
 );
 
-// export const getAllPatientsThunk = createAsyncThunk(
-//   "allPatients/get",
-//   async (id: number) => {
-//     try {
-//       const userResponse = await getPatientDetails(id);
-//       return userResponse.data;
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   }
-// );
 export const getPatientMedicationThunk = createAsyncThunk(
   "medication/get",
   async (id: string, { rejectWithValue }) => {
@@ -216,6 +239,28 @@ export const updateMedicationByPatientIdThunk = createAsyncThunk(
         return rejectWithValue({
           message: errorMessage,
           response: error.response.status,
+        } as ErrorResponse);
+      } else {
+        return rejectWithValue({
+          message: "Unknown Error",
+        });
+      }
+    }
+  }
+);
+
+export const addMedicationDetailsThunk = createAsyncThunk(
+  "medication/post",
+  async (payload: ICreateMedication, { rejectWithValue }) => {
+    try {
+      const response = await addMedicationDetails(payload);
+      return response;
+    } catch (error) {
+      if (isAxiosError(error) && error?.message) {
+        const errorMessage = error.message;
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.response?.status,
         } as ErrorResponse);
       } else {
         return rejectWithValue({
@@ -320,7 +365,8 @@ export const getPatientMedicalConditionsThunk = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await getPatientMedicalConditions(id);
-      return response.data;
+      const _response = transformMedicalCondtions(response.data);
+      return _response;
     } catch (error) {
       if (isAxiosError(error) && error.response?.data?.message) {
         const errorMessage = error.response?.data?.message?.split(":")[0];
@@ -467,11 +513,13 @@ const commonSlice = createSlice({
       .addCase(getPatientMedicationThunk.fulfilled, (state, { payload }) => {
         state.selectedPatient.medicationDetails = payload;
       })
+      .addCase(getPatientMedicationThunk.rejected, (state) => {
+        state.selectedPatient.medicationDetails = {} as IMedicationDetails;
+      })
       .addCase(
         getVisitHistoryByPatientIdThunk.fulfilled,
         (state, { payload }) => {
           state.selectedPatient.visitHistory = [...payload];
-          console.log(payload);
         }
       );
     // .addCase(getPatientInsuranceThunk.rejected, (action) => {

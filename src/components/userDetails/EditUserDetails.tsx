@@ -1,14 +1,7 @@
 import { Controller, useForm } from "react-hook-form";
 import { IEditProfile, IUser } from "../../interfaces/User";
 import "./EditUserDetails.css";
-import {
-  countries,
-  countryCodes,
-  ethnicities,
-  genders,
-  raceList,
-  states,
-} from "../../assets/MockData";
+import { ethnicities, genders, raceList, states } from "../../assets/MockData";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { InputNumber, InputNumberChangeEvent } from "primereact/inputnumber";
 import BackButton from "../backButton/BackButton";
@@ -76,7 +69,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
       middleName: userDetails.middleName,
       phoneCode: userDetails.phoneCode,
       alternateCode: userDetails.alternateCode,
-      phoneNo: Number(splitCodeWithPhoneNumber(userDetails.phoneNo).phone) || 0,
+      phoneNo: Number(splitCodeWithPhoneNumber(userDetails.phoneNo)) || 0,
       race: userDetails.race,
       state: userDetails.state,
       weight: userDetails.weight,
@@ -110,12 +103,14 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
     };
     dispatch(updatePatientProfileThunk(payload)).then(({ meta }) => {
       if (meta.requestStatus === RESPONSE.FULFILLED) {
-        successToast("Data Updated", "Profile updated successfully");
-        if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
-          navigate(PATH_NAME.HEALTH_RECORDS);
-        } else {
-          navigate(PATH_NAME.PROFILE);
-        }
+        successToast("Updated Successfully", "Profile updated successfully");
+        setTimeout(() => {
+          if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
+            navigate(PATH_NAME.HEALTH_RECORDS);
+          } else {
+            navigate(PATH_NAME.PROFILE);
+          }
+        }, 2000);
       } else if (RESPONSE.REJECTED) {
         errorToast("Failed", "Profile updation unsuccessful");
       }
@@ -322,12 +317,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                         }}
                         placeholder="Feet"
                         value={Number(field.value) || 0}
-                        className="w-full h-full"
+                        className="w-full h-full height-feet"
                         useGrouping={false}
                       />
                     )}
                   />
-                  <span className="absolute top-[.5rem] right-5 bg-white">ft</span>
                 </span>
                 <span className="p-inputgroup-addon w-[48%] px-1 relative">
                   <Controller
@@ -340,7 +334,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       },
                       max: {
                         value: 11,
-                        message: "invalid height",
+                        message: "Invalid height",
                       },
                     }}
                     render={({ field }) => (
@@ -393,9 +387,6 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       placeholder="weight"
                       useGrouping={false}
                     />
-                    <span className="absolute right-2 top-[3rem] z-100">
-                      Lbs
-                    </span>
                   </>
                 )}
               />
@@ -428,7 +419,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     options={raceList}
                     optionLabel="name"
                     placeholder="Select"
-                    className="race-dropdown"
+                    className="race-dropdown items-center"
                   />
                 )}
               />
@@ -634,14 +625,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               >
                 Country*
               </label>
-              {/* <Controller
-                name="country"
-                control={control}
-                defaultValue={user.country}
-                rules={{
-                  required: "Country can not be empty",
-                }}
-                render={({ field }) => ( */}
+
               <Dropdown
                 id="country"
                 value="USA"
@@ -650,8 +634,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 disabled
                 className="dropdown w-full md:w-14rem border border-gray-300  rounded-lg !py-[0.4rem]"
               />
-              {/* )}
-              /> */}
+
               {errors.country && (
                 <ErrorMessage message={errors.country.message} />
               )}

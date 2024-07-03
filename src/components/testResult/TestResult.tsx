@@ -9,11 +9,14 @@ import { Sidebar } from "primereact/sidebar";
 import { getRowClasses, getStatusColors } from "../../services/commonFunctions";
 import { Button } from "primereact/button";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
+import { useSelector } from "react-redux";
+import { selectLabTests } from "../../store/slices/serviceHistorySlice";
 
-const TestResult = ({ results }: { results: LabTestResult[] }) => {
+const TestResult = () => {
   const [selectedTest, setSelectedTest] = useState({} as LabTestResult);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
   const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
+  const results = useSelector(selectLabTests);
 
   const handlePageChange = (event: PaginatorPageChangeEvent) => {
     //TODO: Write logic to call api
@@ -41,7 +44,7 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
           <Button
             title="Download test report"
             label="Download"
-            className="text-purple-900 bg-purple-100 rounded-full py-1 px-3 border border-purple-900 me-3 text-sm"
+            className="text-purple-900 bg-purple-100 rounded-full py-2 px-3 border border-purple-900 me-3 text-[16px]"
             icon="pi pi-download"
           />
         )}
@@ -91,8 +94,13 @@ const TestResult = ({ results }: { results: LabTestResult[] }) => {
   return (
     <>
       <DataTable
-        selection={selectedTest}
+        // selection={selectedTest}
         value={results}
+        emptyMessage={
+          <div className="flex w-full justify-center">
+            No lab tests available
+          </div>
+        }
         selectionMode="single"
         dataKey="orderId"
         tableStyle={{ minWidth: "50rem" }}

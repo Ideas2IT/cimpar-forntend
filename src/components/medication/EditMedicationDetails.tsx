@@ -3,12 +3,10 @@ import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
 import { Controller, useForm } from "react-hook-form";
-import { IUser } from "../../interfaces/User";
 import { RadioButton } from "primereact/radiobutton";
 import "./Medication.css";
-// import { Chips } from "primereact/chips";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { PATH_NAME } from "../../utils/AppConstants";
+import { PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
@@ -21,19 +19,20 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store/store";
 import {
+  addMedicationDetailsThunk,
+  getPatientMedicationThunk,
   selectSelectedPatient,
-  updateMedicalConditonsThunk,
   updateMedicationByPatientIdThunk,
 } from "../../store/slices/PatientSlice";
 import {
+  ICreateMedication,
   IMedicationFormValues,
   IUpdateMedicationPayload,
 } from "../../interfaces/medication";
-import { useEffect, useState } from "react";
-
+import { useEffect, useRef } from "react";
 const EditMedicationDetails = () => {
   const selectedPatinet = useSelector(selectSelectedPatient);
-  const [formValues, setFormValurs] = useState<IMedicationFormValues>();
+  const initialRef = useRef(true);
   const {
     control,
     handleSubmit,
@@ -47,40 +46,83 @@ const EditMedicationDetails = () => {
   useEffect(() => {
     const medicationDetails: IMedicationFormValues = {
       currentMedication:
-        selectedPatinet.medicationDetails.currentTakingMedication,
+        selectedPatinet?.medicationDetails?.currentTakingMedication,
       hasMedicalHistory:
-        !!selectedPatinet.medicationDetails.medicationTakenBefore.length,
-      isOnMedicine: !!selectedPatinet.medicationDetails.currentTakingMedication,
+        !!selectedPatinet?.medicationDetails?.medicationTakenBefore,
+      isOnMedicine:
+        !!selectedPatinet?.medicationDetails?.currentTakingMedication,
       medicationTakenBefore:
-        selectedPatinet.medicationDetails.medicationTakenBefore,
+        selectedPatinet?.medicationDetails?.medicationTakenBefore,
     };
     reset({ ...medicationDetails });
   }, [selectedPatinet.medicationDetails]);
 
+  useEffect(() => {
+    if (initialRef?.current) {
+      initialRef.current = false;
+      return;
+    }
+    dispatch(getPatientMedicationThunk(selectedPatinet?.basicDetails?.id));
+  }, [selectedPatinet?.basicDetails?.id]);
+
   const dispatch = useDispatch<AppDispatch>();
   const filteredMedications = useSelector(selectMedications);
 
-  const { successToast, toast } = useToast();
+  const { successToast, errorToast, toast } = useToast();
   const navigate = useNavigate();
   const handleFormSubmit = (data: IMedicationFormValues) => {
     const payload: IUpdateMedicationPayload = {
-      patient_id: selectedPatinet?.basicDetails?.id,
-      request: data.currentMedication,
-      request_approved: data.isOnMedicine,
-      statement_approved: data.hasMedicalHistory,
-      request_id: data.currentMedication[0].id,
-      statement_id: data.medicationTakenBefore[0].id,
+      patient_id: selectedPatinet?.basicDetails?.id || "",
+      request: data?.currentMedication || "",
+      statement: data?.medicationTakenBefore || "",
+      request_approved: data?.hasMedicalHistory,
+      statement_approved: data?.isOnMedicine,
+      request_id: selectedPatinet?.medicationDetails?.requestId || "",
+      statement_id: selectedPatinet?.medicationDetails?.statementId || "",
     };
-    // dispatch(updateMedicationByPatientIdThunk({} as IUpdateMedicationPayload));
-    successToast(
-      "Update Successful",
-      "Medication Details has been updated successfully"
-    );
+    if (payload.statement_id || payload.request_id) {
+      dispatch(updateMedicationByPatientIdThunk(payload)).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "Updated Successfully!",
+            "Medication details has been updated successfully"
+          );
+        } else {
+          errorToast("Updation Failed", "Failed to update medication details");
+        }
+      });
+    } else {
+      const payload: ICreateMedication = {
+        request: data.medicationTakenBefore,
+        statement: data.currentMedication,
+        request_approved: data.isOnMedicine,
+        statement_approved: data.hasMedicalHistory,
+        patient_id: selectedPatinet?.basicDetails?.id || "",
+      };
+      payload.patient_id &&
+        dispatch(addMedicationDetailsThunk(payload)).then(({ meta }) => {
+          if (meta.requestId === RESPONSE.FULFILLED) {
+            successToast(
+              "Created Successfully",
+              "Medication has been created successfully"
+            );
+          } else {
+            errorToast(
+              "Failed to Create Medication",
+              "Failed to create medication for the patient. Please try again. "
+            );
+          }
+        });
+    }
+  };
+
+  const validateBoolean = (value: boolean, message: string) => {
+    return value === true || value === false || message;
   };
 
   const searchMedications = (event: AutoCompleteCompleteEvent) => {
     setTimeout(() => {
-      if (event.query.trim().length > 1) {
+      if (event.query.trim()?.length > 2) {
         dispatch(getMedicationByQueryThunk(event.query));
       }
     }, 300);
@@ -122,8 +164,8 @@ const EditMedicationDetails = () => {
                   type="submit"
                 >
                   <i className="pi pi-check me-2" />
-                  {selectedPatinet.medicationDetails.medicationTakenBefore
-                    .length
+                  {selectedPatinet?.medicationDetails?.medicationTakenBefore
+                    ?.length
                     ? "Save"
                     : "Add"}
                 </PrimeButton>
@@ -138,8 +180,10 @@ const EditMedicationDetails = () => {
               <Controller
                 name="isOnMedicine"
                 control={control}
-                rules={{ required: "Field is required" }}
-                // defaultValue={user.isOnMedicine}
+                rules={{
+                  validate: (value) =>
+                    validateBoolean(value, `On Medication field is required`),
+                }}
                 render={({ field }) => (
                   <div className="font-primary text-xl flex items-center py-4">
                     <RadioButton
@@ -194,8 +238,7 @@ const EditMedicationDetails = () => {
                       <CustomAutoComplete
                         {...field}
                         handleSearch={searchMedications}
-                        // selectedItems={field.value}
-                        selectedItems={[] as string[]}
+                        selectedItems={field.value}
                         handleSelection={(medicines) => {
                           setValue("currentMedication", medicines);
                         }}
@@ -215,7 +258,10 @@ const EditMedicationDetails = () => {
               <Controller
                 name="hasMedicalHistory"
                 control={control}
-                rules={{ required: "Field is required" }}
+                rules={{
+                  validate: (value) =>
+                    validateBoolean(value, `On Medication field is required`),
+                }}
                 render={({ field }) => (
                   <div className="flex font-primary text-xl items-center">
                     <RadioButton
@@ -257,26 +303,11 @@ const EditMedicationDetails = () => {
                   <Controller
                     name="medicationTakenBefore"
                     control={control}
-                    // defaultValue={user.medicationTakenBefore}
                     render={({ field }) => (
-                      // <Chips
-                      //   {...field}
-                      //   tooltipOptions={{ position: "bottom" }}
-                      //   className="chips"
-                      //   tooltip="Enter your medication name(s), separated by commas"
-                      //   removeIcon={"pi pi-times"}
-                      //   placeholder={
-                      //     !field.value.length
-                      //       ? "Enter your medication name(s), separated by commas"
-                      //       : ""
-                      //   }
-                      //   separator=","
-                      // />
                       <CustomAutoComplete
                         {...field}
                         handleSearch={searchMedications}
-                        // selectedItems={field.value}
-                        selectedItems={[] as string[]}
+                        selectedItems={field.value}
                         handleSelection={(medicines) => {
                           setValue("medicationTakenBefore", medicines);
                         }}

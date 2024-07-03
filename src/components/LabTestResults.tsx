@@ -1,18 +1,31 @@
 import Tab from "../interfaces/Tab";
 import VerticalTabView from "./VerticalTabView";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import SearchInput from "./SearchInput";
 import SlideBack from "../assets/icons/slideback.svg?react";
 import SlideOpen from "../assets/icons/slideOpen.svg?react";
 import Immunization from "./testResult/Immunization";
 import TestResult from "./testResult/TestResult";
 import ServiceHistory from "./serviceHistory/ServiceHistory";
-import { labResults, services } from "../assets/MockData";
 import FilterIcon from "../assets/icons/filter.svg?react";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { IItem } from "./appointmentForm/AppointmentForm";
+import { useDispatch, useSelector } from "react-redux";
+import { selectSelectedPatient } from "../store/slices/PatientSlice";
+import { AppDispatch } from "../store/store";
+import {
+  IServiceHistory,
+  IServiceHistoryPayload,
+  ITestResultPayload,
+} from "../interfaces/immunization";
+import {
+  getImmunizationsByPatientIdThunk,
+  getLabTestsThunk,
+  getServiceHistoryThunk,
+} from "../store/slices/serviceHistorySlice";
+import { TABS } from "../utils/AppConstants";
 export interface LabTestResult {
   testName: string;
   testedAt: string;
@@ -29,6 +42,10 @@ export interface LabTestResult {
 }
 
 const LabTestResults = () => {
+  const patient = useSelector(selectSelectedPatient);
+  const dispatch = useDispatch<AppDispatch>();
+  const [serviceHistory, setServieHistory] = useState<IServiceHistory[]>([]);
+
   const tabs: Tab[] = [
     {
       key: "pastHealthRecord",
@@ -44,7 +61,7 @@ const LabTestResults = () => {
       value: "Lab Results",
       content: (
         <div className="px-6 py-1 h-full">
-          <TestResult results={labResults} />
+          <TestResult />
         </div>
       ),
     },
@@ -58,17 +75,60 @@ const LabTestResults = () => {
       ),
     },
   ];
+  const services = [
+    { id: 1, name: "All Services" },
+    { id: 2, name: "Lab Tests" },
+    { id: 3, name: "Immunization" },
+  ];
 
   const [hideTabs, setHideTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Service History");
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
   const [selectedServices, setSelectedServices] = useState<number[]>([1, 2, 3]);
+  const [searchValue, setSearchValue] = useState("");
 
   //TODO: Need to call API with search query
   const handleSearch = (value: string) => {
-    console.log(value);
+    setSearchValue(value);
   };
+
+  const handleTabChange = (tab: string) => {
+    setSelectedTab(tab);
+  };
+
+  const callResource = () => {
+    if (!patient?.basicDetails?.id) {
+      return;
+    }
+    if (selectedTab === TABS.SERVICE_HISTORY) {
+      const payload: IServiceHistoryPayload = {
+        immunization: selectedServices.includes(1),
+        labtest: selectedServices.includes(2),
+        patinetId: patient?.basicDetails?.id,
+        searchValue: searchValue,
+      };
+      dispatch(getServiceHistoryThunk(payload));
+    } else if (selectedTab === TABS.IMMUNIZATION) {
+      dispatch(getImmunizationsByPatientIdThunk(patient?.basicDetails?.id));
+    } else {
+      const payload: ITestResultPayload = {
+        patinetId: patient?.basicDetails?.id,
+        searchValue: searchValue,
+      };
+      dispatch(getLabTestsThunk(payload));
+    }
+  };
+
+  useEffect(() => {
+    if (searchValue) {
+      setSearchValue("");
+    }
+  }, [selectedTab]);
+
+  useEffect(() => {
+    callResource();
+  }, [selectedTab, searchValue, patient?.basicDetails?.id]);
 
   const handleServiceFilter = (newService: IItem) => {
     if (
@@ -106,16 +166,6 @@ const LabTestResults = () => {
 
   const handleFilter = () => {};
 
-  const setLabel = () => {
-    if (selectedServices.includes(1) || !selectedServices.length) {
-      return "All Services";
-    } else if (selectedServices.includes(2)) {
-      return "Lab Tests";
-    } else {
-      return "Immunization";
-    }
-  };
-
   return (
     <div className="flex flex-col flex-grow px-6">
       <div className="flex justify-between items-center mb-3">
@@ -139,7 +189,7 @@ const LabTestResults = () => {
             }}
           >
             <FilterIcon className="mx-3 color-primary" />
-            <span className="color-primary">{setLabel()}</span>
+            <span className="color-primary">All Services</span>
             <span
               className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
             />
@@ -192,14 +242,14 @@ const LabTestResults = () => {
               </div>
             </div>
           </OverlayPanel>
-          <SearchInput handleSearch={handleSearch} />
+          <SearchInput handleSearch={handleSearch} value={searchValue} />
         </div>
       </div>
       <div className="flex flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">
         <VerticalTabView
           tabs={tabs}
           hideTabs={hideTabs}
-          changeTab={setSelectedTab}
+          changeTab={handleTabChange}
         />
       </div>
     </div>

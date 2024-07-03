@@ -24,7 +24,7 @@ import {
 type loggedInUserSliceState = {
   loggedInUserData: {
     emailVerified: boolean | undefined;
-    role: "patient" | "admin" | "other";
+    role: "admin" | "patient" | "other";
     error: string;
   };
 };
@@ -33,7 +33,7 @@ const initialState: loggedInUserSliceState = {
   loggedInUserData: {
     emailVerified: sessionStorage.getItem("accessToken") ? true : false,
     role:
-      _role === "patinet" ? "patient" : _role === "admin" ? "admin" : "other",
+      _role === "patient" ? "patient" : _role === "admin" ? "admin" : "other",
     error: "",
   },
 };
@@ -45,15 +45,16 @@ export const loginUserThunk = createAsyncThunk(
       const loginResponse = await login(payload);
       return { req: payload, res: loginResponse.data };
     } catch (error) {
-      if (isAxiosError(error) && error.response?.data?.message) {
-        const errorMessage = error.response?.data?.message?.split(":")[0];
+      if (isAxiosError(error) && error?.message) {
+        const errorMessage = error.message;
         return rejectWithValue({
           message: errorMessage,
-          response: error.response.status,
+          response: error?.status,
         } as ErrorResponse);
       } else {
         return rejectWithValue({
           message: "Unknown Error",
+
         });
       }
     }
@@ -208,6 +209,9 @@ const loggedInUserSlice = createSlice({
       state.loggedInUserData.emailVerified = false;
       localStorageService.clearTokens();
     },
+    setAuthState: (state, action) => {
+      state.loggedInUserData.emailVerified = action.payload.isAuthenticated;
+    },
     // updateLoggedInUserProfile: (state, { payload }) => {
     //   if (state.loggedInUserData.userInfo) {
     //     state.loggedInUserData.userInfo.firstName = payload.first_name || "";
@@ -219,19 +223,11 @@ const loggedInUserSlice = createSlice({
     builder
       .addCase(loginUserThunk.fulfilled, (state, { payload }) => {
         state.loggedInUserData = payload?.res;
-        localStorage.setItem("role", payload.res.role);
+        localStorage.setItem("role", payload?.res?.role);
         localStorageService.setAccessToken(payload?.res.access_token);
+        localStorage.setItem("refresh_token", payload.res.refresh_token);
         localStorage.setItem("email", payload?.req?.username || "");
-        localStorage.setItem(
-          "refresh_token",
-          payload?.res?.refresh_token || ""
-        );
-        localStorage.setItem("password", payload?.req.password || "");
         state.loggedInUserData.emailVerified = true;
-        sessionStorage.setItem(
-          "okr_info",
-          JSON.stringify(payload?.res?.userInfo)
-        );
       })
       .addCase(loginUserThunk.rejected, () => {
         localStorageService.logout;
@@ -257,7 +253,7 @@ const loggedInUserSlice = createSlice({
 
 const { reducer } = loggedInUserSlice;
 
-export const { signOut } = loggedInUserSlice.actions;
+export const { signOut, setAuthState } = loggedInUserSlice.actions;
 export const selectIsEmailVerified = (state: RootState) =>
   state.loggedInUser.loggedInUserData.emailVerified;
 export const selectRole = (state: RootState) =>

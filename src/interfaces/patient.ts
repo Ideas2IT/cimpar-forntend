@@ -57,6 +57,8 @@ export interface IPatient {
   basicDetails: IPatientDetailsResponse;
   medicationDetails: IMedicationDetails;
   visitHistory: IVisitHistory[];
+  medicalConditions: string[];
+  allergies: string;
 }
 
 export interface IUpdateAllergiesAndConditionsPayload {

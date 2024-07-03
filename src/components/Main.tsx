@@ -2,13 +2,19 @@ import Header from "./Header";
 import "../../node_modules/primereact/resources/themes/fluent-light/theme.css";
 import "../../node_modules/primereact/resources/primereact.min.css";
 import "../../node_modules/primeicons/primeicons.css";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectRole } from "../store/slices/loginSlice";
+import { ROLE } from "../utils/AppConstants";
 
 const Main = () => {
+  const role = useSelector(selectRole);
+  console.log()
   return (
     <div className="flex flex-col flex-grow bg-gray-100 p-8">
       <Header />
       <Outlet />
+      {role === ROLE.ADMIN && <Navigate to="/appointments" />}
     </div>
   );
 };

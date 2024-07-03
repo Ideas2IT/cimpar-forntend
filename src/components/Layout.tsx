@@ -1,25 +1,21 @@
 import { useEffect, useState } from "react";
-import HeaderContext from ".././context/HeaderContext";
-import Main from "./Main";
-import Sidebar from "./Sidebar";
-import LoginForm from "./loginForm/LoginForm";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-import SetPassword from "./setPassword/SetPassword";
+import HeaderContext from ".././context/HeaderContext";
+import localStorageService from "../services/localStorageService";
+import { getPatientDetailsThunk } from "../store/slices/PatientSlice";
 import {
   getUserProfileThunk,
   selectProfileName,
   selectUserProfile,
 } from "../store/slices/UserSlice";
-import {
-  loginUserThunk,
-  selectIsEmailVerified,
-  selectRole,
-} from "../store/slices/loginSlice";
-import localStorageService from "../services/localStorageService";
+import { selectIsEmailVerified, selectRole } from "../store/slices/loginSlice";
 import { AppDispatch } from "../store/store";
-import { CLIENT_ID, RESPONSE, ROLE } from "../utils/AppConstants";
-import { getPatientDetailsThunk } from "../store/slices/PatientSlice";
+import { ROLE } from "../utils/AppConstants";
+import Main from "./Main";
+import Sidebar from "./Sidebar";
+import LoginForm from "./loginForm/LoginForm";
+import SetPassword from "./setPassword/SetPassword";
 
 const Layout = () => {
   const user = useSelector(selectProfileName);
@@ -27,7 +23,7 @@ const Layout = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    setUsername(user);
+    setUsername("Hi ," + user);
   }, [user]);
 
   const updateHeaderTitle = (newValue: string) => {
@@ -45,18 +41,13 @@ const Layout = () => {
   useEffect(() => {
     if (localStorageService.getAccessToken()) {
       const email = localStorage.getItem("email");
-      const password = localStorage.getItem("password");
-      if (email && password) {
-        dispatch(
-          loginUserThunk({
-            username: email,
-            password: password,
-            client_id: CLIENT_ID,
-            grant_type: "password",
-          })
-        ).then(({ meta }) => {
-          if (meta.requestStatus === RESPONSE.FULFILLED) {
-            dispatch(getUserProfileThunk());
+      if (email) {
+        dispatch(getUserProfileThunk()).then((response) => {
+          if (
+            localStorage.getItem("role") === "patient" &&
+            response?.payload?.id
+          ) {
+            dispatch(getPatientDetailsThunk(response?.payload.id));
           }
         });
       }

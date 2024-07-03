@@ -8,38 +8,37 @@ import {
   getMedicalConditionsByQuery,
   getMedicationByQuery,
 } from "../../services/masterTable.service";
-import { mockautocomplateDate } from "../../assets/MockData";
+import { IMedicine } from "../../interfaces/medication";
 
-interface IMedication {
-  code: string;
-  id: string;
-  display: string;
-}
+// interface IMedication {
+//   code: string;
+//   id: string;
+//   display: string;
+// }
 
 interface IMasterTableData {
-  medications: string[];
+  medications: IMedicine[];
   allergies: string[];
   medicalConditions: string[];
 }
 
 const initialState: IMasterTableData = {
-  medications: [] as string[],
+  medications: [] as IMedicine[],
   allergies: [] as string[],
   medicalConditions: [] as string[],
 };
 
 function transformMedication(data: any) {
-  let filteredMedication = [] as string[];
+  let filteredMedication = [] as IMedicine[];
   if (data?.medication_list?.total) {
     const medicineList = data?.medication_list?.entry.map((item: any) => {
       const resource = item?.resource;
-      return resource.display;
-      // const medicine = {
-      //   code: resource?.code,
-      //   id: resource?.id,
-      //   display: resource?.display,
-      // };
-      // return medicine;
+      const medicine = {
+        code: resource?.code || "",
+        system: resource?.system || "",
+        display: resource?.display || "",
+      };
+      return medicine;
     });
     filteredMedication = medicineList;
   }
@@ -54,8 +53,8 @@ export const getMedicationByQueryThunk = createAsyncThunk(
       const _response = transformMedication(userResponse.data);
       return _response;
     } catch (error) {
-      if (isAxiosError(error) && error.response?.data?.message) {
-        const errorMessage = error.response?.data?.message?.split(":")[0];
+      if (isAxiosError(error) && error.message) {
+        const errorMessage = error.message;
         return rejectWithValue({
           message: errorMessage,
           response: error?.response?.status,
@@ -127,13 +126,11 @@ const userSlice = createSlice({
         }
       })
       .addCase(getAllergiesByQueryThunk.fulfilled, (state, { payload }) => {
-        state.allergies = [...mockautocomplateDate];
-
-        // if (state.allergies.length) {
-        //   state.allergies = payload;
-        // } else {
-        //   state.allergies = [];
-        // }
+        if (state.allergies.length) {
+          state.allergies = payload;
+        } else {
+          state.allergies = [];
+        }
       })
       .addCase(
         getMedicalConditionsByQueryThunk.fulfilled,

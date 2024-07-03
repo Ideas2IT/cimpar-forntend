@@ -43,7 +43,7 @@ const LoginForm = () => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
         dispatch(getUserProfileThunk());
       } else if (response?.meta.requestStatus === RESPONSE.REJECTED) {
-        errorToast("Login Failed", "Invalid username or password");
+        errorToast("Login Failed", response?.payload?.message);
       }
     });
   };
@@ -118,7 +118,7 @@ const LoginForm = () => {
             )}
           </div>
           <Link to={PATH_NAME.FORGOT_PASSWORD}>
-            <label className="text-purple-800 font-primary cursor-pointer">
+            <label className="text-purple-800 font-primary text-sm cursor-pointer">
               Forgot Password?
             </label>
           </Link>
@@ -132,7 +132,7 @@ const LoginForm = () => {
             <Button
               disabled={isSubmitting}
               type="submit"
-              className="bg-purple-800 text-white px-8 py-1 rounded-full font-primary"
+              className="bg-purple-800 text-white px-8 py-2 rounded-full font-primary"
               label="Login"
             />
           </div>

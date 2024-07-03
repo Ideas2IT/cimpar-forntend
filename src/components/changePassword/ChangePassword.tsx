@@ -1,19 +1,18 @@
-import { Password } from "primereact/password";
-import { Controller, useForm } from "react-hook-form";
-import { CLIENT_ID, MESSAGE, RESPONSE } from "../../utils/AppConstants";
-import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Button } from "primereact/button";
-import useToast from "../useToast/UseToast";
+import { Password } from "primereact/password";
 import { Toast } from "primereact/toast";
+import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
+import { IChangePasswordPayload } from "../../interfaces/UserLogin";
+import { selectUserProfile } from "../../store/slices/UserSlice";
 import {
   changePasswordThunk,
   logoutThunk,
 } from "../../store/slices/loginSlice";
-import { IChangePasswordPayload } from "../../interfaces/UserLogin";
-import { selectUserProfile } from "../../store/slices/UserSlice";
-import { useNavigate } from "react-router-dom";
+import { AppDispatch } from "../../store/store";
+import { CLIENT_ID, MESSAGE, RESPONSE } from "../../utils/AppConstants";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import useToast from "../useToast/UseToast";
 
 const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
   const profile = useSelector(selectUserProfile);
@@ -29,7 +28,6 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
   } = useForm({ defaultValues: {} as IChangePassword });
   const { errorToast, toast, successToast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
 
   //TODO: Handle Password change API call
   const handlePasswordChange = (data: IChangePassword) => {
@@ -189,7 +187,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
             onClick={() => handleClose()}
           />
           <Button
-            className="text-white bg-purple-900 font-primary rounded-full px-4 py-1"
+            className="text-white bg-purple-900 font-primary rounded-full px-4 py-2"
             label="Change Password"
             onClick={() => handleSubmit}
           />

@@ -23,7 +23,7 @@ const MedicalConditionDetails = () => {
   const medicalConditonFields = [
     {
       label: "MEDICAL CONDITIONS YOU HAVE",
-      value: patientMedicalDetails.medicalConditions.join(", "),
+      value: patientMedicalDetails?.medicalConditions?.join(", "),
     },
     {
       label: "OTHER MEDICAL CONDITIONS",

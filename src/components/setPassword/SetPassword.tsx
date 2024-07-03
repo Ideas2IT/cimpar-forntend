@@ -1,11 +1,11 @@
 import ReyaIcon from "../../assets/reya-logo.svg?react";
 import CheckMark from "../../assets/icons/bluetick.svg?react";
-import { MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
+import { MESSAGE, RESPONSE } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 import "./SetPassword.css";
@@ -19,7 +19,6 @@ import { useEffect, useState } from "react";
 const SetPassword = () => {
   const location = useLocation();
   const { errorToast, toast, successToast } = useToast();
-  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [token, setToken] = useState<string>();
 
@@ -144,7 +143,7 @@ const SetPassword = () => {
           <div className="flex w-full justify-end">
             <Button
               type="submit"
-              className="bg-purple-800 text-white px-4 py-1 rounded-full font-primary"
+              className="bg-purple-800 text-white px-4 py-2 rounded-full font-primary"
               label="Set Passowrd"
             />
           </div>

@@ -8,7 +8,7 @@ input::-webkit-inner-spin-button {
 }
 
 .weight .p-inputtext {
-  @apply ps-0 w-[60%]
+  @apply ps-0 w-[60%];
 }
 
 .p-dropdown .p-dropdown-trigger {
@@ -48,4 +48,17 @@ input::-webkit-inner-spin-button {
 
 .race-dropdown {
   @apply p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none;
+}
+
+.height-feet::after {
+  content: "ft";
+  align-items: center;
+  height: 100%;
+  padding: 0.4rem;
+}
+.weight::after {
+  content: "Lbs";
+  align-items: center;
+  height: 100%;
+  padding: 0.4rem;
 }

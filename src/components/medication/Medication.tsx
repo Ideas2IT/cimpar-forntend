@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { PatientDetails } from "../userDetails/UserDetails";
-import { user } from "../userProfilePage/UserProfilePage";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store/store";
 import {

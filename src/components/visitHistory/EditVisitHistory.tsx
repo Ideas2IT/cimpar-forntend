@@ -3,7 +3,6 @@ import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
 import { Controller, useForm } from "react-hook-form";
-import { countryCodes } from "../../assets/MockData";
 import { useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
@@ -16,10 +15,7 @@ import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 import ReportImage from "../reportImage/ReportImage";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import {
-  handleKeyPress,
-  splitCodeWithPhoneNumber,
-} from "../../services/commonFunctions";
+import { handleKeyPress } from "../../services/commonFunctions";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store/store";
 import {
@@ -69,7 +65,6 @@ const EditVisitHistory = () => {
   });
 
   useEffect(() => {
-    console.log(selectedHistory);
     reset({ ...selectedHistory });
   }, [selectedHistory]);
 
@@ -86,6 +81,7 @@ const EditVisitHistory = () => {
       reason: formData.visitReason,
       status: "in-progress",
       treatment_summary: formData.treatmentSummary,
+      follow_up_care: formData.followUpCare,
     };
     if (!Object.keys(selectedHistory).length) {
       dispatch(

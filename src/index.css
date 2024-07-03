@@ -99,7 +99,10 @@ body {
   @apply border-gray-300 ps-2;
 }
 
-label, li, input, div {
+label,
+li,
+input,
+div {
   @apply text-[#283956];
 }
 
@@ -165,4 +168,12 @@ label, li, input, div {
 
 .p-dialog-header {
   @apply rounded-t-md;
+}
+
+.button-purple {
+  @apply text-[#61277F] stroke-[#61277F];
+}
+
+.border-purple {
+  @apply border-[#61277F];
 }

@@ -1,8 +1,7 @@
 import { EnhancedStore } from "@reduxjs/toolkit";
 import axios, { AxiosInstance } from "axios";
 import { hideSpinner, showSpinner } from "../store/slices/spinnerSlice";
-import localStorageService from "./localStorageService";
-import { CLIENT_ID, PATH_NAME } from "../utils/AppConstants";
+import { CLIENT_ID } from "../utils/AppConstants";
 import { rotateTokenThunk, signOut } from "../store/slices/loginSlice";
 import { IRotateTokenPayload } from "../interfaces/UserLogin";
 import { AppDispatch } from "../store/store";

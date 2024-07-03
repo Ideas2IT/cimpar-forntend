@@ -62,6 +62,12 @@ export const INSURANCE_TYPE = {
   SECONDARY: 2,
   TERTIARY: 3,
 };
+
+export const TABS = {
+  LAB_RESULT: "Lab Results",
+  IMMUNIZATION: "Immunization",
+  SERVICE_HISTORY: "Service History",
+};
 export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
 export const SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";

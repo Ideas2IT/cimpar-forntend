@@ -1,5 +1,6 @@
 import { LabTestResult } from "../components/LabTestResults";
 import { IItem } from "../components/appointmentForm/AppointmentForm";
+import { IMedicine } from "../interfaces/medication";
 import { dateFormatter } from "../utils/Date";
 
 export const allergies: IItem[] = [
@@ -102,12 +103,6 @@ export const tests: ITest[] = [
   { id: 3, name: "Coronavirus" },
   { id: 5, name: "hIV/AIDS" },
   { id: 6, name: "Cholera" },
-];
-
-export const services = [
-  { id: 1, name: "All Services" },
-  { id: 2, name: "Lab Tests" },
-  { id: 3, name: "Immunization" },
 ];
 
 export const medicalConditons: IItem[] = [
@@ -747,181 +742,35 @@ export const mockautocomplateDate = [
   "long allergy e",
 ];
 
-export const mockInsurannceResponse = {
-  coverage: {
-    // resourceType: "Bundle",
-    // type: "searchset",
-    // meta: {
-    //   versionId: "0",
-    // },
-    // total: 3,
-    // link: [
-    //   {
-    //     relation: "first",
-    //     url: "/fhir/Coverage/?beneficiary=Patient/ceb05abe63ffe18d1bf9be5c6215e173&page=1",
-    //   },
-    //   {
-    //     relation: "self",
-    //     url: "/fhir/Coverage/?beneficiary=Patient/ceb05abe63ffe18d1bf9be5c6215e173&page=1",
-    //   },
-    // ],
-    entry: [
-      {
-        resource: {
-          // meta: {
-          //   lastUpdated: "2024-06-20T14:00:41.267664Z",
-          //   versionId: "2002",
-          //   extension: [
-          //     {
-          //       url: "ex:createdAt",
-          //       valueInstant: "2024-06-20T14:00:41.267664Z",
-          //     },
-          //   ],
-          // },
-          // beneficiary: {
-          //   reference: "Patient/ceb05abe63ffe18d1bf9be5c6215e173",
-          // },
-          // resourceType: "Coverage",
-          payor: [
-            {
-              display: "providerName",
-            },
-          ],
-          // status: "active",
-          id: "d15ca7a7-ff1d-4d20-ac7d-f95ee9fcde27",
-          class: [
-            {
-              type: {
-                coding: [
-                  {
-                    code: "group",
-                    system:
-                      "http://terminology.hl7.org/CodeSystem/coverage-class",
-                  },
-                ],
-              },
-              value: "groupNumber",
-            },
-          ],
-          // order: 2,
-          subscriberId: "PolicyyNumber123",
-        },
-        // search: {
-        //   mode: "match",
-        // },
-        // fullUrl:
-        //   "http://localhost:8888/Coverage/d15ca7a7-ff1d-4d20-ac7d-f95ee9fcde27",
-        // link: [
-        //   {
-        //     relation: "self",
-        //     url: "http://localhost:8888/Coverage/d15ca7a7-ff1d-4d20-ac7d-f95ee9fcde27",
-        //   },
-        // ],
-      },
-      {
-        resource: {
-          // meta: {
-          //   lastUpdated: "2024-06-20T14:02:00.349863Z",
-          //   versionId: "2003",
-          //   extension: [
-          //     {
-          //       url: "ex:createdAt",
-          //       valueInstant: "2024-06-20T14:02:00.349863Z",
-          //     },
-          //   ],
-          // },
-          // beneficiary: {
-          //   reference: "Patient/ceb05abe63ffe18d1bf9be5c6215e173",
-          // },
-          // resourceType: "Coverage",
-          payor: [
-            {
-              display: "providerName",
-            },
-          ],
-          // status: "active",
-          id: "39b65b56-db55-4dec-a181-159d2a57fab9",
-          class: [
-            {
-              type: {
-                coding: [
-                  {
-                    code: "group",
-                    system:
-                      "http://terminology.hl7.org/CodeSystem/coverage-class",
-                  },
-                ],
-              },
-              value: "groupNumber",
-            },
-          ],
-          // order: 2,
-          subscriberId: "PolicyyNumber2",
-        },
-        // search: {
-        //   mode: "match",
-        // },
-        // fullUrl:
-        //   "http://localhost:8888/Coverage/39b65b56-db55-4dec-a181-159d2a57fab9",
-        // link: [
-        //   {
-        //     relation: "self",
-        //     url: "http://localhost:8888/Coverage/39b65b56-db55-4dec-a181-159d2a57fab9",
-        //   },
-        // ],
-      },
-      {
-        resource: {
-          // meta: {
-          //   lastUpdated: "2024-06-20T14:02:07.074635Z",
-          //   versionId: "2004",
-          //   extension: [
-          //     {
-          //       url: "ex:createdAt",
-          //       valueInstant: "2024-06-20T14:02:07.074635Z",
-          //     },
-          //   ],
-          // },
-          // beneficiary: {
-          //   reference: "Patient/ceb05abe63ffe18d1bf9be5c6215e173",
-          // },
-          // resourceType: "Coverage",
-          payor: [
-            {
-              display: "providerName",
-            },
-          ],
-          // status: "active",
-          id: "cb985e16-3fab-40cf-b41e-6406b54a486b",
-          class: [
-            {
-              type: {
-                coding: [
-                  {
-                    code: "group",
-                    system:
-                      "http://terminology.hl7.org/CodeSystem/coverage-class",
-                  },
-                ],
-              },
-              value: "groupNumber",
-            },
-          ],
-          // order: 2,
-          subscriberId: "PolicyyNumber3",
-        },
-        // search: {
-        //   mode: "match",
-        // },
-        // fullUrl:
-        //   "http://localhost:8888/Coverage/cb985e16-3fab-40cf-b41e-6406b54a486b",
-        // link: [
-        //   {
-        //     relation: "self",
-        //     url: "http://localhost:8888/Coverage/cb985e16-3fab-40cf-b41e-6406b54a486b",
-        //   },
-        // ],
-      },
-    ],
+export const autoCompleteMock:IMedicine[] = [
+  {
+    code: "1232",
+    system: "system",
+    display: "Amlodipine",
   },
-};
+  {
+    code: "1232",
+    system: "system",
+    display: "Atorvastatin",
+  },
+  {
+    code: "1232",
+    system: "system",
+    display: "Levothyroxine",
+  },
+  {
+    code: "1232",
+    system: "system",
+    display: "Omeprazole",
+  },
+  {
+    code: "1232",
+    system: "system",
+    display: "Metformin",
+  },
+  {
+    code: "1232",
+    system: "system",
+    display: "Gabapentin",
+  },
+];

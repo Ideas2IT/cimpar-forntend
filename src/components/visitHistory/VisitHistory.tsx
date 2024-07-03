@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
-import { PATH_NAME, ROLE } from "../../utils/AppConstants";
+import { PATH_NAME, RESPONSE, ROLE } from "../../utils/AppConstants";
 import { useDispatch, useSelector } from "react-redux";
 import { selectedRole } from "../../store/slices/commonSlice";
 import { getRowClasses } from "../../services/commonFunctions";
@@ -19,12 +19,15 @@ import {
   IVisitHistory,
 } from "../../interfaces/visitHistory";
 import { dateFormatter } from "../../utils/Date";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
 
 const VisitHistory = () => {
   const selectedPatinet = useSelector(selectSelectedPatient);
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
   const dispatch = useDispatch<AppDispatch>();
   const initialRender = useRef(true);
+  const { toast, errorToast, successToast } = useToast();
 
   useEffect(() => {
     if (initialRender?.current) {
@@ -42,7 +45,19 @@ const VisitHistory = () => {
         patinetId: selectedPatinet.basicDetails.id,
         visitHistoryId: id,
       };
-      dispatch(deleteVisitHistoryByIdThunk(payload));
+      dispatch(deleteVisitHistoryByIdThunk(payload)).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.REJECTED) {
+          errorToast(
+            "Failed to delete service history",
+            "Error: Unable to delete service history."
+          );
+        } else {
+          successToast(
+            "Service history successfully deleted",
+            "Service history has been removed successfully"
+          );
+        }
+      });
     }
   };
   const columnList = [
@@ -99,11 +114,11 @@ const VisitHistory = () => {
     },
     {
       field: "ADMISSION DATE",
-      value: selectedHistory.admissionDate,
+      value: dateFormatter(selectedHistory.admissionDate, "dd MMM,yyyy"),
     },
     {
       field: "DISCHARGE DATE",
-      value: selectedHistory.dischargeDate,
+      value: dateFormatter(selectedHistory.dischargeDate, "dd MMM,yyyy"),
     },
     {
       field: "REASON FOR VISIT",
@@ -211,6 +226,7 @@ const VisitHistory = () => {
       >
         <DetailedHistory />
       </Sidebar>
+      <Toast ref={toast} />
     </>
   );
 };

@@ -1,36 +1,44 @@
-import "react-datepicker/dist/react-datepicker.css";
-import "react-clock/dist/Clock.css";
-import { useContext, useRef, useState } from "react";
-import "react-time-picker/dist/TimePicker.css";
-import "./AppointmentPage.css";
-import Button from "../Button";
-import { Link, useNavigate } from "react-router-dom";
-import CustomModal from "../customModal/CustomModal";
-import checkmark from "../../assets/icons/checkmark.svg";
-import { Controller, useForm } from "react-hook-form";
-import { ITest, reasonsForTest, tests } from "../../assets/MockData";
-import { MultiSelect } from "primereact/multiselect";
-import { user } from "../userProfilePage/UserProfilePage";
-import { format } from "date-fns";
-import BackButton from "../backButton/BackButton";
-import { Dropdown } from "primereact/dropdown";
-import ErrorMessage from "../errorMessage/ErrorMessage";
-import { PATH_NAME } from "../../utils/AppConstants";
-import { Calendar } from "primereact/calendar";
-import { Button as PrimeButton } from "primereact/button";
-import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
-import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
-import HeaderContext from "../../context/HeaderContext";
-import { handleKeyPress } from "../../services/commonFunctions";
 import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import { Button as PrimeButton } from "primereact/button";
+import { Calendar } from "primereact/calendar";
+import { Chips } from "primereact/chips";
+import { Dropdown } from "primereact/dropdown";
+import { MultiSelect } from "primereact/multiselect";
+import { useContext, useEffect, useRef, useState } from "react";
+import "react-clock/dist/Clock.css";
+import "react-datepicker/dist/react-datepicker.css";
+import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
+import { Link, useNavigate } from "react-router-dom";
+import "react-time-picker/dist/TimePicker.css";
+import { ITest, reasonsForTest, tests } from "../../assets/MockData";
+import checkmark from "../../assets/icons/checkmark.svg";
+import HeaderContext from "../../context/HeaderContext";
+import {
+  getDobAndAge,
+  // getDobAndAge,
+  getPolicyDetails,
+  handleKeyPress,
+} from "../../services/commonFunctions";
+import {
+  getPatientInsuranceThunk,
+  selectSelectedPatient,
+} from "../../store/slices/PatientSlice";
 import {
   getAllergiesByQueryThunk,
   getMedicalConditionsByQueryThunk,
   selectAllergies,
   selectConditions,
 } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
+import { PATH_NAME } from "../../utils/AppConstants";
+import Button from "../Button";
+import BackButton from "../backButton/BackButton";
+import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
+import CustomModal from "../customModal/CustomModal";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
+import "./AppointmentPage.css";
 
 export interface IItem {
   id: number;
@@ -45,9 +53,9 @@ export interface IFormData {
   testReason: IItem;
   otherReasonForTest: string;
   medicalConditions: string[];
-  otherMedicalConditon: string;
+  otherMedicalConditions: string[];
   allergies: string[];
-  otherAllergies: string;
+  otherAllergies: string[];
 }
 
 const AppointmentForm = () => {
@@ -67,6 +75,7 @@ const AppointmentForm = () => {
     string[]
   >([]);
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+  const patient = useSelector(selectSelectedPatient);
   const [showDialog, setShowDialog] = useState(false);
   const multiSelectRef = useRef<MultiSelect>(null);
   const reasonForTest = watch("testReason");
@@ -74,6 +83,8 @@ const AppointmentForm = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formData, setFormData] = useState({} as IFormData);
   const dispatch = useDispatch<AppDispatch>();
+  const initialRender = useRef(true);
+
   //TODO: need to write the logic to handle formSubmit
   const handleFormSubmit = (data: IFormData) => {
     setShowConfirmDialog(true);
@@ -83,16 +94,32 @@ const AppointmentForm = () => {
   const filteredAllergies = useSelector(selectAllergies);
   const filteredConditions = useSelector(selectConditions);
 
+  useEffect(() => {
+    if (initialRender?.current) {
+      initialRender.current = false;
+      return;
+    }
+    if (patient?.basicDetails?.id) {
+      dispatch(getPatientInsuranceThunk(patient?.basicDetails?.id));
+    }
+  }, [patient?.basicDetails?.id]);
+
   const searchAllergies = (event: AutoCompleteCompleteEvent) => {
     if (event.query.trim().length > 1) {
-      dispatch(getAllergiesByQueryThunk(event.query));
+      dispatch(getAllergiesByQueryThunk(event.query)).then((response) => {
+        console.log(response);
+      });
     }
   };
 
   const searchMedicalConditions = (event: AutoCompleteCompleteEvent) => {
     setTimeout(() => {
       if (event.query.trim().length > 1) {
-        dispatch(getMedicalConditionsByQueryThunk(event.query));
+        dispatch(getMedicalConditionsByQueryThunk(event.query)).then(
+          (response) => {
+            console.log(response.payload);
+          }
+        );
       }
     }, 300);
   };
@@ -107,15 +134,9 @@ const AppointmentForm = () => {
     setValue("allergies", values);
   };
 
-  const getDobAndAge = () => {
-    const dateOfBirth = format(user.dob, "dd MMMM, yyyy");
-    const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
-    return dateOfBirth + " (" + age + ")";
-  };
-
   const TestFooterFormat = () => {
     return (
-      <div className="text-end px-4 py-2">
+      <div className="text-end px-4 text-md py-2">
         <PrimeButton
           label="Cancel"
           className="me-3 px-5 py-1 font-secondary color-primary rounded-md border border-cyan-900"
@@ -164,13 +185,14 @@ const AppointmentForm = () => {
             <Link to={PATH_NAME.HOME}>
               <Button
                 onClick={() => {}}
-                className="ml-3 font-primary"
+                className="ml-3 font-primary text-md"
                 variant="primary"
                 type="button"
                 style="link"
+                size="medium"
               >
-                <i className="p" />
-                <i className="pi pi-times me-2"></i>Cancel
+                <i className="pi pi-times me-2" />
+                Cancel
               </Button>
             </Link>
             <Button
@@ -178,9 +200,11 @@ const AppointmentForm = () => {
               className="ml-3 font-primary"
               variant="primary"
               style="outline"
+              size="medium"
               type="submit"
             >
-              <i className="pi pi-check me-2"></i>Confirm
+              <i className="pi pi-check me-2" />
+              Confirm
             </Button>
           </div>
         </div>
@@ -202,8 +226,8 @@ const AppointmentForm = () => {
                 }}
                 render={({ field }) => (
                   <MultiSelect
-                    inputId="testToTake"
                     {...field}
+                    inputId="testToTake"
                     ref={multiSelectRef}
                     options={tests}
                     filter
@@ -212,7 +236,9 @@ const AppointmentForm = () => {
                     optionLabel="name"
                     placeholder="Select Tests"
                     data-testid="select-tests"
-                    className="input-field"
+                    showClear={true}
+                    className="input-field font-secondary"
+                    maxSelectedLabels={4}
                   />
                 )}
               />
@@ -358,16 +384,23 @@ const AppointmentForm = () => {
             >
               Other medical conditions.
             </label>
-            <input
-              {...register("otherMedicalConditon")}
-              id="otherMedicalConditions"
-              name={`otherMedicalConditon`}
-              onChange={(event) =>
-                setValue("otherMedicalConditon", event?.target?.value || "")
-              }
-              className="cimpar-input focus:outline-none font-sans"
-              type="text"
-              placeholder="Enter other medical conditions"
+            <Controller
+              name="otherMedicalConditions"
+              control={control}
+              render={({ field }) => (
+                <Chips
+                  inputId="otherMedicalConditions"
+                  {...field}
+                  className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
+                  placeholder={
+                    !field?.value?.length
+                      ? "Enter your medication name(s), separated by commas"
+                      : ""
+                  }
+                  removeIcon={"pi pi-times"}
+                  separator=","
+                />
+              )}
             />
           </div>
           <div className="font-primary text-xl pt-4 pb-2">Allergies</div>
@@ -388,16 +421,23 @@ const AppointmentForm = () => {
             <label className="block input-label" htmlFor="otherAllergies">
               Other allergies.
             </label>
-            <input
-              {...register("otherAllergies")}
-              id="otherAllergies"
-              name={`otherMedicalConditon`}
-              onChange={(event) =>
-                setValue("otherAllergies", event?.target?.value || "")
-              }
-              className="cimpar-input focus:outline-none font-sans"
-              type="text"
-              placeholder="Enter other allergies"
+            <Controller
+              name="otherAllergies"
+              control={control}
+              render={({ field }) => (
+                <Chips
+                  inputId="otherAllergies"
+                  {...field}
+                  className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
+                  placeholder={
+                    !field?.value?.length
+                      ? "Enter your allergies name(s), separated by commas"
+                      : ""
+                  }
+                  removeIcon={"pi pi-times"}
+                  separator=","
+                />
+              )}
             />
           </div>
           <div className="font-primary text-xl pt-4 pb-2">
@@ -414,14 +454,22 @@ const AppointmentForm = () => {
             <DetailColumn
               label="Name (Gender)"
               content={
-                user.firstName + " " + user.middleName + "(" + user.gender + ")"
+                patient?.basicDetails?.firstName +
+                " " +
+                patient?.basicDetails?.middleName +
+                "(" +
+                patient?.basicDetails?.gender +
+                ")"
               }
             />
-            <DetailColumn label="DOB (Age)" content={getDobAndAge()} />
+            <DetailColumn
+              label="DOB (Age)"
+              content={getDobAndAge(patient?.basicDetails?.dob) || ""}
+            />
             <div className="col-span-2">
               <DetailColumn
                 label="insurance provider & number"
-                content={user.insuranceName + " - " + user.insuranceNumber}
+                content={getPolicyDetails(patient?.InsuranceDetails) || ""}
               />
             </div>
           </div>
@@ -470,8 +518,10 @@ const DetailColumn = ({
 }) => {
   return (
     <div className={`w-full ${styleClass && styleClass}  min-h-[50px]`}>
-      <label className="uppercase block input-label">{label}</label>
-      <div className="w-full text-md">{content}</div>
+      <label className="uppercase block text-[#283956] opacity-65 text-sm font-secondary">
+        {label || "-"}
+      </label>
+      <div className="w-full font-primary text-md">{content || "-"}</div>
     </div>
   );
 };

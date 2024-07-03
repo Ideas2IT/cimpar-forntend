@@ -12,6 +12,7 @@ import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
 import MedicalConditionDetails from "../MedicalDetails/MedicalConditionDetails";
 import VisitHistory from "../visitHistory/VisitHistory";
 import { useDispatch, useSelector } from "react-redux";
+import AddRecord from "../../assets/icons/addrecord.svg?react";
 import {
   selectTab,
   setSelectedSidebarTab,
@@ -63,7 +64,7 @@ export const tabs: Tab[] = [
     value: "Personal",
     content: (
       <div className="px-6 py-1 h-full">
-        <UserDetails patient={user} />
+        <UserDetails />
       </div>
     ),
   },
@@ -105,8 +106,7 @@ export const tabs: Tab[] = [
   },
 ];
 const UserProfilePage = () => {
-  const patinetInsuranceCount = useSelector(selectSelectedPatient)
-    ?.InsuranceDetails?.length;
+  const selectedPatient = useSelector(selectSelectedPatient);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const selectedOption = useSelector(selectTab);
@@ -154,66 +154,67 @@ const UserProfilePage = () => {
           {selectedTab.toLowerCase() === "insurance" ? (
             <Button
               disabled={
-                patinetInsuranceCount && patinetInsuranceCount >= 3
+                selectedPatient &&
+                selectedPatient?.InsuranceDetails?.length >= 3
                   ? true
                   : false
               }
-              className="ml-3"
+              className="ml-3 font-primary"
               variant="primary"
               style="outline"
               onClick={() => navigate(PATH_NAME.EDIT_INSURANCE)}
             >
-              <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+              <AddRecord className="stroke-purple-900 mx-2" />
               Add Insurance
             </Button>
           ) : selectedTab.toLowerCase() === "visit history" ? (
             <Button
-              className="ml-3"
+              className="ml-3 font-primary"
               variant="primary"
               style="outline"
               onClick={() => {
                 navigate(PATH_NAME.EDIT_VISIT_HISTORY);
               }}
             >
-              <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+              <AddRecord className="stroke-purple-900 mx-2" />
               Add Visit History
             </Button>
           ) : selectedTab.toLowerCase() === "medications" ? (
             <Button
-              className="ml-3"
+              className="ml-3 font-primary"
               variant="primary"
               style="outline"
               onClick={() => {
                 navigate(PATH_NAME.EIDT_MEDICATION);
               }}
             >
-              <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
-              {user.isOnMedicine === "yes" || user.medicationalHistory === "yes"
+              <AddRecord className="stroke-purple-900 mx-2" />
+              { selectedPatient?.medicationDetails && Object.keys(selectedPatient?.medicationDetails)?.length
                 ? "Edit Medication"
                 : "Add Medication"}
             </Button>
           ) : selectedTab === "Medical Conditions & Allergies" ? (
             <Button
-              className="ml-3"
+              className="ml-3 font-primary"
               variant="primary"
               style="outline"
               onClick={() => navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS)}
             >
               {!user.hasMedicalConditions ? (
                 <>
-                  <i className=" pi pi-file-plus stroke-purple-700 mr-2" />
+                  <AddRecord className="stroke-purple-900 mx-2" />
                   Add Medical Conditions & Allergies
                 </>
               ) : (
                 <>
-                  <i className=" pi pi-pencil stroke-purple-700 mr-2" />
+                  <i className=" pi pi-pencil stroke-purple-700 font-primary mr-2" />
                   Edit Details
                 </>
               )}
             </Button>
           ) : (
             <Button
-              className="ml-3"
+              className="ml-3 font-primary"
               variant="primary"
               style="outline"
               onClick={() => handleEdit()}

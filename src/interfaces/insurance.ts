@@ -15,3 +15,14 @@ export interface deleteInsurancePayload {
   insuranceId: string;
   patinetId: string;
 }
+
+export interface IInsurance {
+  id: string;
+  insuranceType: number;
+  insuranceNumber: string;
+  policyNumber: string;
+  groupNumber: string;
+  insuranceCompany: string;
+  insuranceCard?: File;
+  insuranceId?: File;
+}

@@ -154,7 +154,7 @@ const SignUpForm = () => {
               </label>
               <Button
                 type="submit"
-                className="bg-purple-800 text-white md:px-4 px-1 py-1 rounded-full font-primary"
+                className="bg-purple-800 text-white md:px-4 px-1 py-2 rounded-full font-primary"
                 label="Sign Up"
               />
             </div>

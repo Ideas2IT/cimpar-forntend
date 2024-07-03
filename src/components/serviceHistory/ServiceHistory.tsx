@@ -7,18 +7,16 @@ import Download from "../../assets/icons/download.svg?react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { Sidebar } from "primereact/sidebar";
 import { getRowClasses, getStatusColors } from "../../services/commonFunctions";
-import {
-  IService,
-  immunizations,
-  labResults,
-  serviceData,
-} from "../../assets/MockData";
+import { IService, immunizations, labResults } from "../../assets/MockData";
 import { ImmunizationDetailView } from "../testResult/Immunization";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
+import { useSelector } from "react-redux";
+import { selectServiceHistory } from "../../store/slices/serviceHistorySlice";
 
 const ServiceHistory = () => {
   const [selectedService, setSelectedTest] = useState<IService>({} as IService);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+  const serviceData = useSelector(selectServiceHistory);
 
   const handlePageChange = (event: PaginatorPageChangeEvent) => {
     //TODO: Write logic to call api
@@ -48,7 +46,9 @@ const ServiceHistory = () => {
       field: "category",
       header: "CATEGORY",
       bodyClassName: "py-2",
-      body: (rowData: IService) => <div> {rowData.category} </div>,
+      body: (rowData: IService) => (
+        <div className="font-tertiary"> {rowData.category} </div>
+      ),
     },
     {
       field: "serviceFor",
@@ -74,6 +74,11 @@ const ServiceHistory = () => {
       <DataTable
         selection={selectedService}
         value={serviceData}
+        emptyMessage={
+          <div className="w-full justify-center flex">
+            No service history available.
+          </div>
+        }
         selectionMode="single"
         dataKey="serviceId"
         tableStyle={{ minWidth: "50rem" }}

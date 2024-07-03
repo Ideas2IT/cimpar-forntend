@@ -3,7 +3,7 @@ import {
   IUpdateInsurancePayload,
   deleteInsurancePayload,
 } from "../interfaces/insurance";
-import { IUpdateMedicationPayload } from "../interfaces/medication";
+import { ICreateMedication, IUpdateMedicationPayload } from "../interfaces/medication";
 import {
   IUpdateAllergiesAndConditionsPayload,
   IUpdatePatientPayload,
@@ -24,12 +24,16 @@ const updatePatientProfile = (payload: IUpdatePatientPayload) => {
   return http.put(`/${API_URL.patient}/${payload.patient_id}`, payload);
 };
 
+
+const addMedicationDetails = (payload:ICreateMedication)=>{
+  return http.post(`/${API_URL.medication}/${payload.patient_id}`)
+}
 const getPatientMedication = (id: string) => {
   return http.get(`/${API_URL.medication}/${id}`);
 };
 
 const updateMedicationByPatientId = (payload: IUpdateMedicationPayload) => {
-  return http.put(`/${API_URL.medication}/${payload.patient_id}`);
+  return http.put(`/${API_URL.medication}/${payload.patient_id}`, payload);
 };
 
 const getPatientInsurance = (id: string) => {
@@ -62,13 +66,28 @@ const updateMedicalConditons = (
 };
 
 const addVisitHistory = (payload: ICreateVisitHistoryPayload) => {
-  return http.post(`${API_URL.visit_history}`, payload);
+  const _payload = {
+    location: payload.location,
+    phone_number: payload.phone_number,
+    admission_date: payload.admission_date,
+    discharge_date: payload.discharge_date,
+    reason: payload.reason,
+    primary_care_team: payload.primary_care_team,
+    treatment_summary: payload.treatment_summary,
+    follow_up_care: payload.follow_up_care,
+    status: payload.status,
+    class_code: payload.class_code,
+  };
+  return http.post(`${API_URL.visit_history}/${payload.patient_id}`, _payload);
 };
 const getVisitHistoryByPatientId = (id: string) => {
   return http.get(`${API_URL.visit_history}/${id}`);
 };
 const updateVisitHistory = (payload: IUpdateVisitHistoryPayload) => {
-  return http.put(`${API_URL.visit_history}/${payload.patient_id}`, payload);
+  return http.put(
+    `${API_URL.visit_history}/${payload.patient_id}/${payload.id}`,
+    payload
+  );
 };
 
 const deleteVisitHistoryById = (payload: IDeleteVisitHistoryPayload) => {
@@ -92,4 +111,5 @@ export {
   updateMedicationByPatientId,
   addVisitHistory,
   deleteVisitHistoryById,
+  addMedicationDetails,
 };

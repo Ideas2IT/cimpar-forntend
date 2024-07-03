@@ -2,39 +2,21 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import "./Immunization.css";
 import { Sidebar } from "primereact/sidebar";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { getRowClasses } from "../../services/commonFunctions";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
 import EyeIcon from "../../assets/icons/eye.svg?react";
-import { useDispatch, useSelector } from "react-redux";
-import { selectSelectedPatient } from "../../store/slices/PatientSlice";
-import { AppDispatch } from "../../store/store";
-import {
-  getImmunizationsByPatientIdThunk,
-  selectImmunizations,
-} from "../../store/slices/serviceHistorySlice";
+import { useSelector } from "react-redux";
 import { IImmunization } from "../../interfaces/immunization";
 import { dateFormatter } from "../../utils/Date";
+import { selectImmunizations } from "../../store/slices/serviceHistorySlice";
 
 const TestResult = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedImmunization, setSelectedImmunization] = useState(
     {} as IImmunization
   );
-  const selectedPatient = useSelector(selectSelectedPatient);
-  const dispatch = useDispatch<AppDispatch>();
-  const initialRender = useRef(true);
-  useEffect(() => {
-    if (initialRender?.current) {
-      initialRender.current = false;
-      return;
-    }
-    if (selectedPatient?.basicDetails?.id)
-      dispatch(
-        getImmunizationsByPatientIdThunk(selectedPatient.basicDetails.id)
-      );
-  }, [selectedPatient]);
   const immunizations = useSelector(selectImmunizations);
 
   const columnsConfig = [
@@ -68,7 +50,7 @@ const TestResult = () => {
   const ImmunizationHeader = () => {
     return (
       <div>
-        <label className="pe-3">"Immunization Details"</label>
+        <label className="pe-3">Immunization Details</label>
         <span
           className={`sidebar-header ${getStatusColor(selectedImmunization.status)}`}
         >
@@ -98,7 +80,7 @@ const TestResult = () => {
         value={immunizations}
         emptyMessage={
           <div className="flex justify-center font-secondary">
-            No data to display
+            No Immunization available.
           </div>
         }
         selectionMode="single"

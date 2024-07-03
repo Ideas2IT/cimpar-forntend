@@ -8,14 +8,12 @@ import { IProfile } from "../../interfaces/User";
 
 interface IProfileSlice {
   name: string;
-  role: string;
   id: number;
   selectedProfile: IProfile;
 }
 
 const initialState: IProfileSlice = {
   name: "",
-  role: "ADMIN",
   id: 1,
   selectedProfile: {} as IProfile,
 };

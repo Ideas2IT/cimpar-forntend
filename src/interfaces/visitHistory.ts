@@ -20,6 +20,7 @@ export interface ICreateVisitHistoryPayload {
   discharge_date: string;
   reason: string;
   primary_care_team: string;
+  follow_up_care: string;
   treatment_summary: string;
   status: string;
   class_code: string;

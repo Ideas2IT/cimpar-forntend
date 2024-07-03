@@ -36,7 +36,6 @@ const localStorageService = {
   },
   logout: (): void => {
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
     localStorage.removeItem("email");
     localStorage.removeItem("password");
     localStorage.removeItem("role");

@@ -1,5 +1,7 @@
 import { KeyboardEvent } from "react";
 import { IItem } from "../components/appointmentForm/AppointmentForm";
+import { dateFormatter } from "../utils/Date";
+import { IInsurance } from "../interfaces/User";
 
 export const getStatusColors = (status = "") => {
   switch (status.toLowerCase()) {
@@ -88,13 +90,9 @@ export const combinePhoneAndCode = (
 };
 
 export const splitCodeWithPhoneNumber = (phoneNumber: String) => {
-  if (phoneNumber && phoneNumber.includes("-")) {
-    const response = {
-      code: phoneNumber.split("-")[0],
-      phone: phoneNumber.split("-")[1],
-    };
-    return response;
-  } else return { code: "", phone: phoneNumber };
+  if (phoneNumber.includes("+") || phoneNumber.length > 10) {
+    return Number(phoneNumber.split("+1")[1]);
+  }
 };
 
 export const combineHeight = (
@@ -122,4 +120,36 @@ export const getFractionalPart = (inches: number) => {
     }
     return parseInt(numStr.substring(decimalIndex + 1), 10);
   } else return 0;
+};
+
+export const getDobAndAge = (dob: string) => {
+  if (!isNaN(new Date(dob).getTime())) {
+    const dateOfBirth = dateFormatter(dob, "dd MMMM, yyyy");
+    const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
+    return dateOfBirth + " (" + age + ")";
+  } else return;
+};
+
+export const getPolicyDetails = (insurances: IInsurance[]) => {
+  if (insurances && insurances.length) {
+    const priorities = [1, 2, 3];
+    for (const priority of priorities) {
+      const insurance = insurances.find(
+        (ins) => ins.insuranceType === priority
+      );
+      if (insurance) {
+        return insurance.insuranceCompany + "-" + insurance.policyNumber;
+      }
+    }
+  } else return "";
+};
+
+export const maskNumber = (value: string) => {
+  if (value && value?.length > 5) {
+    const start = value?.slice(0, 2);
+    const end = value?.slice(value?.length - 3, value.length);
+    return start + "*****" + end;
+  } else {
+    return "";
+  }
 };

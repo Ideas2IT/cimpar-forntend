@@ -5,8 +5,6 @@ import imagingIcon from "../../assets/icons/imagingicon.svg";
 import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
 import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
 import { NavLink } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
 
 interface ICard {
   id: number;
