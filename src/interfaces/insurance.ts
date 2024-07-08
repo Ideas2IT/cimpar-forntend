@@ -1,10 +1,10 @@
 export interface INewInsurancePayload {
-  status: string;
   beneficiary_id: string;
-  insurance_type: number;
-  provider_name: string;
-  policy_number: string;
-  group_number: string;
+  insurance_type: string;
+  providerName: string;
+  policyNumber: string;
+  groupNumber: string;
+  file: File | null;
 }
 
 export interface IUpdateInsurancePayload extends INewInsurancePayload {

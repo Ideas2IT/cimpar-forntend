@@ -18,7 +18,9 @@ const signup = (payload: ISignupPayload) => {
 };
 
 const setPassword = (payload: ISetPassword) => {
-  return http.post(`${API_URL.confirmPassword}`, payload);
+  const formData = new FormData();
+  formData.append("password", payload.confirmPassword);
+  return http.post(`${API_URL.confirmPassword}/${payload.token}`, formData);
 };
 
 const rotateToken = (payload: IRotateTokenPayload) => {
@@ -40,6 +42,10 @@ const resetPassword = (email: string) => {
 const confirmPassword = (payload: IConfirmPasswordPayload) => {
   return http.post(`${API_URL.confirmPassword}/${payload.token}`);
 };
+
+const getServiceTitle = () => {
+  return http.get(`${API_URL.customMessage}`);
+};
 export {
   login,
   signup,
@@ -49,4 +55,5 @@ export {
   logout,
   changePassword,
   resetPassword,
+  getServiceTitle,
 };

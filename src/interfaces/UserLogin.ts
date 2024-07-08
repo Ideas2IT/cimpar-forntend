@@ -8,6 +8,7 @@ export interface ISignUp {
 export interface ISetPassword {
   newPassword: string;
   confirmPassword: string;
+  token: string;
 }
 
 export interface ILogin {

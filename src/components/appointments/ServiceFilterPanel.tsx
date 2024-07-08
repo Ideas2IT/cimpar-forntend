@@ -1,28 +1,37 @@
-import { useRef, useState } from "react";
-import { OverlayPanel } from "primereact/overlaypanel";
-import { Checkbox } from "primereact/checkbox";
 import { Button } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
 import { Divider } from "primereact/divider";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 import ActiveFilterIcon from "../../assets/icons/ServiceFilterIcon.svg?react";
 import InactiveFilterIcon from "../../assets/icons/filter.svg?react";
-
-const services: string[] = [
-  "Blood count",
-  "Thyroid test",
-  "MRI",
-  "Urine analysis",
-  "X Ray",
-  "USG abdomen scan",
-  "Prenatal test",
-  "Blood test",
-];
+import { IMedicine } from "../../interfaces/medication";
+import { getAllTestsThunk } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
+import { RESPONSE, TABLE } from "../../utils/AppConstants";
+import "./Appointments.css";
 
 const serviceStyle = {
   active: "bg-primary text-white ",
   inActive: "color-primary bg-white",
 };
 
-const ServiceFilterPanel = () => {
+const ServiceFilterPanel = ({
+  onApplyFilter,
+}: {
+  onApplyFilter: (values: string[]) => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [allTests, setAllTests] = useState([] as IMedicine[]);
+
+  useEffect(() => {
+    dispatch(getAllTestsThunk(TABLE.LAB_TEST)).then((response) => {
+      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+        setAllTests(response.payload as IMedicine[]);
+      }
+    });
+  }, []);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const op = useRef<OverlayPanel>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -40,17 +49,22 @@ const ServiceFilterPanel = () => {
   };
 
   const clearSelections = () => {
-    setSelectedServices([]);
+    op?.current?.hide && op?.current?.hide();
   };
 
   const applySelections = () => {
+    onApplyFilter(selectedServices);
     op?.current?.hide && op?.current?.hide();
   };
 
   return (
-    <div className="h-full max-h-[2.5rem] w-full">
+    <div className="h-full !min-h-[2.5rem] w-full relative">
       <div
-        className={`relative rounded-full h-full ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
+        onClick={(e) => {
+          op?.current?.toggle(e);
+          setIsOpen(true);
+        }}
+        className={`relative rounded-full h-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
       >
         <Button
           type="button"
@@ -62,10 +76,6 @@ const ServiceFilterPanel = () => {
               <InactiveFilterIcon className="me-3" />
             )
           }
-          onClick={(e) => {
-            op?.current?.toggle(e);
-            setIsOpen(true);
-          }}
           className={`rounded-full font-primary border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
         />
         <span
@@ -74,27 +84,28 @@ const ServiceFilterPanel = () => {
       </div>
       <OverlayPanel
         ref={op}
-        className="w-[20rem]"
+        className="w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
         onHide={() => setIsOpen(false)}
       >
-        <div className="fluid">
-          {services.map((service) => (
-            <div
-              key={service}
-              onClick={() => toggleService(service)}
-              className="w-full flex justify-between h-[2.5rem] border-b items-center cursor-pointer"
-            >
-              <label className="cursor-pointer">{service}</label>
-              <Checkbox
-                inputId={service}
-                value={service}
-                // onChange={(e) => toggleService(e.value)}
-                checked={selectedServices.includes(service)}
-              />
-            </div>
-          ))}
-          <Divider />
-          <div className="flex justify-end gap-4">
+        <div className="h-[20rem] relative">
+          <div className="h-[90%] overflow-scroll">
+            {allTests?.map((service) => (
+              <div
+                key={service.display}
+                onClick={() => toggleService(service.display)}
+                className="w-full flex justify-between min-h-[2.5rem] pe-1 border-b items-center cursor-pointer"
+              >
+                <label className="cursor-pointer">{service.display}</label>
+                <Checkbox
+                  inputId={service.display}
+                  value={service}
+                  checked={selectedServices.includes(service.display)}
+                />
+              </div>
+            ))}
+            <Divider />
+          </div>
+          <div className="flex gap-4 py-1 bg-white justify-end  w-full right-2 absolute bottom-0">
             <Button
               type="button"
               label="Cancel"

@@ -1,37 +1,51 @@
-import { Controller, useForm } from "react-hook-form";
-import { IEditProfile, IUser } from "../../interfaces/User";
-import "./EditUserDetails.css";
-import { ethnicities, genders, raceList, states } from "../../assets/MockData";
+import { Button as PrimeButton } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { InputNumber, InputNumberChangeEvent } from "primereact/inputnumber";
-import BackButton from "../backButton/BackButton";
-import Button from "../Button";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button as PrimeButton } from "primereact/button";
-import { ERROR, PATH_NAME, PATTERN, RESPONSE } from "../../utils/AppConstants";
-import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
-import { Calendar } from "primereact/calendar";
 import { InputText } from "primereact/inputtext";
+import { Toast } from "primereact/toast";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ErrorResponse, IOptionValue } from "../../interfaces/common";
+import { IUpdatePatientPayload } from "../../interfaces/patient";
+import { IEditProfile } from "../../interfaces/User";
 import {
   combineHeight,
+  getDecimalPartPart,
   getFractionalPart,
-  getFullPhoneNumber,
   handleKeyPress,
   splitCodeWithPhoneNumber,
 } from "../../services/commonFunctions";
-import { useDispatch, useSelector } from "react-redux";
+import { getOptionValuesThunk } from "../../store/slices/masterTableSlice";
 import {
+  getPatientDetailsThunk,
   selectSelectedPatient,
   updatePatientProfileThunk,
 } from "../../store/slices/PatientSlice";
-import { IUpdatePatientPayload } from "../../interfaces/patient";
+import { getUserProfileThunk } from "../../store/slices/UserSlice";
 import { AppDispatch } from "../../store/store";
+import {
+  ERROR,
+  GENDER,
+  PATH_NAME,
+  PATTERN,
+  RESPONSE,
+  TABLE,
+} from "../../utils/AppConstants";
+import { dateFormatter } from "../../utils/Date";
+import BackButton from "../backButton/BackButton";
+import Button from "../Button";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { useEffect } from "react";
+import useToast from "../useToast/UseToast";
+import "./EditUserDetails.css";
 
-const EditUserDetails = ({ user }: { user: IUser }) => {
+const EditUserDetails = () => {
   const userDetails = useSelector(selectSelectedPatient).basicDetails;
+  const [races, setRace] = useState<IOptionValue[]>([]);
+  const [ethnicities, setEthnicities] = useState<IOptionValue[]>([]);
+  const [states, setStates] = useState<IOptionValue[]>([]);
   const {
     register,
     control,
@@ -44,39 +58,130 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
     defaultValues: {} as IEditProfile,
   });
 
+  const genders = [
+    { name: "Male", value: "male" },
+    { name: "Female", value: "female" },
+    { name: "Unknown", value: "unknown" },
+  ];
+
   useEffect(() => {
-    if (userDetails && Object.keys(userDetails).length) {
+    if (userDetails && Object.keys(userDetails)?.length) {
       resetForm();
     }
+    getOptionData();
   }, [userDetails]);
+
+  useEffect(() => {
+    if (ethnicities?.length) {
+      const value = ethnicities?.find(
+        (item: IOptionValue) =>
+          item?.display?.toLowerCase() === userDetails?.ethnicity?.toLowerCase()
+      );
+      if (value) {
+        setValue("ethnicity", value);
+        trigger("ethnicity");
+      }
+    }
+  }, [ethnicities]);
+
+  useEffect(() => {
+    if (races?.length) {
+      let value = {} as IOptionValue | undefined;
+      value = races?.find(
+        (item: IOptionValue) =>
+          item?.display?.toLowerCase() === userDetails?.race?.toLowerCase()
+      );
+      if (userDetails?.race?.toLowerCase() === "white") {
+        value = races?.find(
+          (item: IOptionValue) =>
+            item?.display?.toLowerCase() === "white or caucasian"
+        );
+      }
+      if (value) {
+        setValue("race", value);
+        trigger("race");
+      }
+    }
+  }, [races]);
+
+  useEffect(() => {
+    if (states?.length) {
+      const value = states?.find(
+        (item: IOptionValue) =>
+          item?.display?.toLowerCase() === userDetails?.state?.toLowerCase()
+      );
+      if (value) {
+        setValue("state", value);
+        trigger("state");
+      }
+    }
+  }, [states]);
 
   const resetForm = () => {
     const patient: IEditProfile = {
-      city: userDetails.city,
-      country: userDetails.country,
-      dob: userDetails.dob,
-      email: userDetails.email,
-      ethnicity: userDetails.ethnicity,
-      firstName: userDetails.firstName,
-      gender: userDetails.gender,
-      fullAddress: userDetails.address,
+      city: userDetails?.city,
+      country: userDetails?.country,
+      dob: userDetails?.dob,
+      email: userDetails?.email,
+      ethnicity: {} as IOptionValue,
+      firstName: userDetails?.firstName,
+      gender: userDetails?.gender,
+      fullAddress: userDetails?.address ?? "",
       height: {
-        inches: Number(Math.floor(userDetails.height)),
-        feet: getFractionalPart(userDetails.height),
+        inches: getDecimalPartPart(Number(userDetails?.height)),
+        feet: getFractionalPart(Number(userDetails?.height)),
       },
       id: "",
-      lastName: userDetails.lastName,
-      middleName: userDetails.middleName,
-      phoneCode: userDetails.phoneCode,
-      alternateCode: userDetails.alternateCode,
-      phoneNo: Number(splitCodeWithPhoneNumber(userDetails.phoneNo)) || 0,
-      race: userDetails.race,
-      state: userDetails.state,
-      weight: userDetails.weight,
-      zipCode: userDetails.zipCode,
-      alternateNo: Number(userDetails.alternateNo),
+      lastName: userDetails?.lastName,
+      middleName: userDetails?.middleName,
+      phoneCode: userDetails?.phoneCode,
+      phoneNo: Number(splitCodeWithPhoneNumber(userDetails?.phoneNo)) || null,
+      race: {} as IOptionValue,
+      state: {} as IOptionValue,
+      weight: Number(userDetails?.weight),
+      zipCode: userDetails?.zipCode || "",
+      alternateNo: userDetails?.alternativeNumber
+        ? Number(userDetails.alternativeNumber)
+        : null,
     };
     reset({ ...patient });
+  };
+
+  const getOptionData = () => {
+    dispatch(getOptionValuesThunk(TABLE.RACE)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        const _response = response.payload as IOptionValue[];
+        if (_response?.length) {
+          const updatedResponse: IOptionValue[] = _response?.map(
+            (raceItem: IOptionValue) => {
+              if (raceItem?.display?.toLowerCase() === "white") {
+                const race: IOptionValue = {
+                  display: "White or Caucasian",
+                  code: raceItem?.code,
+                  id: raceItem?.id,
+                };
+                return race;
+              } else {
+                return raceItem;
+              }
+            }
+          );
+          setRace(updatedResponse);
+        }
+      }
+    });
+    dispatch(getOptionValuesThunk(TABLE.STATE)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        const _response = response.payload as IOptionValue[];
+        setStates(_response);
+      }
+    });
+    dispatch(getOptionValuesThunk(TABLE.ETHNICITY)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        const _response = response.payload as IOptionValue[];
+        setEthnicities(_response);
+      }
+    });
   };
 
   const { toast, successToast, errorToast } = useToast();
@@ -86,23 +191,33 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
   const handleFormSubmit = (data: IEditProfile) => {
     const payload: IUpdatePatientPayload = {
       city: data.city,
-      country: data.country,
-      date_of_birth: data.dob,
-      email: data.email,
-      first_name: data.firstName,
-      middle_name: data.middleName,
-      last_name: data.lastName,
-      full_address: data.fullAddress,
-      gender: data.gender,
+      country: data.country || "USA",
+      dob: dateFormatter(data?.dob, "MM/dd/yyyy"),
+      email: data?.email?.trim(),
+      firstName: data?.firstName?.trim(),
+      middleName: data?.middleName?.trim(),
+      lastName: data.lastName?.trim(),
+      address: data.fullAddress,
+      gender:
+        data?.gender?.toLowerCase() === GENDER.MALE
+          ? "M"
+          : data?.gender?.toLowerCase() === GENDER.FEMAIL
+            ? "F"
+            : "U",
       patient_id: userDetails.id,
-      phone_number: getFullPhoneNumber("+1", data.phoneNo),
-      state: data.state,
-      zip_code: data.zipCode,
-      weight: data.weight,
-      height: combineHeight(data.height.feet, data.height.inches),
+      phoneNo: data.phoneNo?.toString() || "",
+      state: data.state.code,
+      zipCode: data.zipCode,
+      weight: data.weight.toString() || "",
+      height: combineHeight(data.height.feet, data.height.inches) || "0",
+      ethnicity: data.ethnicity.code || "",
+      race: data?.race?.code,
+      alternativeNumber: data?.alternateNo?.toString() || "",
     };
-    dispatch(updatePatientProfileThunk(payload)).then(({ meta }) => {
-      if (meta.requestStatus === RESPONSE.FULFILLED) {
+    dispatch(updatePatientProfileThunk(payload)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        dispatch(getPatientDetailsThunk(payload.patient_id));
+        dispatch(getUserProfileThunk());
         successToast("Updated Successfully", "Profile updated successfully");
         setTimeout(() => {
           if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
@@ -110,62 +225,90 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
           } else {
             navigate(PATH_NAME.PROFILE);
           }
-        }, 2000);
-      } else if (RESPONSE.REJECTED) {
-        errorToast("Failed", "Profile updation unsuccessful");
+        }, 1000);
+      } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
+        const errorResponse = response.payload as ErrorResponse;
+        errorToast("Updation Failed", errorResponse.message);
       }
     });
   };
 
   const validateHeight = (height: number) => {
-    if (height > 20 || height < 1) {
+    if (!height) {
+      return "Height is requited";
+    }
+    if (height > 20) {
       return "Invalid height";
     }
     return true;
   };
 
   const validatePhoneNumber = (value: number | null) => {
-    if (value == null || value.toString().length < 6) {
-      return "Phone number must be at least 6 digits";
+    if (value == null || value?.toString()?.length != 10) {
+      return "Phone number must be 10 digits";
+    } else return true;
+  };
+
+  const handleCancel = () => {
+    if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
+      navigate(PATH_NAME.HEALTH_RECORDS);
+    } else {
+      navigate(PATH_NAME.PROFILE);
+    }
+  };
+
+  const validateAlternateNumber = (item: number | null) => {
+    if (item != null && item?.toString()?.length != 10) {
+      return "Alternate Number must be 10 digits";
     } else return true;
   };
   return (
-    <div className="px-6 ">
+    <div className="px-6">
       <form
+        className="relative"
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
         onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-row justify-between pb-6">
           <BackButton
-            previousPage="Personal"
+            previousPage={
+              location?.state?.from === PATH_NAME.HEALTH_RECORDS
+                ? "Make Appointment"
+                : "Personal"
+            }
             currentPage="Edit Profile"
-            backLink={PATH_NAME.PROFILE}
+            backLink={
+              location?.state?.from === PATH_NAME.HEALTH_RECORDS
+                ? PATH_NAME.HEALTH_RECORDS
+                : PATH_NAME.PROFILE
+            }
           />
           <div>
             <div className="flex py-2 justify-between items-center">
-              <Link to={PATH_NAME.PROFILE}>
-                <Button
-                  className="ml-3 font-primary text-purple-800"
-                  variant="primary"
-                  type="reset"
-                  style="link"
-                >
-                  <i className="p" />
-                  <i className="pi pi-times me-2"></i>Cancel
-                </Button>
-              </Link>
+              <Button
+                onClick={handleCancel}
+                className="ml-3 font-primary text-purple-800"
+                variant="primary"
+                type="reset"
+                style="link"
+              >
+                <i className="p" />
+                <i className="pi pi-times me-2"></i>Cancel
+              </Button>
+
               <PrimeButton
                 onClick={() => handleSubmit}
-                className="ml-3 submit-button"
+                className="ml-3 submit-button items-center"
                 outlined
                 type="submit"
               >
-                <i className="pi pi-check me-2"></i>Save
+                <i className="pi pi-check me-2" />
+                Save
               </PrimeButton>
             </div>
           </div>
         </div>
-        <div className="bg-white py-4 px-6 rounded-xl">
+        <div className="bg-white py-4 px-6 rounded-xl h-[calc(100vh-200px)] overflow-auto">
           <div className="font-primary text-xl">Basic Details</div>
           <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-4">
             <div className="pt-4 relative">
@@ -174,7 +317,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </label>
               <input
                 {...register("firstName", {
-                  required: "First name can not be empty.",
+                  required: "First Name is required",
                   pattern: {
                     value: PATTERN.NAME,
                     message: ERROR.NAME_ERROR,
@@ -213,7 +356,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
             </div>
             <div className="pt-4">
               <label className="block input-label" htmlFor="lastName">
-                Last Name
+                Last Name*
               </label>
               <input
                 {...register("lastName", {
@@ -221,6 +364,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     value: PATTERN.NAME,
                     message: ERROR.NAME_ERROR,
                   },
+                  required: "Last Name is required",
                 })}
                 name={`lastName`}
                 className="cimpar-input focus:outline-none"
@@ -243,7 +387,6 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <Controller
                 name="gender"
                 control={control}
-                defaultValue={user.gender}
                 rules={{
                   required: "Gender is required",
                 }}
@@ -254,7 +397,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     onChange={(e) => setValue("gender", e.target.value)}
                     options={genders}
                     optionLabel="name"
-                    placeholder="Select a City"
+                    placeholder="Select Gender"
                     className="dropdown w-full md:w-[14rem] gender"
                   />
                 )}
@@ -271,7 +414,6 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 <Controller
                   name="dob"
                   control={control}
-                  defaultValue={user.dob}
                   rules={{
                     required: "Date of appointment is required",
                   }}
@@ -289,6 +431,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       value={new Date(field.value)}
                       dateFormat="dd MM, yy"
                       className="calander border rounded-lg h-[2.5rem]"
+                      maxDate={new Date()}
                     />
                   )}
                 />
@@ -310,9 +453,10 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     }}
                     render={({ field }) => (
                       <InputNumber
+                        {...field}
                         inputId="height"
                         onChange={(event: InputNumberChangeEvent) => {
-                          event.value && setValue("height.feet", event.value);
+                          setValue("height.feet", event.value || 0);
                           trigger("height.feet");
                         }}
                         placeholder="Feet"
@@ -328,20 +472,16 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                     name="height.inches"
                     control={control}
                     rules={{
-                      min: {
-                        value: 0,
-                        message: "Invalid height",
-                      },
-                      max: {
-                        value: 11,
-                        message: "Invalid height",
+                      validate: {
+                        value: (value) =>
+                          (value >= 0 && value <= 11) || "Invalid Height",
                       },
                     }}
                     render={({ field }) => (
                       <InputNumber
-                        max={11}
                         onChange={(e) => {
                           e.value && setValue("height.inches", e.value);
+                          trigger("height.inches");
                         }}
                         value={Number(field.value) || 0}
                         placeholder="inches"
@@ -370,6 +510,8 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 control={control}
                 rules={{
                   required: "Weight is required",
+                  min: { value: 1, message: "Weight is required" },
+                  validate: (value) => value >= 1 || "Weight is required",
                 }}
                 render={({ field }) => (
                   <>
@@ -377,7 +519,9 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                       mode="decimal"
                       value={field.value}
                       onChange={(event) => {
-                        event.value ? setValue("weight", event?.value) : 0;
+                        event.value
+                          ? setValue("weight", event?.value)
+                          : setValue("weight", 0);
                         trigger("weight");
                       }}
                       className="cimpar-input weight focus:outline-none"
@@ -405,19 +549,18 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <Controller
                 name="race"
                 control={control}
-                defaultValue={user.race}
                 rules={{
-                  required: "Race can not be empty",
+                  required: "Race is required",
                 }}
                 render={({ field }) => (
                   <Dropdown
                     id="race"
                     value={field.value}
                     onChange={(e: DropdownChangeEvent) =>
-                      e.value && setValue("race", e.value)
+                      setValue("race", e.value)
                     }
-                    options={raceList}
-                    optionLabel="name"
+                    options={races}
+                    optionLabel="display"
                     placeholder="Select"
                     className="race-dropdown items-center"
                   />
@@ -436,16 +579,17 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <Controller
                 name="ethnicity"
                 control={control}
-                defaultValue={user.ethnicity}
                 rules={{
                   required: "Ethnicity is required",
                 }}
                 render={({ field }) => (
                   <Dropdown
                     {...field}
+                    onChange={(e) => setValue("ethnicity", e.value)}
                     id="ethnicity"
                     value={field.value}
                     options={ethnicities}
+                    optionLabel="display"
                     placeholder="Select"
                     className="border p-0 w-full border-border-gray-300 rounded-lg h-[2.5rem] text-xs px-0 shadow-none"
                   />
@@ -496,14 +640,14 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 <ErrorMessage message={errors.phoneNo.message} />
               )}
             </div>
-            <div className="pt-4">
+            <div className="pt-4 relative">
               <label
                 className="block input-label pb-1"
                 htmlFor="alternateNumberCode"
               >
                 Alternate Number
               </label>
-              <div className="p-inputgroup buttonGroup  flex-1 w-full h-[2.5rem]">
+              <div className="p-inputgroup buttonGroup relative  flex-1 w-full h-[2.5rem]">
                 <span className="country-code w-[50%] align-middle">
                   <Dropdown
                     value="+1"
@@ -515,13 +659,17 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                 <Controller
                   name="alternateNo"
                   control={control}
+                  rules={{
+                    validate: validateAlternateNumber,
+                  }}
                   render={({ field }) => (
                     <InputNumber
                       inputId="alternateNumberCode"
-                      value={(field.value && Number(field.value)) || 0}
-                      onChange={(e) =>
-                        e.value && setValue("alternateNo", e.value)
-                      }
+                      value={field?.value ? Number(field?.value) : null}
+                      onChange={(e) => {
+                        setValue("alternateNo", e.value || null);
+                        trigger("alternateNo");
+                      }}
                       placeholder="Phone Number"
                       useGrouping={false}
                       className="border custom-input rounded-r-lg border-gray-300 w-[50%]"
@@ -529,6 +677,11 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
                   )}
                 />
               </div>
+              <span className="absolute">
+                {errors.alternateNo && (
+                  <ErrorMessage message={errors.alternateNo.message} />
+                )}
+              </span>
             </div>
 
             <div className="pt-4">
@@ -537,7 +690,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </label>
               <input
                 {...register("city", {
-                  required: "City can not be empty.",
+                  required: "City is required",
                 })}
                 name={`city`}
                 className="cimpar-input focus:outline-none"
@@ -549,14 +702,21 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
             </div>
             <div className="pt-4">
               <label className="block input-label pb-1" htmlFor="zipCode">
-                Zip code*
+                Zip Code*
               </label>
               <Controller
                 name="zipCode"
                 control={control}
-                defaultValue={user.zipCode}
                 rules={{
-                  required: "ZipCode can not be empty",
+                  required: "Zip Code is required",
+                  minLength: {
+                    value: 5,
+                    message: "Zip Code must be 5 digits",
+                  },
+                  maxLength: {
+                    value: 5,
+                    message: "Zip Code must be 5 digits",
+                  },
                 }}
                 render={({ field }) => (
                   <InputText
@@ -576,7 +736,7 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               </label>
               <input
                 {...register("fullAddress", {
-                  required: "Address can't be empty.",
+                  required: "Full Address is required",
                 })}
                 name={`fullAddress`}
                 className="cimpar-input focus:outline-none"
@@ -599,17 +759,19 @@ const EditUserDetails = ({ user }: { user: IUser }) => {
               <Controller
                 name="state"
                 control={control}
-                defaultValue={user.state}
                 rules={{
-                  required: "State can't be empty",
+                  required: "State is required",
                 }}
                 render={({ field }) => (
                   <Dropdown
                     {...field}
+                    onChange={(event) => {
+                      setValue("state", event?.value);
+                      setValue("zipCode", "");
+                    }}
                     id="state"
-                    onChange={(e) => setValue("state", e.target.value)}
                     options={states}
-                    optionLabel="value"
+                    optionLabel="display"
                     placeholder="Select a State"
                     className="dropdown w-full md:w-14rem border border-gray-300 rounded-lg !py-[0.4rem]"
                   />

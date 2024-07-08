@@ -1,4 +1,16 @@
+import { Button } from "primereact/button";
+import { InputText } from "primereact/inputtext";
+import { Password } from "primereact/password";
+import { Toast } from "primereact/toast";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import ReyaIcon from "../../assets/reya-logo.svg?react";
+import { ILogin, ILoginPayload } from "../../interfaces/UserLogin";
+import { ErrorResponse } from "../../interfaces/common";
+import { getUserProfileThunk } from "../../store/slices/UserSlice";
+import { loginUserThunk } from "../../store/slices/loginSlice";
+import { AppDispatch } from "../../store/store";
 import {
   CLIENT_ID,
   GRANT_TYPE,
@@ -7,20 +19,8 @@ import {
   PATTERN,
   RESPONSE,
 } from "../../utils/AppConstants";
-import { InputText } from "primereact/inputtext";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { Password } from "primereact/password";
-import { Button } from "primereact/button";
-import { useForm, Controller } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { ILogin, ILoginPayload } from "../../interfaces/UserLogin";
-import { loginUserThunk } from "../../store/slices/loginSlice";
 import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
-import { handleKeyPress } from "../../services/commonFunctions";
-import { getUserProfileThunk } from "../../store/slices/UserSlice";
 
 const LoginForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,7 +30,7 @@ const LoginForm = () => {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({ defaultValues: {} as ILogin });
+  } = useForm({ defaultValues: { email: "", password: "" } });
 
   const handleLogin = (data: ILogin) => {
     const payload: ILoginPayload = {
@@ -41,9 +41,14 @@ const LoginForm = () => {
     };
     dispatch(loginUserThunk(payload)).then((response) => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
-        dispatch(getUserProfileThunk());
+        dispatch(getUserProfileThunk()).then(({ meta }) => {
+          if (meta?.requestStatus === RESPONSE.REJECTED) {
+            errorToast("Failed To Fetch", "Failed to retrieve user profile");
+          }
+        });
       } else if (response?.meta.requestStatus === RESPONSE.REJECTED) {
-        errorToast("Login Failed", response?.payload?.message);
+        const errorResponse = response?.payload as ErrorResponse;
+        errorToast("Login Failed", errorResponse?.message);
       }
     });
   };
@@ -51,9 +56,9 @@ const LoginForm = () => {
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
       <form
         onSubmit={handleSubmit((data) => handleLogin(data))}
-        onKeyDown={(e) => handleKeyPress(e)}
+        className="flex justify-center w-full"
       >
-        <div className="rounded-xl bg-white md:w-[30rem] md:min-h-[25rem] p-6">
+        <div className="rounded-xl bg-white md:w-[30rem] md:min-h-[25rem] w-[90%] p-6">
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" />
           </div>
@@ -67,8 +72,11 @@ const LoginForm = () => {
                 name="email"
                 control={control}
                 rules={{
-                  pattern: PATTERN.EMAIL,
-                  required: true,
+                  pattern: {
+                    value: PATTERN.EMAIL,
+                    message: "Invalid Email Address",
+                  },
+                  required: "Email is required",
                 }}
                 render={({ field }) => (
                   <InputText
@@ -77,12 +85,13 @@ const LoginForm = () => {
                     keyfilter="email"
                     className="signup-input"
                     placeholder="Enter Email Address"
-                    aria-label="Enter Email Address"
                   />
                 )}
               />
-              <span className="absolute right-2 top-[0.7rem] pi pi-envelope" />
-              {errors.email && <ErrorMessage message="Invalid Email Id" />}
+              <span className="absolute right-2 top-[0.8rem] pi pi-envelope" />
+              {errors.email && (
+                <ErrorMessage message={errors?.email?.message} />
+              )}
             </div>
           </div>
           <div className="w-full py-4 relative">
@@ -94,7 +103,7 @@ const LoginForm = () => {
                 control={control}
                 name="password"
                 rules={{
-                  required: "Password can't be empty",
+                  required: "Password is required",
                   minLength: {
                     value: 8,
                     message: MESSAGE.PASSWORD_LENGTH_ERROR,
@@ -122,13 +131,13 @@ const LoginForm = () => {
               Forgot Password?
             </label>
           </Link>
-          <div className="col-span-2 flex justify-between items-center pt-2">
-            <label className="text-sm">
+          <div className="col-span-2 flex justify-end items-center pt-2">
+            {/* <label className="text-sm pe-3">
               Don't have an account?
               <Link to={PATH_NAME.SIGNUP} className="text-purple-800 ps-1">
                 Signup
               </Link>
-            </label>
+            </label> */}
             <Button
               disabled={isSubmitting}
               type="submit"

@@ -1,32 +1,118 @@
-import { useState } from "react";
-import { LabTestResult } from "../LabTestResults";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import Eye from "../../assets/icons/eye.svg?react";
-import Download from "../../assets/icons/download.svg?react";
-import CustomPaginator from "../customPagenator/CustomPaginator";
-import { Sidebar } from "primereact/sidebar";
-import { getRowClasses, getStatusColors } from "../../services/commonFunctions";
 import { Button } from "primereact/button";
-import { PaginatorPageChangeEvent } from "primereact/paginator";
-import { useSelector } from "react-redux";
-import { selectLabTests } from "../../store/slices/serviceHistorySlice";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { Sidebar } from "primereact/sidebar";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Download from "../../assets/icons/download.svg?react";
+import Eye from "../../assets/icons/eye.svg?react";
+import {
+  IDetailedAppointment,
+  IGetAppointmentByIdPayload,
+  SidebarAppointment,
+} from "../../interfaces/appointment";
+import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
+import {
+  appointmentStatus,
+  getRowClasses,
+  getStatusColors,
+} from "../../services/commonFunctions";
+import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
+import { selectSelectedPatient } from "../../store/slices/PatientSlice";
+import {
+  getLabTestByIdThunk,
+  selectLabTests,
+} from "../../store/slices/serviceHistorySlice";
+import { AppDispatch } from "../../store/store";
+import { NORMAL, RESPONSE, RESULT_STATUS } from "../../utils/AppConstants";
+import CustomPaginator from "../customPagenator/CustomPaginator";
+import { AppointentView } from "../serviceHistory/ServiceHistory";
+import { dateFormatter } from "../../utils/Date";
+import useToast from "../useToast/UseToast";
+import { Toast } from "primereact/toast";
 
-const TestResult = () => {
-  const [selectedTest, setSelectedTest] = useState({} as LabTestResult);
+const TestResult = ({
+  handlePageChange,
+}: {
+  handlePageChange: (value: number) => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [selectedTest, setSelectedTest] = useState({} as ILabTest);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(
+    {} as SidebarAppointment
+  );
   const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
   const results = useSelector(selectLabTests);
-
-  const handlePageChange = (event: PaginatorPageChangeEvent) => {
-    //TODO: Write logic to call api
-    console.log(event);
-  };
-
-  //TODO: Need to handle the logic
-  const handleReports = (action: string, row: LabTestResult) => {
-    setSelectedTest(row);
+  const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
+  const handleReports = (action: string, row: ILabTest) => {
+    if (action === "download") {
+      if (row.fileUrl) {
+        const link = document.createElement("a");
+        link.href = row.fileUrl;
+        link.download = "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        errorToast("File not found", "This observation does not have a file");
+        return;
+      }
+    }
+    if (
+      row.status?.toLowerCase() === RESULT_STATUS.UPCOMING_APPOINTMENT ||
+      row.status?.toLowerCase() === RESULT_STATUS.UNDER_PROCESSING
+    ) {
+      const payload: IGetAppointmentByIdPayload = {
+        appointment_id: row.orderId,
+        patient_id: patientId,
+      };
+      dispatch(getAppointmentByIdThunk(payload)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+          const appointment = response.payload as IDetailedAppointment;
+          const appointmentDate: SidebarAppointment = {
+            allergies: appointment?.currentAllergies || "",
+            conditions: appointment?.currentConditions || "",
+            dateOfTest:
+              dateFormatter(
+                appointment?.appointmentDate,
+                "dd MMM yyyy, hh:mm a"
+              ) || "N/A",
+            testName: appointment?.appointmentFor || "",
+            orderId: appointment?.id || "",
+            status: appointmentStatus(appointment?.appointmentDate),
+            otherAllergies: appointment?.otherAllergies || "",
+            otherMedicalConditions: appointment?.otherConditions || "",
+          };
+          setSelectedAppointment(appointmentDate);
+        }
+      });
+    } else {
+      const payload: IGetTestByIdPayload = {
+        test_id: row.orderId,
+        patient_id: patientId,
+      };
+      dispatch(getLabTestByIdThunk(payload)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+          const test = response.payload as ILabTest;
+          setSelectedTest(test);
+        }
+      });
+    }
     action === "view" && setIsOpenSidebar(true);
+  };
+  const { errorToast, toast } = useToast();
+  const downloadDocument = (url: string) => {
+    if (url) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      errorToast("File Not Found", "This observation does not have a file");
+    }
   };
 
   const SidebarHeader = () => {
@@ -35,19 +121,42 @@ const TestResult = () => {
         <div>
           <span className="pe-3">Lab Result</span>
           <span
-            className={`${getStatusColors(selectedTest.status)} py-1 px-3 rounded-full text-sm font-tertiary`}
+            className={`${getStatusColors(selectedTest.status)} py-2 px-3 rounded-full text-sm font-tertiary`}
           >
             {selectedTest.status ? selectedTest.status : "-"}
           </span>
         </div>
-        {selectedTest.status === "Available" && (
+        {selectedTest.fileUrl && (
           <Button
             title="Download test report"
             label="Download"
             className="text-purple-900 bg-purple-100 rounded-full py-2 px-3 border border-purple-900 me-3 text-[16px]"
             icon="pi pi-download"
+            onClick={() => downloadDocument(selectedTest.fileUrl)}
           />
         )}
+      </div>
+    );
+  };
+
+  const AppointmentHeader = () => {
+    const getValue = () => {
+      if (!selectedAppointment?.status) return selectedAppointment?.status;
+      return selectedAppointment?.status
+        ?.split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    };
+    return (
+      <div className="flex items-center justify-between w-full">
+        <div>
+          <span className="pe-3">Lab Result</span>
+          <span
+            className={`${getStatusColors(selectedAppointment.status)} py-2 px-3 rounded-full text-sm font-tertiary`}
+          >
+            {getValue()}
+          </span>
+        </div>
       </div>
     );
   };
@@ -56,36 +165,32 @@ const TestResult = () => {
     {
       field: "testName",
       header: "TEST NAME",
-      body: (rowData: LabTestResult) => <TestName name={rowData.testName} />,
+      body: (rowData: ILabTest) => <TestName name={rowData.testName} />,
     },
     {
       field: "orderId",
       header: "ORDER ID",
-      body: (rowData: LabTestResult) => <TestDetails value={rowData.orderId} />,
+      body: (rowData: ILabTest) => <TestDetails value={rowData.orderId} />,
     },
     {
       field: "testedAt",
       header: "TESTED AT",
-      body: (rowData: LabTestResult) => (
-        <TestDetails value={rowData.testedAt} />
-      ),
+      body: (rowData: ILabTest) => <TestDetails value={rowData.testedAt} />,
     },
     {
       field: "dateOfTest",
       header: "DATE OF TEST",
-      body: (rowData: LabTestResult) => (
-        <TestDetails value={rowData.dateOfTest} />
-      ),
+      body: (rowData: ILabTest) => <TestDetails value={rowData.dateOfTest} />,
     },
     {
       field: "status",
       header: "STATUS",
-      body: (rowData: LabTestResult) => <TestStatus status={rowData.status} />,
+      body: (rowData: ILabTest) => <TestStatus status={rowData.status} />,
     },
     {
       field: "",
       header: "",
-      body: (rowData: LabTestResult) => (
+      body: (rowData: ILabTest) => (
         <ReportColumn data={rowData} handleReports={handleReports} />
       ),
     },
@@ -93,39 +198,41 @@ const TestResult = () => {
 
   return (
     <>
-      <DataTable
-        // selection={selectedTest}
-        value={results}
-        emptyMessage={
-          <div className="flex w-full justify-center">
-            No lab tests available
-          </div>
-        }
-        selectionMode="single"
-        dataKey="orderId"
-        tableStyle={{ minWidth: "50rem" }}
-        className="mt-2 max-h-[90%] rowHoverable"
-        rowClassName={() => getRowClasses("h-10 border-b")}
-        scrollHeight="40rem"
-      >
-        {resultColumns.map((column, index) => {
-          return (
-            <Column
-              key={index}
-              headerClassName={columnHeaderStyle}
-              bodyClassName="py-4"
-              field={column.field}
-              header={column.header}
-              body={column.body}
-            />
-          );
-        })}
-      </DataTable>
-      {results.length > 10 && (
+      <div className="h-[calc(100vh-200px)] overflow-auto">
+        <DataTable
+          selection={selectedTest}
+          value={results?.data}
+          emptyMessage={
+            <div className="flex w-full justify-center">
+              No lab tests available
+            </div>
+          }
+          selectionMode="single"
+          dataKey="orderId"
+          tableStyle={{ minWidth: "50rem" }}
+          className="mt-2 rowHoverable"
+          rowClassName={() => getRowClasses("h-10 border-b")}
+        >
+          {resultColumns.map((column, index) => {
+            return (
+              <Column
+                key={index}
+                headerClassName={columnHeaderStyle}
+                bodyClassName="py-4 text-ellipsis text-wrap max-w-[12rem]"
+                field={column.field}
+                header={column.header}
+                body={column.body}
+              />
+            );
+          })}
+        </DataTable>
+        <Toast ref={toast} />
+      </div>
+      {results?.pagination?.total_pages > 1 && (
         <CustomPaginator
-          rowLimit={10}
           handlePageChange={handlePageChange}
-          totalRecords={results.length}
+          currentPage={results?.pagination?.current_page}
+          totalPages={results?.pagination?.total_pages}
         />
       )}
       {!!Object.keys(selectedTest).length && (
@@ -135,11 +242,25 @@ const TestResult = () => {
           visible={!!Object.keys(selectedTest).length && isOpenSidebar}
           position="right"
           onHide={() => {
-            setSelectedTest({} as LabTestResult);
+            setSelectedTest({} as ILabTest);
             setIsOpenSidebar(false);
           }}
         >
           <TestDetailedView test={selectedTest} />
+        </Sidebar>
+      )}
+      {!!Object.keys(selectedAppointment).length && (
+        <Sidebar
+          className="detailed-view w-[30rem]"
+          header={<AppointmentHeader />}
+          visible={!!Object.keys(selectedAppointment).length && isOpenSidebar}
+          position="right"
+          onHide={() => {
+            setSelectedAppointment({} as SidebarAppointment);
+            setIsOpenSidebar(false);
+          }}
+        >
+          <AppointentView appointment={selectedAppointment} />
         </Sidebar>
       )}
     </>
@@ -153,14 +274,18 @@ const TestName = ({ name }: { name: string }) => {
 };
 
 const TestDetails = ({ value }: { value: string }) => {
-  return <div className="font-tertiary">{value ? value : "-"}</div>;
+  return (
+    <div title={value} className="font-tertiary break-words">
+      {value ? value : "-"}
+    </div>
+  );
 };
 
 const TestStatus = ({ status }: { status: string }) => {
   return (
     <div>
       <span
-        className={`${getStatusColors(status)} rounded-full py-[.4rem] px-4 text-sm text-center font-tertiary`}
+        className={`${getStatusColors(status)} rounded-full py-[.4rem] px-4 text-sm text-center font-tertiary capitalize`}
       >
         {status ? status : "-"}
       </span>
@@ -172,21 +297,20 @@ const ReportColumn = ({
   data,
   handleReports,
 }: {
-  data: LabTestResult;
-  handleReports: (action: string, data: LabTestResult) => void;
+  data: ILabTest;
+  handleReports: (action: string, data: ILabTest) => void;
 }) => {
   return (
     <div className="flex flex-row items-center stroke-purple-800 items-center justify-start">
       <Eye className="me-2" onClick={() => handleReports("view", data)} />
-      {(data.status.toLowerCase() === "under porcesses" ||
-        data.status.toLowerCase() === "available") && (
+      {data?.fileUrl && (
         <Download onClick={() => handleReports("download", data)} />
       )}
     </div>
   );
 };
 
-const TestDetailedView = ({ test }: { test: LabTestResult }) => {
+export const TestDetailedView = ({ test }: { test: ILabTest }) => {
   const TableCell = ({
     label,
     value,
@@ -196,7 +320,7 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
     value: string | undefined;
     highlight?: boolean;
   }) => (
-    <div className="border-b pb-1">
+    <div title={value} className="border-b pb-1 max-w-[100%] truncate">
       <div className="text-gray-500 font-secondary text-sm pt-4">
         {label ? label : "-"}
       </div>
@@ -210,18 +334,30 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
     const columnFields = [
       {
         label: "RESULT",
-        value: "16",
-        highlight: true,
+        value: test?.result || "-",
+        highlight:
+          (test?.flag && test?.flag?.toLowerCase() !== NORMAL) ||
+          (test?.flag && test?.flag?.toLowerCase() !== "n") ||
+          false,
       },
-      { label: "REFERENCE RANGE", value: "10-13", highlight: false },
-      { label: "UNITS", value: "G/dL", heightlight: false },
-      { label: "FALG", value: "HIGH", highlight: true },
+      { label: "REFERENCE RANGE", value: test?.range, highlight: false },
+      { label: "UNITS", value: test?.unit || "-", heightlight: false },
+      {
+        label: "FLAG",
+        value: test?.flag,
+        highlight:
+          (test?.flag && test?.flag?.toLowerCase() !== "normal") ||
+          (test?.flag && test?.flag?.toLowerCase() !== "n") ||
+          false,
+      },
     ];
+
     return (
       <div className="flex grid lg:grid-cols-2 gap-3">
-        {columnFields.map((column) => {
+        {columnFields.map((column, index) => {
           return (
             <TableCell
+              key={index}
               label={column.label}
               value={column.value}
               highlight={column.highlight}
@@ -233,7 +369,7 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
   };
 
   const columnKeys =
-    test.status.toLowerCase() !== "upcoming appointment"
+    test?.status?.toLowerCase() !== RESULT_STATUS.UPCOMING_APPOINTMENT
       ? [
           "ORDER ID",
           "DATE OF TEST",
@@ -252,17 +388,17 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
         case "DATE OF TEST":
           return test["dateOfTest"];
         case "SPECIMEN USED":
-          return test.data["specimenUsed"];
+          return test["specimenUsed"];
         case "TESTED AT":
           return test["testedAt"];
         case "DATE/TIME COLLECTED":
-          return test.data["dateTimeCollected"];
+          return test["collectedDateTime"];
         case "PHYSICAN PHONE":
-          return test.data["physicianPhone"];
+          return test["contactInfo"];
         case "PHYSICIAN NAME":
-          return test.data["physicianName"];
+          return test["physicianName"];
         case "DATE/TIME REPORTED":
-          return test.data["dateTimeReported"];
+          return test["dateOfTest"];
         default:
           return "";
       }
@@ -277,24 +413,26 @@ const TestDetailedView = ({ test }: { test: LabTestResult }) => {
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         {Boolean(columnKeys.length) &&
-          columnKeys.map((column) => {
-            return <TableCell label={column} value={getValue(column)} />;
+          columnKeys.map((column, index) => {
+            return (
+              <TableCell label={column} key={index} value={getValue(column)} />
+            );
           })}
       </div>
-      {test.status.toLowerCase() !== "upcoming appointment" && (
+      {test?.status?.toLowerCase() !== RESULT_STATUS.UPCOMING_APPOINTMENT && (
         <>
           <div className="font-primary text-primary flex justify-between py-6 mt-6 text-xl">
             Test Results
-            {test.status === "Available" && (
+            {/* {test.status?.toLowerCase() === RESULT_STATUS.AVAILABLE && (
               <div
                 className="flex flex-row items-center justify-center text-purple-800 cursor-pointer"
                 onClick={() => {}}
               >
                 <Eye className="stroke-purple-800 me-2" /> Preview
               </div>
-            )}
+            )} */}
           </div>
-          {test.status.toLowerCase() === "available" ? (
+          {test?.status?.toLowerCase() === RESULT_STATUS.AVAILABLE ? (
             <Result />
           ) : (
             <label className="text:sm py-6">

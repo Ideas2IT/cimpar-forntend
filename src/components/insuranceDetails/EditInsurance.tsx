@@ -1,41 +1,55 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import BackButton from "../backButton/BackButton";
-import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
-import { RadioButton } from "primereact/radiobutton";
-import { Controller, useForm } from "react-hook-form";
-import { IInsurance } from "../../interfaces/User";
-import { useEffect, useState } from "react";
-import { insuranceCompanies } from "../../assets/MockData";
 import { Dropdown } from "primereact/dropdown";
-import { InputText } from "primereact/inputtext";
-import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
-import { INSURANCE_TYPE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import { FileUpload } from "primereact/fileupload";
-import { FileTile } from "../visitHistory/EditVisitHistory";
-import ReportImage from "../reportImage/ReportImage";
-import { handleKeyPress } from "../../services/commonFunctions";
+import { InputText } from "primereact/inputtext";
+import { RadioButton } from "primereact/radiobutton";
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { IInsuranceResponse } from "../../interfaces/User";
+import { ErrorResponse } from "../../interfaces/common";
 import {
   INewInsurancePayload,
   IUpdateInsurancePayload,
 } from "../../interfaces/insurance";
+import { handleKeyPress } from "../../services/commonFunctions";
 import {
   addInsuranceThunk,
+  deleteInsuranceFileThunk,
+  getInsuranceByIdThunk,
+  getPatientInsuranceThunk,
   selectSelectedPatient,
   updateInsuranceByIdThunk,
 } from "../../store/slices/PatientSlice";
+import { getInputDataThunk } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
+import {
+  INSURANCE_TYPE,
+  MESSAGE,
+  PATH_NAME,
+  RESPONSE,
+} from "../../utils/AppConstants";
+import Button from "../Button";
+import BackButton from "../backButton/BackButton";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import ReportImage from "../reportImage/ReportImage";
+import useToast from "../useToast/UseToast";
+import { FileTile } from "../visitHistory/EditVisitHistory";
 import "./Insurance.css";
 
 const EditInsurance = () => {
-  const location = useLocation();
-  const selectedPatinet = useSelector(selectSelectedPatient);
-  const [selectedInsurance, setSelectedInsurance] = useState({} as IInsurance);
+  const [insuranceCompanies, setInsuranceCompanies] = useState<string[]>([]);
+  const selectedPatient = useSelector(selectSelectedPatient);
+  const [selectedInsurance, setSelectedInsurance] = useState(
+    {} as IInsuranceResponse
+  );
   const { successToast, toast, errorToast } = useToast();
   const [showImage, setShowImage] = useState(false);
-  const [selectedReport, setSelectedReport] = useState({} as File);
+  const [updatedFile, setUpdatedFile] = useState<File>({} as File);
+  const [disabledOptions, setDisabledOptions] = useState<string[]>([]);
+  const insuranceDetails = useSelector(selectSelectedPatient)?.InsuranceDetails;
   const {
     control,
     handleSubmit,
@@ -47,63 +61,177 @@ const EditInsurance = () => {
     defaultValues: selectedInsurance,
   });
 
-  const insuranceId = watch("insuranceId");
-  // const insuranceCard = watch("insuranceCard");
+  const insuranceCompany = watch("insuranceCompany");
+  const insuranceCard = watch("insuranceCard");
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
+  const { id } = useParams();
+  const fileUploadRef = useRef<FileUpload | null>(null);
 
   useEffect(() => {
-    if (selectedPatinet?.InsuranceDetails?.length) {
-      const insurance = selectedPatinet.InsuranceDetails.find(
-        (ins) => ins.id == location.pathname.split("/")[2]
+    dispatch(getInputDataThunk("company")).then((response) => {
+      if (response.meta?.requestStatus === RESPONSE.FULFILLED) {
+        const companies = response.payload as string[];
+        if (companies?.length > 0) {
+          setInsuranceCompanies(["Other", ...companies]);
+        } else {
+          setInsuranceCompanies(["Other"]);
+        }
+      } else {
+        errorToast("Failed to load", "Failed to get Insurance Companies");
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    vaidateInsurance(selectedInsurance?.insuranceType);
+    if (selectedInsurance?.insuranceCompany) {
+      selectedInsurance.otherCompany =
+        selectedInsurance?.insuranceCompany || "";
+    }
+    if (
+      insuranceCompanies?.length &&
+      !validateCompanyName() &&
+      selectedInsurance &&
+      Object.keys(selectedInsurance)?.length
+    ) {
+      selectedInsurance.insuranceCompany = "Other";
+    }
+    reset({ ...selectedInsurance });
+  }, [selectedInsurance, insuranceCompanies]);
+
+  const vaidateInsurance = (inusuranceType: string) => {
+    setDisabledOptions(
+      disabledOptions.filter(
+        (option) => inusuranceType?.toLowerCase() !== option
+      )
+    );
+  };
+
+  useEffect(() => {
+    if (insuranceDetails?.length) {
+      setDisabledOptions(
+        insuranceDetails?.map((ins) => ins?.insuranceType?.toLowerCase())
       );
-      if (insurance !== undefined) {
-        setSelectedInsurance(insurance);
+    }
+  }, [insuranceDetails]);
+
+  const validateCompanyName = (): boolean => {
+    const isPresent = insuranceCompanies
+      ?.slice(0, insuranceCompanies?.length - 1)
+      ?.some((c) => {
+        return selectedInsurance?.insuranceCompany === c;
+      });
+    return isPresent;
+  };
+
+  useEffect(() => {
+    if (selectedPatient?.basicDetails?.id) {
+      dispatch(getPatientInsuranceThunk(selectedPatient?.basicDetails?.id));
+      if (id) {
+        dispatch(
+          getInsuranceByIdThunk({
+            patinetId: selectedPatient.basicDetails.id,
+            insuranceId: id,
+          })
+        ).then((response) => {
+          if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+            const insurance = response?.payload as IInsuranceResponse;
+            const _insurance: IInsuranceResponse = {
+              id: insurance.id,
+              groupNumber: insurance.groupNumber,
+              insuranceType: insurance.insuranceType,
+              insuranceCompany: insurance.insuranceCompany,
+              insuranceNumber: insurance.insuranceNumber,
+              policyNumber: insurance.policyNumber,
+              insuranceCard: insurance.insuranceCard,
+              otherCompany: insurance.otherCompany,
+              insuranceId: insurance.id,
+            };
+            setSelectedInsurance(_insurance);
+          }
+        });
       }
     }
-  }, [location.pathname]);
+  }, [selectedPatient?.basicDetails?.id, id]);
 
-  useEffect(() => {
-    reset({ ...selectedInsurance });
-  }, [selectedInsurance]);
-
-  const handleFormSubmit = (data: IInsurance) => {
+  const handleFormSubmit = (data: IInsuranceResponse) => {
     const payload: INewInsurancePayload = {
-      status: "active",
+      file: updatedFile && Object.keys(updatedFile).length ? updatedFile : null,
       beneficiary_id: patientId,
-      group_number: data.groupNumber,
-      insurance_type: data.insuranceType,
-      policy_number: data.policyNumber,
-      provider_name: data.insuranceCompany,
+      groupNumber: data?.groupNumber || "",
+      insurance_type: data?.insuranceType || "",
+      policyNumber: data?.policyNumber || "",
+      providerName:
+        data?.insuranceCompany?.toLowerCase() !== "other"
+          ? data?.insuranceCompany
+          : data.otherCompany || "",
     };
-    if (!Object.keys(selectedInsurance).length) {
-      dispatch(addInsuranceThunk(payload)).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.FULFILLED) {
+    if (selectedInsurance && !Object.keys(selectedInsurance)?.length) {
+      dispatch(addInsuranceThunk(payload)).then((response) => {
+        if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
           successToast(
             "Insurance Added",
             "Insurance details has been added successfully"
           );
-        } else {
-          errorToast("Insurance failed", "Could not add insurance");
+          setTimeout(() => {
+            navigate(PATH_NAME.PROFILE);
+          }, 1000);
+        } else if (response?.meta.requestStatus === RESPONSE.REJECTED) {
+          const errorResponse = response?.payload as ErrorResponse;
+          errorToast("Failed to add Insurance", errorResponse?.message);
         }
       });
     } else {
       const updationPayload: IUpdateInsurancePayload = {
         ...payload,
-        insurance_id: selectedInsurance.id,
+        insurance_id: selectedInsurance?.id,
       };
-      dispatch(updateInsuranceByIdThunk(updationPayload)).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.FULFILLED) {
+      dispatch(updateInsuranceByIdThunk(updationPayload)).then((response) => {
+        if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
           successToast(
             "Updation Successful",
             "Insurance has been updated successfully"
           );
+          setTimeout(() => {
+            navigate(PATH_NAME.PROFILE);
+          }, 1500);
         } else {
-          errorToast("Updation Failed", "Insurance updation failed");
+          const errorResponse = response?.payload as ErrorResponse;
+          errorToast("Updation Failed", errorResponse?.message);
         }
       });
     }
+  };
+  const validateFileSize = () => {
+    errorToast("File Size Exceeded", "File size should not exceed 1MB");
+  };
+
+  const handleRemoveFile = () => {
+    if (
+      selectedInsurance &&
+      !updatedFile.size &&
+      Object.keys(selectedInsurance)?.length > 0 &&
+      typeof selectedInsurance.insuranceCard === "string"
+    ) {
+      const path = selectedInsurance.insuranceCard.split("?")[0];
+      const filePath = path.split("/").slice(-2).join("/");
+      dispatch(deleteInsuranceFileThunk(filePath)).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "File successfully",
+            "Inusrance Card has been deleted successfully"
+          );
+        } else {
+          errorToast("File deleted", "Insurance Card could not be deleted");
+        }
+      });
+    } else {
+      setUpdatedFile({} as File);
+    }
+
+    setValue("insuranceCard", "");
   };
 
   return (
@@ -116,7 +244,7 @@ const EditInsurance = () => {
           <BackButton
             previousPage="Insurance"
             currentPage={
-              Object.keys(selectedInsurance).length
+              selectedInsurance && Object.keys(selectedInsurance).length
                 ? "Edit Insurance"
                 : "Add Insurance"
             }
@@ -156,65 +284,72 @@ const EditInsurance = () => {
             <Controller
               name="insuranceType"
               control={control}
-              defaultValue={selectedInsurance.insuranceType}
+              defaultValue={selectedInsurance?.insuranceType || ""}
               rules={{
-                required: "Insurance Type can't be empty",
+                required: "Insurance Type is required",
               }}
               render={({ field }) => (
-                <div className="font-primary text-xl flex flex-row items-center">
+                <div
+                  className="font-primary text-xl flex flex-row items-center"
+                  title="You can't add multiple insurances with the same type."
+                >
                   <label
-                    className={`${field.value === INSURANCE_TYPE.PRIMARY ? "active" : "in-active"} type-label`}
-                    onClick={() =>
-                      setValue("insuranceType", INSURANCE_TYPE.PRIMARY)
-                    }
+                    className={`capitalize ${field.value?.toLowerCase() === INSURANCE_TYPE.PRIMARY ? "active" : disabledOptions.includes(INSURANCE_TYPE.PRIMARY) && "in-active"} type-label`}
                   >
                     <RadioButton
                       {...field}
+                      disabled={disabledOptions.includes(
+                        INSURANCE_TYPE.PRIMARY
+                      )}
                       inputId="insuranceTypeSelector"
                       className="me-2"
                       value={INSURANCE_TYPE.PRIMARY}
                       inputRef={field.ref}
                       checked={
-                        control._formValues.insuranceType ===
+                        control._formValues?.insuranceType?.toLowerCase() ===
                         INSURANCE_TYPE.PRIMARY
                       }
                     />
-                    Primary
+                    {INSURANCE_TYPE.PRIMARY}
                   </label>
                   <label
-                    className={`${field.value === INSURANCE_TYPE.SECONDARY ? "active" : "in-active"} type-label`}
-                    onClick={() =>
-                      setValue("insuranceType", INSURANCE_TYPE.SECONDARY)
-                    }
+                    className={`${field.value === INSURANCE_TYPE.SECONDARY ? "active" : disabledOptions.includes(INSURANCE_TYPE.SECONDARY) && "in-active"} type-label capitalize`}
                   >
                     <RadioButton
+                      {...field}
+                      disabled={disabledOptions.includes(
+                        INSURANCE_TYPE.SECONDARY
+                      )}
                       className="me-2 h-full w-full"
                       inputRef={field.ref}
-                      {...field}
                       value={INSURANCE_TYPE.SECONDARY}
-                      checked={field.value === INSURANCE_TYPE.SECONDARY}
+                      checked={
+                        field.value?.toLowerCase() === INSURANCE_TYPE.SECONDARY
+                      }
                     />
-                    Secondary
+                    {INSURANCE_TYPE.SECONDARY}
                   </label>
                   <label
-                    className={`${control._formValues.insuranceType === INSURANCE_TYPE.TERTIARY ? "active" : "in-active"} type-label`}
-                    onClick={() =>
-                      setValue("insuranceType", INSURANCE_TYPE.TERTIARY)
-                    }
+                    className={`${control._formValues?.insuranceType === INSURANCE_TYPE.TERTIARY ? "active" : disabledOptions.includes(INSURANCE_TYPE.TERTIARY) && "in-active"} type-label capitalize`}
                   >
                     <RadioButton
+                      {...field}
+                      disabled={disabledOptions.includes(
+                        INSURANCE_TYPE.TERTIARY
+                      )}
                       className="me-2"
                       inputRef={field.ref}
-                      {...field}
                       value={INSURANCE_TYPE.TERTIARY}
-                      checked={field.value === INSURANCE_TYPE.TERTIARY}
+                      checked={
+                        field.value?.toLowerCase() === INSURANCE_TYPE.TERTIARY
+                      }
                     />
-                    Tertiary
+                    {INSURANCE_TYPE.TERTIARY}
                   </label>
                 </div>
               )}
             />
-            {errors.insuranceType && (
+            {errors?.insuranceType && (
               <span className="text-red-500 text-xs">
                 {errors.insuranceType.message}
               </span>
@@ -230,123 +365,67 @@ const EditInsurance = () => {
             <Controller
               name="insuranceCompany"
               control={control}
-              defaultValue={selectedInsurance.insuranceCompany}
+              defaultValue={selectedInsurance?.insuranceCompany}
               rules={{
-                required: "Race can't be empty",
+                required: "Insurance Company is required",
               }}
               render={({ field }) => (
                 <Dropdown
                   {...field}
                   id="company"
                   options={insuranceCompanies}
-                  optionLabel="value"
                   placeholder="Select Insurance Company"
                   ariaLabel="Select Insurance Company"
                   className="pe-2 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none items-center"
                 />
               )}
             />
-            {errors.insuranceCompany && (
+            {errors?.insuranceCompany && (
               <span className="text-red-500 text-xs">
-                {errors.insuranceCompany.message}
+                {errors?.insuranceCompany.message}
               </span>
             )}
-          </div>
-          <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-3 pt-4 gap-6">
-            <div>
-              {/* <label
-                className="block input-label pb-1"
-                htmlFor="insuranceNumber"
-              >
-                Insurance Number*
-              </label>
-              <Controller
-                name="insuranceNumber"
-                control={control}
-                defaultValue={selectedInsurance.insuranceNumber}
-                rules={{
-                  required: "Insurance number can't be empty",
-                }}
-                render={({ field }) => (
-                  <InputText
-                    {...field}
-                    id="insuranceNumber"
-                    placeholder="Enter insurance Number"
-                    aria-label="Insurance number"
-                    className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
-                  />
-                )}
-              />
-              {errors.insuranceNumber && (
-                <span className="text-red-500 text-xs">
-                  {errors.insuranceNumber.message}
-                </span>
-              )} */}
-              <label className="block input-label pb-1" htmlFor="policyNumber">
-                Policy Number*
-              </label>
-              <Controller
-                name="policyNumber"
-                control={control}
-                defaultValue={selectedInsurance.policyNumber}
-                rules={{
-                  required: "Policy number can't be empty",
-                }}
-                render={({ field }) => (
-                  <InputText
-                    {...field}
-                    id="policyNumber"
-                    placeholder="Enter Policy Number"
-                    aria-label="Policy number"
-                    className="p-0 w-full border rounded-lg h-[2.5rem] border-gray-300 text-xs px-0 shadow-none"
-                  />
-                )}
-              />
-              {errors.policyNumber && (
-                <span className="text-red-500 text-xs">
-                  {errors.policyNumber.message}
-                </span>
-              )}
-              <>
-                <label className="input-label my-5 block">
-                  Upload your insurance ID
+            {insuranceCompany?.toLowerCase() === "other" && (
+              <div className="pt-2">
+                <label htmlFor="otherCompanyName" className="input-label">
+                  Other Insurance Company*
                 </label>
-                {insuranceId?.name ? (
-                  <FileTile
-                    handleView={() => {
-                      setShowImage(true);
-                      setSelectedReport(insuranceId);
-                    }}
-                    fileName={insuranceId?.name || ""}
-                    handleRemoveFile={() => setValue("insuranceId", {} as File)}
-                  />
-                ) : (
-                  <FileUpload
-                    auto
-                    customUpload
-                    multiple
-                    uploadHandler={(e) => setValue("insuranceId", e.files[0])}
-                    chooseOptions={{
-                      label: "Upload",
-                      icon: <i className="pi pi-file-plus pe-2" />,
-                      className: "custom-file-uploader",
-                    }}
-                    accept="image/*"
-                    maxFileSize={1000000}
-                  />
+                <Controller
+                  name="otherCompany"
+                  control={control}
+                  rules={{
+                    required:
+                      insuranceCompany?.toLowerCase() === "other"
+                        ? "Other Insurance Company is required"
+                        : false,
+                  }}
+                  render={({ field }) => (
+                    <InputText
+                      {...field}
+                      value={field.value}
+                      id="otherCompanyName"
+                      className="input-field text-xs w-full"
+                      placeholder="Enter insurance company name"
+                    />
+                  )}
+                />
+                {errors.otherCompany && (
+                  <ErrorMessage message={errors.otherCompany.message} />
                 )}
-              </>
-            </div>
-            {/* <div>
+              </div>
+            )}
+          </div>
+          <div className="grid lg:grid-cols-4 pt-4 gap-6">
+            <div className="md:col-span-2 sm:col-span-4 lg:col-span-1">
               <label className="block input-label pb-1" htmlFor="policyNumber">
                 Policy Number*
               </label>
               <Controller
                 name="policyNumber"
                 control={control}
-                defaultValue={selectedInsurance.policyNumber}
+                defaultValue={selectedInsurance?.policyNumber || ""}
                 rules={{
-                  required: "Policy number can't be empty",
+                  required: "Policy Number is required",
                 }}
                 render={({ field }) => (
                   <InputText
@@ -363,17 +442,17 @@ const EditInsurance = () => {
                   {errors.policyNumber.message}
                 </span>
               )}
-            </div> */}
-            <div>
+            </div>
+            <div className="md:col-span-2 sm:col-span-4 lg:col-span-1">
               <label className="block input-label pb-1" htmlFor="groupNumber">
                 Group Number*
               </label>
               <Controller
                 name="groupNumber"
                 control={control}
-                defaultValue={selectedInsurance.groupNumber}
+                defaultValue={selectedInsurance?.groupNumber}
                 rules={{
-                  required: "Group number can't be empty",
+                  required: "Group Number is required",
                 }}
                 render={({ field }) => (
                   <InputText
@@ -391,14 +470,67 @@ const EditInsurance = () => {
                 </span>
               )}
             </div>
+            <div className="col-span-4">
+              <label className="input-label my-3 block">
+                Upload your insurance ID (Max 1MB)
+              </label>
+              {insuranceCard ||
+              (selectedInsurance && !!Object.keys(updatedFile).length) ? (
+                <FileTile
+                  handleView={() => {
+                    setShowImage(true);
+                  }}
+                  fileName={
+                    updatedFile && !!Object.keys(updatedFile)?.length
+                      ? updatedFile.name
+                      : "Insurance-Card"
+                  }
+                  handleRemoveFile={() => {
+                    handleRemoveFile();
+                  }}
+                />
+              ) : (
+                <FileUpload
+                  auto
+                  ref={fileUploadRef}
+                  customUpload
+                  multiple
+                  uploadHandler={(e) => {
+                    if (e?.files?.[0]?.type?.split("/")?.[0] === "image") {
+                      setUpdatedFile(e.files[0]);
+                    } else {
+                      errorToast(
+                        MESSAGE.INVALID_FILE_FORMAT_TITLE,
+                        MESSAGE.INVALID_IMAGE_FORMAT
+                      );
+                      fileUploadRef?.current && fileUploadRef?.current.clear();
+                    }
+                  }}
+                  chooseOptions={{
+                    label: "Upload",
+                    icon: <i className="pi pi-file-plus pe-2" />,
+                    className: "custom-file-uploader",
+                  }}
+                  accept="image/*"
+                  maxFileSize={1000000}
+                  onValidationFail={validateFileSize}
+                />
+              )}
+            </div>
           </div>
         </div>
       </form>
-      <Toast ref={toast} onHide={() => navigate(PATH_NAME.PROFILE)} />
+      <Toast ref={toast} />
       {showImage && (
         <ReportImage
+          image_url={
+            updatedFile && !!Object.keys(updatedFile).length
+              ? URL.createObjectURL(updatedFile)
+              : typeof selectedInsurance?.insuranceCard === "string"
+                ? selectedInsurance?.insuranceCard
+                : ""
+          }
           closeModal={() => setShowImage(false)}
-          file={selectedReport}
         />
       )}
     </div>

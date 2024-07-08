@@ -1,13 +1,15 @@
-import { SyntheticEvent, useState } from "react";
-import { Calendar, CalendarViewChangeEvent } from "primereact/calendar";
 import { addMonths, format } from "date-fns";
 import { Button } from "primereact/button";
-import "./DualCalendar.css";
-import { IDualCalendarReponse } from "../appointments/Appointments";
+import { Calendar, CalendarViewChangeEvent } from "primereact/calendar";
 import { FormEvent } from "primereact/ts-helpers";
+import { SyntheticEvent, useState } from "react";
+import { IDualCalendarReponse } from "../appointments/Appointments";
+import "./DualCalendar.css";
 
 const DualCalendar = ({ dateFilter }: { dateFilter: IDualCalendarReponse }) => {
-  const [range, setRange] = useState<Date[]>([new Date()]);
+  const [range, setRange] = useState<Date[]>(
+    dateFilter?.selectedRange ? dateFilter?.selectedRange : [new Date()]
+  );
   const [firstMonthViewDate, setFirstMonthViewDate] = useState<Date>(
     new Date()
   );
@@ -37,42 +39,13 @@ const DualCalendar = ({ dateFilter }: { dateFilter: IDualCalendarReponse }) => {
     dateFilter.onCancel();
   };
 
-  // const monthNavigatorTemplate = (options: any): ReactNode => {
-  //   const month = options.options[options.value];
-  //   return (
-  //     <span className="flex w-full text-lg justify-between items-center color-primary">
-  //       <i
-  //         className="pi pi-angle-left"
-  //         onClick={() => {
-  //           const date = firstMonthViewDate;
-  //           date.setMonth(date.getMonth() - 1);
-  //           setFirstMonthViewDate(new Date(date));
-  //         }}
-  //       />
-  //       {month.label} {options.props.value[0].getFullYear()}{" "}
-  //       <i
-  //         className="pi pi-angle-right"
-  //         onClick={() => {
-  //           const date = firstMonthViewDate;
-  //           date.setMonth(date.getMonth() + 1);
-  //           setFirstMonthViewDate(new Date(date));
-  //         }}
-  //       />
-  //     </span>
-  //   );
-  // };
-
   return (
     <div className="grid grid-cols-2 relative bg-white">
       <div>
         <Calendar
-          // monthNavigator={false}
-          // yearNavigator={false}
-          // monthNavigatorTemplate={(date) => monthNavigatorTemplate(date)}
           todayButtonClassName="bg-red-500 rounded-md"
           value={range}
           onChange={handleRangeChange}
-          // onChange={(e) => console.log(e)}
           viewDate={firstMonthViewDate}
           onViewDateChange={handleFirstMonthViewDateChange}
           selectionMode="range"
@@ -80,7 +53,7 @@ const DualCalendar = ({ dateFilter }: { dateFilter: IDualCalendarReponse }) => {
           inline
         />
       </div>
-      <div className="">
+      <div>
         <Calendar
           value={range}
           onChange={handleRangeChange}

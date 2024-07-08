@@ -1,3 +1,5 @@
+import { REFRESH_TOKEN } from "../utils/AppConstants";
+
 const localStorageService = {
   // Method to get access token from local storage
   getAccessToken: (): string | null => {
@@ -39,7 +41,7 @@ const localStorageService = {
     localStorage.removeItem("email");
     localStorage.removeItem("password");
     localStorage.removeItem("role");
-    localStorage.removeItem("refresh_token");
+    localStorage.removeItem(REFRESH_TOKEN);
   },
 };
 

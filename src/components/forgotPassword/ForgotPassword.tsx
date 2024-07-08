@@ -1,23 +1,24 @@
+import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
+import { Toast } from "primereact/toast";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import ReyaIcon from "../../assets/reya-logo.svg?react";
+import { IForgotPassword } from "../../interfaces/UserLogin";
+import { resetPasswordThunk } from "../../store/slices/loginSlice";
+import { AppDispatch } from "../../store/store";
 import {
   MESSAGE,
   PATH_NAME,
   PATTERN,
   RESPONSE,
 } from "../../utils/AppConstants";
-import { Controller, useForm } from "react-hook-form";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { Button } from "primereact/button";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "./forgotPassword.css";
-import { IForgotPassword } from "../../interfaces/UserLogin";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { resetPasswordThunk } from "../../store/slices/loginSlice";
 import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
+import "./forgotPassword.css";
+import localStorageService from "../../services/localStorageService";
 
 const ForgotPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -35,11 +36,11 @@ const ForgotPassword = () => {
   const handleFormSubmit = (data: IForgotPassword) => {
     if (data?.email) {
       dispatch(resetPasswordThunk(data.email)).then((response) => {
+        localStorageService.logout();
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           setIsSubmitted(true);
         } else {
-          setIsSubmitted(true);
-
+          setIsSubmitted(false);
           errorToast("Password Reset Failed", response.payload.message);
         }
       });
@@ -72,8 +73,11 @@ const ForgotPassword = () => {
                     name="email"
                     control={control}
                     rules={{
-                      pattern: PATTERN.EMAIL,
-                      required: true,
+                      pattern: {
+                        value: PATTERN.EMAIL,
+                        message: "Invalid Email",
+                      },
+                      required: "Email is required",
                     }}
                     render={({ field }) => (
                       <InputText
@@ -86,7 +90,9 @@ const ForgotPassword = () => {
                     )}
                   />
                   <span className="absolute right-2 top-[0.7rem] pi pi-envelope" />
-                  {errors.email && <ErrorMessage message="Invalid Email Id" />}
+                  {errors.email && (
+                    <ErrorMessage message={errors?.email?.message} />
+                  )}
                 </div>
               </div>
             </>
@@ -132,7 +138,7 @@ const ForgotPassword = () => {
                 </Link>
                 <Button
                   onClick={() => {
-                    window.open(`http://${email.split("@")[1]}`, "_blank");
+                    localStorageService.logout();
                     navigate(PATH_NAME.HOME);
                   }}
                   type="button"

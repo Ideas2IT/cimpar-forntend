@@ -9,33 +9,52 @@ import {
   selectProfileName,
   selectUserProfile,
 } from "../store/slices/UserSlice";
-import { selectIsEmailVerified, selectRole } from "../store/slices/loginSlice";
+import {
+  getServicesTitleThunk,
+  selectIsEmailVerified,
+  selectRole,
+} from "../store/slices/loginSlice";
 import { AppDispatch } from "../store/store";
-import { ROLE } from "../utils/AppConstants";
+import { RESPONSE, ROLE } from "../utils/AppConstants";
 import Main from "./Main";
 import Sidebar from "./Sidebar";
 import LoginForm from "./loginForm/LoginForm";
 import SetPassword from "./setPassword/SetPassword";
+import useToast from "./useToast/UseToast";
+import { Toast } from "primereact/toast";
 
 const Layout = () => {
   const user = useSelector(selectProfileName);
-  const [username, setUsername] = useState(user);
+  const [username, setUsername] = useState("");
   const dispatch = useDispatch<AppDispatch>();
+  const { toast, errorToast } = useToast();
 
   useEffect(() => {
-    setUsername("Hi ," + user);
+    setUsername("Hi, " + user);
   }, [user]);
 
   const updateHeaderTitle = (newValue: string) => {
-    setUsername(newValue);
+    if (newValue) {
+      setUsername(newValue);
+    }
   };
+
   const isLoggedIn = useSelector(selectIsEmailVerified);
   const role = useSelector(selectRole);
   const profileId = useSelector(selectUserProfile)?.id;
 
   useEffect(() => {
-    if (profileId && role === ROLE.PATIENT)
-      dispatch(getPatientDetailsThunk(profileId));
+    if (profileId && role === ROLE.PATIENT) {
+      dispatch(getPatientDetailsThunk(profileId)).then((response) => {
+        if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
+          errorToast(
+            "Failed to Load",
+            "Failed to fetch patient details. Please try again later."
+          );
+        }
+      });
+      dispatch(getServicesTitleThunk());
+    }
   }, [profileId]);
 
   useEffect(() => {
@@ -44,7 +63,7 @@ const Layout = () => {
       if (email) {
         dispatch(getUserProfileThunk()).then((response) => {
           if (
-            localStorage.getItem("role") === "patient" &&
+            localStorage.getItem("role") === ROLE.PATIENT &&
             response?.payload?.id
           ) {
             dispatch(getPatientDetailsThunk(response?.payload.id));
@@ -60,9 +79,7 @@ const Layout = () => {
         location.pathname === "set-password/:id" ? (
           <SetPassword />
         ) : (
-          (location.pathname === "/" || location.pathname === "/login") && (
-            <LoginForm />
-          )
+          <LoginForm />
         )
       ) : (
         <div className="flex h-full">
@@ -72,6 +89,7 @@ const Layout = () => {
           </HeaderContext.Provider>
         </div>
       )}
+      <Toast ref={toast} />
     </>
   );
 };

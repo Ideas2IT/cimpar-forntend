@@ -1,12 +1,24 @@
-import { format, parseISO } from "date-fns";
+import { format, isToday } from "date-fns";
 
 export const DEFAULT_DATE_FORMAT = "dd MMMM, yyyy";
 
 export const dateFormatter = (
-  value: Date | string,
+  value: Date | string | null | undefined,
   outputFormat = DEFAULT_DATE_FORMAT
 ) => {
-  if (!value) return "";
-  const date = typeof value === "string" ? parseISO(value) : value;
-  return format(date, outputFormat);
+  try {
+    if (!value) return "";
+    const date = typeof value === "string" ? new Date(value) : value;
+    return format(date, outputFormat);
+  } catch (error) {
+    return "";
+  }
+};
+
+export const checkToday = (date: string | Date | null | undefined): boolean => {
+  if (!date) {
+    return false;
+  }
+  const dateValue = new Date(date);
+  return !isNaN(dateValue.getTime()) && isToday(dateValue);
 };

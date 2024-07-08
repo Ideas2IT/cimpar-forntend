@@ -5,7 +5,6 @@ import SlideOpen from "../../assets/icons/slideOpen.svg?react";
 import SlideBack from "../../assets/icons/slideback.svg?react";
 import Button from "../Button";
 import UserDetails from "../userDetails/UserDetails";
-import { IUser } from "../../interfaces/User";
 import { useNavigate } from "react-router-dom";
 import Medication from "../medication/Medication";
 import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
@@ -19,45 +18,11 @@ import {
 } from "../../store/slices/commonSlice";
 import { AppDispatch } from "../../store/store";
 import { PATH_NAME } from "../../utils/AppConstants";
-import { selectSelectedPatient } from "../../store/slices/PatientSlice";
+import {
+  selectHasMedicalConditions,
+  selectSelectedPatient,
+} from "../../store/slices/PatientSlice";
 
-export const user: IUser = {
-  dob: "11-11-1993",
-  ethnicity: "Chinese",
-  gender: "male",
-  height: { inches: 2, feet: 5 },
-  firstName: "Balaji",
-  middleName: "Balamurgun",
-  race: "white",
-  weight: 120,
-  alternativeNumber: 9906915912,
-  city: "Arkansas",
-  country: "USA",
-  fullAddress: "Guindy, Chennai, tamil nadu india 6000032",
-  phoneNumber: 9906461523,
-  state: "Colorado",
-  zipCode: "zy-1232",
-  countryCode: "+61-AU",
-  alternateNumberCode: "+55-BR",
-  insuranceName: "American Family Insurance",
-  insuranceNumber: "10*******982",
-  medicationTakenBefore: [
-    "Celexa",
-    "Lexapro",
-    "Prozacfluvoxamine",
-    "Paroxetine HCL and Zoloft",
-  ],
-  currentMedication: [
-    "Celexa",
-    "Lexapro",
-    "Prozacfluvoxamine",
-    "Paroxetine HCL and Zoloft",
-  ],
-  insurance: [],
-  isOnMedicine: "no",
-  hasMedicalConditions: false,
-  medicationalHistory: "yes",
-};
 export const tabs: Tab[] = [
   {
     key: "Personal",
@@ -90,7 +55,7 @@ export const tabs: Tab[] = [
     key: "MedicalConditions",
     value: "Medical Conditions & Allergies",
     content: (
-      <div className="px-6 py-1 h-full">
+      <div className="ps-6 py-1 h-full">
         <MedicalConditionDetails />
       </div>
     ),
@@ -99,7 +64,7 @@ export const tabs: Tab[] = [
     key: "visitHistory",
     value: "Visit History",
     content: (
-      <div className="px-6 py-1 h-full">
+      <div className="ps-6 py-1 h-full">
         <VisitHistory />
       </div>
     ),
@@ -114,6 +79,7 @@ const UserProfilePage = () => {
     selectedOption ? selectedOption : "personal"
   );
   const [hideTabs, setHideTabs] = useState(false);
+  const hasConditions = useSelector(selectHasMedicalConditions);
 
   useEffect(() => {
     dispatch(setSelectedSidebarTab(selectedTab));
@@ -173,7 +139,7 @@ const UserProfilePage = () => {
               variant="primary"
               style="outline"
               onClick={() => {
-                navigate(PATH_NAME.EDIT_VISIT_HISTORY);
+                navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}`);
               }}
             >
               <AddRecord className="stroke-purple-900 mx-2" />
@@ -189,7 +155,8 @@ const UserProfilePage = () => {
               }}
             >
               <AddRecord className="stroke-purple-900 mx-2" />
-              { selectedPatient?.medicationDetails && Object.keys(selectedPatient?.medicationDetails)?.length
+              {selectedPatient?.medicationDetails &&
+              Object.keys(selectedPatient?.medicationDetails)?.length
                 ? "Edit Medication"
                 : "Add Medication"}
             </Button>
@@ -200,7 +167,7 @@ const UserProfilePage = () => {
               style="outline"
               onClick={() => navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS)}
             >
-              {!user.hasMedicalConditions ? (
+              {!hasConditions ? (
                 <>
                   <AddRecord className="stroke-purple-900 mx-2" />
                   Add Medical Conditions & Allergies

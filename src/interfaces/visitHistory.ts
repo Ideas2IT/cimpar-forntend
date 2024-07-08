@@ -1,3 +1,5 @@
+import { ImmunizationPagination } from "./immunization";
+
 export interface IVisitHistory {
   id: string;
   visitLocation: string;
@@ -9,8 +11,13 @@ export interface IVisitHistory {
   patientNotes: string;
   primaryCareTeam: string;
   phoneCode?: string;
-  hospitalContact: string;
-  documents?: File[];
+  hospitalContact: string | null;
+  files?: string[];
+}
+
+export interface IVisitHistoryData {
+  pagination: ImmunizationPagination;
+  data: IVisitHistory[];
 }
 
 export interface ICreateVisitHistoryPayload {
@@ -25,6 +32,8 @@ export interface ICreateVisitHistoryPayload {
   status: string;
   class_code: string;
   patient_id: string;
+  activity_notes: string;
+  files: File[];
 }
 
 export interface IUpdateVisitHistoryPayload extends ICreateVisitHistoryPayload {
@@ -34,4 +43,9 @@ export interface IUpdateVisitHistoryPayload extends ICreateVisitHistoryPayload {
 export interface IDeleteVisitHistoryPayload {
   patinetId: string;
   visitHistoryId: string;
+}
+
+export interface IDeleteFile {
+  patientId: string;
+  fileName: string;
 }

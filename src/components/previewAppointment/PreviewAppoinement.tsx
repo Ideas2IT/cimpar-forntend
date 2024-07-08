@@ -1,11 +1,15 @@
-import { Button } from "primereact/button";
-import { ITest } from "../../assets/MockData";
-import { IFormData, IItem } from "../appointmentForm/AppointmentForm";
-import { PatientDetails } from "../userDetails/UserDetails";
 import { format } from "date-fns";
+import { Button } from "primereact/button";
 import { useSelector } from "react-redux";
+import {
+  getDobAndAge,
+  getPolicyDetails,
+  getStringValuesFromObjectArray,
+} from "../../services/commonFunctions";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
-import { getDobAndAge, getPolicyDetails } from "../../services/commonFunctions";
+import { IFormData } from "../appointmentForm/AppointmentForm";
+import { PatientDetails } from "../userDetails/UserDetails";
+import { LargeDataField } from "../medication/Medication";
 
 const PreviewAppointment = ({
   details,
@@ -15,19 +19,19 @@ const PreviewAppointment = ({
   handleResponse: (response: boolean) => void;
 }) => {
   const profileDetails = useSelector(selectSelectedPatient);
-  const getStringFromObjects = (values: ITest[] | IItem[]) => {
-    const testString = values
-      .map((value: ITest) => {
-        return value.name;
-      })
-      .join(", ");
-    return testString;
+  const getNameAndGender = () => {
+    const firstName = profileDetails?.basicDetails?.firstName ?? "";
+    const middleName = profileDetails?.basicDetails?.middleName ?? "";
+    const lastName = profileDetails?.basicDetails?.lastName ?? "";
+    const gender = profileDetails?.basicDetails?.gender
+      ? `(${profileDetails.basicDetails.gender})`
+      : "";
+    return `${firstName} ${middleName} ${lastName} ${gender}`;
   };
-
   const fields = [
     {
       header: "TEST NAME",
-      value: getStringFromObjects(details.testToTake),
+      value: getStringValuesFromObjectArray(details.testToTake),
       full: true,
     },
     {
@@ -40,13 +44,18 @@ const PreviewAppointment = ({
     },
     {
       header: "REASON FOR TEST",
-      value: details?.testReason.name || "-",
+      value:
+        details?.testReason.name === "Other"
+          ? details?.otherReasonForTest || "-"
+          : details.testReason.name,
       full: true,
     },
     {
       header: "MEDICAL CONDITIONS",
       full: true,
-      value: "",
+      value: details?.medicalConditions?.length
+        ? getStringValuesFromObjectArray(details?.medicalConditions)
+        : "",
     },
     {
       header: "OTHER MEDICAL CONDITIONS",
@@ -57,18 +66,22 @@ const PreviewAppointment = ({
     },
     {
       header: "ALLERGIES",
-      value: details?.allergies?.length ? details?.allergies.join(", ") : "",
+      value: details?.allergies?.length
+        ? getStringValuesFromObjectArray(details.allergies)
+        : "",
       full: true,
     },
     {
-      header: "NAME(GENDER)",
-      value:
-        profileDetails?.basicDetails.firstName +
-          " " +
-          profileDetails?.basicDetails?.middleName +
-          "(" +
-          profileDetails?.basicDetails?.gender +
-          ")" || "",
+      header: "OTHER ALLERGIES",
+      value: details?.otherAllergies?.length
+        ? details?.otherAllergies.join(", ")
+        : "",
+      full: true,
+    },
+
+    {
+      header: "NAME (GENDER)",
+      value: getNameAndGender(),
       full: false,
     },
     {
@@ -88,20 +101,20 @@ const PreviewAppointment = ({
         <label className="font-primary text-xl py-5 block h-[10%]">
           Test Details
         </label>
-        {fields.slice(0, 7).map((field) => {
+        {fields.slice(0, 8).map((field) => {
           return (
             <div
               key={field.header}
               className={`${field?.full && "col-span-2"}`}
             >
-              <PatientDetails label={field.header} value={field.value} />
+              <LargeDataField label={field.header} value={field.value} />
             </div>
           );
         })}
         <label className="font-primary text-xl py-5 col-span-2 h-[10%]">
           Basic Details
         </label>
-        {fields.slice(7, 10).map((field) => {
+        {fields.slice(8, 11).map((field) => {
           return (
             <div
               key={field.header}

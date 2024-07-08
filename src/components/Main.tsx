@@ -5,16 +5,15 @@ import "../../node_modules/primeicons/primeicons.css";
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectRole } from "../store/slices/loginSlice";
-import { ROLE } from "../utils/AppConstants";
+import { PATH_NAME, ROLE } from "../utils/AppConstants";
 
 const Main = () => {
   const role = useSelector(selectRole);
-  console.log()
   return (
-    <div className="flex flex-col flex-grow bg-gray-100 p-8">
+    <div className="flex flex-col flex-grow bg-gray-100 p-6	">
       <Header />
       <Outlet />
-      {role === ROLE.ADMIN && <Navigate to="/appointments" />}
+      {role === ROLE.ADMIN && <Navigate to={PATH_NAME.APPOINTMENTS} />}
     </div>
   );
 };

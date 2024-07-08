@@ -5,8 +5,6 @@ import { PATH_NAME } from "../utils/AppConstants";
 
 const PrivateRoute = () => {
   const isAuthenticated = useSelector(selectIsLoggedIn);
-  console.log(isAuthenticated);
-
   return isAuthenticated ? <Outlet /> : <Navigate to={PATH_NAME.HOME} />;
 };
 

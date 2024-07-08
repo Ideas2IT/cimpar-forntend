@@ -1,68 +1,100 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { RootState } from "../store";
-import { SLICE_NAME } from "../../utils/sliceUtil";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { isAxiosError } from "axios";
 import { ErrorResponse } from "../../interfaces/common";
+import { IMedicine } from "../../interfaces/medication";
 import {
   getAllergiesByQuery,
+  getInputData,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
 } from "../../services/masterTable.service";
-import { IMedicine } from "../../interfaces/medication";
-
-// interface IMedication {
-//   code: string;
-//   id: string;
-//   display: string;
-// }
+import { SLICE_NAME } from "../../utils/sliceUtil";
+import { RootState } from "../store";
 
 interface IMasterTableData {
   medications: IMedicine[];
-  allergies: string[];
-  medicalConditions: string[];
+  allergies: IMedicine[];
+  medicalConditions: IMedicine[];
 }
 
 const initialState: IMasterTableData = {
   medications: [] as IMedicine[],
-  allergies: [] as string[],
-  medicalConditions: [] as string[],
+  allergies: [] as IMedicine[],
+  medicalConditions: [] as IMedicine[],
 };
 
-function transformMedication(data: any) {
-  let filteredMedication = [] as IMedicine[];
-  if (data?.medication_list?.total) {
-    const medicineList = data?.medication_list?.entry.map((item: any) => {
-      const resource = item?.resource;
-      const medicine = {
-        code: resource?.code || "",
-        system: resource?.system || "",
-        display: resource?.display || "",
-      };
-      return medicine;
-    });
-    filteredMedication = medicineList;
+const transformMedicalCondition = (data: any) => {
+  if (!data?.length) {
+    return [] as IMedicine[];
   }
-  return filteredMedication;
-}
+  const medicalConditions: IMedicine[] = data.map((condition: any) => {
+    return {
+      display: condition.display,
+      code: condition.code,
+      system: condition.system,
+    };
+  });
+  return medicalConditions;
+};
+
+const transformOptionData = (data: any) => {
+  if (!data) {
+    return [];
+  } else {
+    const options = data?.map((option: any) => {
+      return option.display;
+    });
+    const filteredOptions = options?.filter(
+      (option: string) => option !== null
+    );
+    return filteredOptions;
+  }
+};
+
+const transformTests = (data: any) => {
+  if (!data) {
+    return [] as IMedicine[];
+  } else {
+    const tests = data?.map((test: any) => {
+      return {
+        code: test.code,
+        system: test.id,
+        display: test.display,
+      };
+    });
+    return tests;
+  }
+};
+
+const transformMedication = (data: any) => {
+  if (!data?.length) {
+    return [];
+  }
+  const medications = data?.map((med: any) => {
+    const medicine: IMedicine = {
+      code: med?.code || "",
+      display: med?.display || "",
+      system: med.system || "",
+    };
+    return medicine;
+  });
+  return medications;
+};
 
 export const getMedicationByQueryThunk = createAsyncThunk(
   "medication_list/get",
   async (medicationName: string, { rejectWithValue }) => {
     try {
-      const userResponse = await getMedicationByQuery(medicationName);
-      const _response = transformMedication(userResponse.data);
+      const response = await getMedicationByQuery(medicationName);
+      const _response = transformMedication(response.data);
       return _response;
     } catch (error) {
-      if (isAxiosError(error) && error.message) {
-        const errorMessage = error.message;
+      if (isAxiosError(error)) {
+        const errorMessage = error?.response?.data?.error || "Unknown Error";
         return rejectWithValue({
           message: errorMessage,
-          response: error?.response?.status,
+          response: error?.message,
         } as ErrorResponse);
-      } else {
-        return rejectWithValue({
-          message: "Unknown Error",
-        });
       }
     }
   }
@@ -75,16 +107,12 @@ export const getAllergiesByQueryThunk = createAsyncThunk(
       const userResponse = await getAllergiesByQuery(allergyName);
       return userResponse.data;
     } catch (error) {
-      if (isAxiosError(error) && error.response?.data?.message) {
-        const errorMessage = error.response?.data?.message?.split(":")[0];
+      if (isAxiosError(error)) {
+        const errorMessage = error?.response?.data?.error || "Unknown Error";
         return rejectWithValue({
           message: errorMessage,
-          response: error.response.status,
+          response: error?.message,
         } as ErrorResponse);
-      } else {
-        return rejectWithValue({
-          message: "Unknown Error",
-        });
       }
     }
   }
@@ -94,19 +122,71 @@ export const getMedicalConditionsByQueryThunk = createAsyncThunk(
   "medical_condition_list/get",
   async (conditionName: string, { rejectWithValue }) => {
     try {
-      const userResponse = await getMedicalConditionsByQuery(conditionName);
-      return userResponse.data;
+      const response = await getMedicalConditionsByQuery(conditionName);
+      return transformMedicalCondition(response.data);
     } catch (error) {
-      if (isAxiosError(error) && error.response?.data?.message) {
-        const errorMessage = error.response?.data?.message?.split(":")[0];
+      if (isAxiosError(error)) {
+        const errorMessage = error?.response?.data?.error || "Unknown Error";
         return rejectWithValue({
           message: errorMessage,
-          response: error.response.status,
+          response: error?.message,
         } as ErrorResponse);
-      } else {
+      }
+    }
+  }
+);
+
+export const getInputDataThunk = createAsyncThunk(
+  "input-data/get",
+  async (tableName: string, { rejectWithValue }) => {
+    try {
+      const response = await getInputData(tableName);
+      const _response = transformOptionData(response?.data);
+      return _response;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage = error?.response?.data?.error || "Unknown Error";
         return rejectWithValue({
-          message: "Unknown Error",
-        });
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getOptionValuesThunk = createAsyncThunk(
+  "input-data/get",
+  async (tableName: string, { rejectWithValue }) => {
+    try {
+      const response = await getInputData(tableName);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage = error?.response?.data?.error || "Unknown Error";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getAllTestsThunk = createAsyncThunk(
+  "tests/get",
+  async (tableName: string, { rejectWithValue }) => {
+    try {
+      const response = await getInputData(tableName);
+      const _response = transformTests(response?.data);
+      return _response;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage = error?.response?.data?.error || "Unknown Error";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
       }
     }
   }
@@ -122,12 +202,12 @@ const userSlice = createSlice({
         if (payload?.length) {
           state.medications = [...payload];
         } else {
-          state.medicalConditions = [];
+          state.medications = [];
         }
       })
       .addCase(getAllergiesByQueryThunk.fulfilled, (state, { payload }) => {
-        if (state.allergies.length) {
-          state.allergies = payload;
+        if (payload?.length) {
+          state.allergies = [...payload];
         } else {
           state.allergies = [];
         }
@@ -135,10 +215,10 @@ const userSlice = createSlice({
       .addCase(
         getMedicalConditionsByQueryThunk.fulfilled,
         (state, { payload }) => {
-          if (state.allergies.length) {
-            state.medicalConditions = payload;
+          if (payload?.length) {
+            state.medicalConditions = [...payload];
           } else {
-            state.medicalConditions = [];
+            state.medicalConditions = [] as IMedicine[];
           }
         }
       )

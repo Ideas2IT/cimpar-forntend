@@ -1,11 +1,11 @@
 import ReyaIcon from "../../assets/reya-logo.svg?react";
 import CheckMark from "../../assets/icons/bluetick.svg?react";
-import { MESSAGE, RESPONSE } from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import useToast from "../useToast/UseToast";
 import "./SetPassword.css";
@@ -14,25 +14,24 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
 import { setPasswordThunk } from "../../store/slices/loginSlice";
 import { ISetPasswordPayload } from "../../interfaces/User";
-import { useEffect, useState } from "react";
+import localStorageService from "../../services/localStorageService";
 
 const SetPassword = () => {
-  const location = useLocation();
   const { errorToast, toast, successToast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
-  const [token, setToken] = useState<string>();
-
-  useEffect(() => {
-    setToken(location.pathname.split("/")[2]);
-  }, [location.pathname]);
+  const navigate = useNavigate();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm({ defaultValues: {} as ISetPassword });
+  const { id } = useParams();
 
   const handleSetPassowrd = (data: ISetPassword) => {
+    if (!id) {
+      return;
+    }
     if (data.confirmPassword !== data.newPassword) {
       errorToast(
         "Set password failed",
@@ -43,7 +42,7 @@ const SetPassword = () => {
     const payload: ISetPasswordPayload = {
       newPassword: data.newPassword,
       confirmPassword: data.confirmPassword,
-      token: token || "",
+      token: id || "",
     };
     dispatch(setPasswordThunk(payload)).then((response) => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
@@ -51,11 +50,12 @@ const SetPassword = () => {
           "Password Reset Successful",
           "Your password has been successfully reset"
         );
+        localStorageService.logout();
+        setTimeout(() => {
+          navigate(PATH_NAME.HOME);
+        }, 1500);
       } else {
-        errorToast(
-          "Password Reset Failed",
-          "The new password does not meet the required criteria. Please try again."
-        );
+        errorToast("Password Reset Failed", response?.payload?.message);
       }
     });
   };
@@ -144,7 +144,7 @@ const SetPassword = () => {
             <Button
               type="submit"
               className="bg-purple-800 text-white px-4 py-2 rounded-full font-primary"
-              label="Set Passowrd"
+              label="Set Password"
             />
           </div>
         </div>

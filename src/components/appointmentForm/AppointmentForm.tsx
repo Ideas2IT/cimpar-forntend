@@ -1,43 +1,61 @@
+import { addMinutes } from "date-fns";
 import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
 import { Button as PrimeButton } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Chips } from "primereact/chips";
+import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
+import { Toast } from "primereact/toast";
 import { useContext, useEffect, useRef, useState } from "react";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "react-time-picker/dist/TimePicker.css";
-import { ITest, reasonsForTest, tests } from "../../assets/MockData";
+import AddRecord from "../../assets/icons/addrecord.svg?react";
 import checkmark from "../../assets/icons/checkmark.svg";
+import HomeIcon from "../../assets/icons/home.svg?react";
 import HeaderContext from "../../context/HeaderContext";
+import { ICreateAppointmentPayload } from "../../interfaces/appointment";
+import { ErrorResponse } from "../../interfaces/common";
+import { IMedicine } from "../../interfaces/medication";
 import {
   getDobAndAge,
-  // getDobAndAge,
   getPolicyDetails,
+  getStringArrayFromObjectArray,
   handleKeyPress,
 } from "../../services/commonFunctions";
 import {
   getPatientInsuranceThunk,
+  getPatientMedicalConditionsThunk,
   selectSelectedPatient,
 } from "../../store/slices/PatientSlice";
+import { createAppointmentThunk } from "../../store/slices/appointmentSlice";
 import {
   getAllergiesByQueryThunk,
+  getAllTestsThunk,
   getMedicalConditionsByQueryThunk,
   selectAllergies,
   selectConditions,
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import { PATH_NAME } from "../../utils/AppConstants";
+import {
+  CODE,
+  DIALOG_WARNING,
+  PATH_NAME,
+  RESPONSE,
+  SYSTEM,
+  TABLE,
+} from "../../utils/AppConstants";
 import Button from "../Button";
 import BackButton from "../backButton/BackButton";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import CustomModal from "../customModal/CustomModal";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
+import useToast from "../useToast/UseToast";
 import "./AppointmentPage.css";
 
 export interface IItem {
@@ -46,46 +64,47 @@ export interface IItem {
 }
 
 export interface IFormData {
-  testToTake: ITest[];
+  testToTake: IMedicine[];
   dateOfAppointment: Date;
   scheduledTime: Date;
   reasonForTest: string;
   testReason: IItem;
   otherReasonForTest: string;
-  medicalConditions: string[];
+  medicalConditions: IMedicine[];
   otherMedicalConditions: string[];
-  allergies: string[];
+  allergies: IMedicine[];
   otherAllergies: string[];
 }
 
 const AppointmentForm = () => {
+  const reasonsForTest: IItem[] = [
+    { id: 1, name: "Usual checkup" },
+    { id: 2, name: "Advised by doctor" },
+    { id: 3, name: "Other" },
+  ];
   const {
-    register,
     control,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    reset,
+    clearErrors,
+    formState: { errors, isDirty },
     trigger,
   } = useForm({
     defaultValues: {} as IFormData,
   });
-
-  const [selectedMedicalConditions, setSelectedMedicalConditons] = useState<
-    string[]
-  >([]);
-  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const patient = useSelector(selectSelectedPatient);
   const [showDialog, setShowDialog] = useState(false);
   const multiSelectRef = useRef<MultiSelect>(null);
+  const timerRef = useRef<Calendar>(null);
   const reasonForTest = watch("testReason");
+  const appointmentDate = watch("dateOfAppointment");
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formData, setFormData] = useState({} as IFormData);
   const dispatch = useDispatch<AppDispatch>();
-  const initialRender = useRef(true);
-
-  //TODO: need to write the logic to handle formSubmit
+  const [tests, setTests] = useState<IMedicine[]>([]);
   const handleFormSubmit = (data: IFormData) => {
     setShowConfirmDialog(true);
     setFormData(data);
@@ -95,59 +114,90 @@ const AppointmentForm = () => {
   const filteredConditions = useSelector(selectConditions);
 
   useEffect(() => {
-    if (initialRender?.current) {
-      initialRender.current = false;
-      return;
-    }
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  useEffect(() => {
+    dispatch(getAllTestsThunk(TABLE.LAB_TEST)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        setTests(response.payload as IMedicine[]);
+      } else if (response.meta.requestStatus == RESPONSE.REJECTED) {
+        errorToast("Failed to Load lab tests", "Could not load lab tests");
+      }
+    });
     if (patient?.basicDetails?.id) {
-      dispatch(getPatientInsuranceThunk(patient?.basicDetails?.id));
+      dispatch(getPatientInsuranceThunk(patient?.basicDetails?.id)).then(
+        ({ meta }) => {
+          if (meta.requestStatus === RESPONSE.REJECTED) {
+            errorToast(
+              "Failed to Load insurance details",
+              "Could not load insurance details"
+            );
+          }
+        }
+      );
+      dispatch(
+        getPatientMedicalConditionsThunk(patient?.basicDetails?.id)
+      ).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.REJECTED) {
+          errorToast(
+            "Failed to Load data",
+            "Could not load medical conditions"
+          );
+        }
+      });
     }
   }, [patient?.basicDetails?.id]);
 
+  useEffect(() => {
+    reset({
+      medicalConditions:
+        patient?.medicalConditionsAndAllergies?.medicalConditions,
+      allergies: patient?.medicalConditionsAndAllergies?.allergies,
+      otherAllergies: getStringArrayFromObjectArray(
+        patient?.medicalConditionsAndAllergies?.otherAllergies
+      ),
+      otherMedicalConditions: getStringArrayFromObjectArray(
+        patient?.medicalConditionsAndAllergies?.otherMedicalConditions
+      ),
+      dateOfAppointment: new Date(),
+    } as IFormData);
+  }, [patient?.medicalConditionsAndAllergies]);
+
   const searchAllergies = (event: AutoCompleteCompleteEvent) => {
-    if (event.query.trim().length > 1) {
-      dispatch(getAllergiesByQueryThunk(event.query)).then((response) => {
-        console.log(response);
-      });
+    if (event.query.trim().length > 2) {
+      dispatch(getAllergiesByQueryThunk(event.query));
     }
   };
 
   const searchMedicalConditions = (event: AutoCompleteCompleteEvent) => {
-    setTimeout(() => {
-      if (event.query.trim().length > 1) {
-        dispatch(getMedicalConditionsByQueryThunk(event.query)).then(
-          (response) => {
-            console.log(response.payload);
-          }
-        );
-      }
-    }, 300);
+    if (event.query.trim().length > 2) {
+      dispatch(getMedicalConditionsByQueryThunk(event.query));
+    }
   };
 
-  const handleSelectMedicalConditons = (values: string[]) => {
-    setSelectedMedicalConditons(values);
+  const handleSelectMedicalConditons = (values: IMedicine[]) => {
     setValue("medicalConditions", values);
   };
 
-  const handleSelectedAllergies = (values: string[]) => {
-    setSelectedAllergies(values);
+  const handleSelectedAllergies = (values: IMedicine[]) => {
     setValue("allergies", values);
   };
+  const { errorToast, toast } = useToast();
 
   const TestFooterFormat = () => {
     return (
       <div className="text-end px-4 text-md py-2">
         <PrimeButton
-          label="Cancel"
-          className="me-3 px-5 py-1 font-secondary color-primary rounded-md border border-cyan-900"
-          onClick={() => {
-            setValue("testToTake", []);
-            multiSelectRef?.current && multiSelectRef.current.hide();
-          }}
-        />
-        <PrimeButton
-          className="bg-primary font-secondary py-1 px-5 text-white rounded-md"
-          label="Select"
+          className="bg-primary font-secondary py-2 px-6 text-white rounded-md"
+          label="OK"
+          type="button"
           onClick={() => {
             multiSelectRef?.current && multiSelectRef.current.hide();
           }}
@@ -156,20 +206,127 @@ const AppointmentForm = () => {
     );
   };
 
-  const handleEditUser = () => {
+  const confirmEdit = () => {
+    confirmDialog({
+      header: "Confirmation",
+      className: "max-w-[50vw]",
+      message: DIALOG_WARNING,
+      icon: "pi pi-info-circle",
+      defaultFocus: "reject",
+      rejectClassName: "hidden",
+      acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
+      acceptLabel: "Continue",
+      accept,
+    });
+  };
+
+  const confirmCancle = () => {
+    confirmDialog({
+      header: "Confirmation",
+      className: "max-w-[50vw]",
+      message: DIALOG_WARNING,
+      icon: "pi pi-info-circle",
+      defaultFocus: "reject",
+      rejectClassName: "hidden",
+      acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
+      acceptLabel: "Continue",
+      accept() {
+        goBack();
+      },
+    });
+  };
+
+  const accept = () => {
     navigate(PATH_NAME.EDIT_PROFILE, {
       state: { from: PATH_NAME.HEALTH_RECORDS },
     });
   };
 
+  const goBack = () => {
+    navigate(PATH_NAME.HOME);
+  };
+
   const handleConfirmation = (value: boolean) => {
-    setShowDialog(value);
+    if (value) {
+      const dateOfAppointment = formData.dateOfAppointment;
+      const hours = formData.scheduledTime.getHours();
+      const minutes = formData.scheduledTime.getMinutes();
+      dateOfAppointment.setHours(hours);
+      dateOfAppointment.setMinutes(minutes);
+      const payload: ICreateAppointmentPayload = {
+        current_condition_id:
+          patient?.medicalConditionsAndAllergies?.current_condition_id || "",
+        other_condition_id:
+          patient?.medicalConditionsAndAllergies?.additional_condition_id || "",
+        current_allergy_id:
+          patient?.medicalConditionsAndAllergies?.current_allergy_id || "",
+        other_allergy_id:
+          patient?.medicalConditionsAndAllergies?.additional_allergy_id || "",
+        current_allergy: formData.allergies,
+        current_medical_condition: formData?.medicalConditions,
+        date_of_appointment: dateOfAppointment.toISOString(),
+        other_medical_condition: formData?.otherAllergies?.length
+          ? formData?.otherMedicalConditions?.map((condition) => {
+              return { system: SYSTEM, code: CODE, display: condition };
+            })
+          : ([] as IMedicine[]),
+        other_reason: formData.otherReasonForTest,
+        patientid: patient?.basicDetails?.id,
+        reason_for_test: formData?.testReason?.name,
+        schedule_time: formData?.scheduledTime.toISOString(),
+
+        test_to_take: formData?.testToTake,
+        other_allergy: formData?.otherAllergies?.length
+          ? formData?.otherAllergies?.map((allergy) => {
+              return { system: SYSTEM, code: CODE, display: allergy };
+            })
+          : ([] as IMedicine[]),
+      };
+      dispatch(createAppointmentThunk(payload)).then((response) => {
+        if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
+          setShowDialog(value);
+        } else {
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Failed to create Appointment", errorResponse?.message);
+        }
+      });
+    }
     setShowConfirmDialog(false);
   };
+
+  const validateScheduledTime = (appointmentTime: Date) => {
+    const currentDate = new Date();
+    const hours = appointmentTime.getHours();
+    const minutes = appointmentTime.getMinutes();
+
+    const selectedDateTime = new Date(appointmentDate);
+    selectedDateTime.setHours(hours);
+    selectedDateTime.setMinutes(minutes);
+
+    if (selectedDateTime < currentDate) {
+      return "Scheduled time must be in the future.";
+    } else {
+      return true;
+    }
+  };
+
+  const getNameAndGender = () => {
+    const firstName = patient?.basicDetails?.firstName || "-";
+    const middleName = patient?.basicDetails?.middleName || "";
+    const lastName = patient?.basicDetails?.lastName || "";
+    const gender = patient?.basicDetails?.gender || "-";
+    return `${firstName} ${middleName} ${lastName} (${gender})`;
+  };
+
+  useEffect(() => {
+    trigger("otherReasonForTest");
+    trigger("scheduledTime");
+  }, [reasonForTest, appointmentDate]);
 
   return (
     <>
       <form
+        className="h-[calc(100vh-150px)]"
         onSubmit={handleSubmit((data) => handleFormSubmit(data))}
         onKeyDown={(event) => {
           handleKeyPress(event);
@@ -177,24 +334,23 @@ const AppointmentForm = () => {
       >
         <div className="flex mx-4 justify-between items-center bg-gray-100">
           <BackButton
+            showConfirmDialog={true}
             previousPage="Home"
             currentPage="Make Appointment"
-            backLink="/"
+            backLink={PATH_NAME.HOME}
           />
           <div className="flex py-2 justify-between items-center">
-            <Link to={PATH_NAME.HOME}>
-              <Button
-                onClick={() => {}}
-                className="ml-3 font-primary text-md"
-                variant="primary"
-                type="button"
-                style="link"
-                size="medium"
-              >
-                <i className="pi pi-times me-2" />
-                Cancel
-              </Button>
-            </Link>
+            <Button
+              onClick={confirmCancle}
+              className="ml-3 font-primary text-md"
+              variant="primary"
+              type="button"
+              style="link"
+              size="medium"
+            >
+              <i className="pi pi-times me-2" />
+              Cancel
+            </Button>
             <Button
               onClick={() => handleSubmit}
               className="ml-3 font-primary"
@@ -208,7 +364,7 @@ const AppointmentForm = () => {
             </Button>
           </div>
         </div>
-        <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%]">
+        <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%] overflow-auto">
           <div className="font-primary text-xl">Appointment Details</div>
           <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 mt-1 gap-4">
             <div className="md:col-span-2 test w-full relative">
@@ -222,22 +378,30 @@ const AppointmentForm = () => {
                 name="testToTake"
                 control={control}
                 rules={{
-                  required: "Test list can't be empty",
+                  required: "Test to be taken is required",
                 }}
                 render={({ field }) => (
                   <MultiSelect
                     {...field}
+                    title={field?.value
+                      ?.map((test) => {
+                        return test.display;
+                      })
+                      .join(", ")}
                     inputId="testToTake"
+                    optionLabel="display"
                     ref={multiSelectRef}
                     options={tests}
                     filter
+                    resetFilterOnHide
                     showSelectAll={false}
                     panelFooterTemplate={<TestFooterFormat />}
-                    optionLabel="name"
                     placeholder="Select Tests"
                     data-testid="select-tests"
                     showClear={true}
-                    className="input-field font-secondary"
+                    panelClassName="test-list"
+                    appendTo="self"
+                    className="input-field font-secondary test-multiselect"
                     maxSelectedLabels={4}
                   />
                 )}
@@ -254,17 +418,21 @@ const AppointmentForm = () => {
                 <Controller
                   name="dateOfAppointment"
                   control={control}
-                  defaultValue={new Date()}
                   rules={{
                     required: "Date of appointment is required",
                   }}
                   render={({ field }) => (
                     <Calendar
                       {...field}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         e?.target?.value &&
-                        setValue("dateOfAppointment", e.target.value)
-                      }
+                          setValue("dateOfAppointment", e.target.value);
+                        setValue(
+                          "scheduledTime",
+                          e?.target?.value || new Date()
+                        );
+                        trigger("scheduledTime");
+                      }}
                       inputId="appointmentDate"
                       placeholder="Please pick the date of appointment"
                       aria-label="Please pick the date of appointment"
@@ -289,8 +457,10 @@ const AppointmentForm = () => {
                   name="scheduledTime"
                   control={control}
                   rules={{
-                    required: "Date of appointment is required",
+                    validate: (value) => validateScheduledTime(value),
+                    required: "Scheduled time is required",
                   }}
+                  defaultValue={addMinutes(new Date(), +1)}
                   render={({ field }) => (
                     <Calendar
                       {...field}
@@ -299,6 +469,7 @@ const AppointmentForm = () => {
                           setValue("scheduledTime", e.target.value);
                         trigger("scheduledTime");
                       }}
+                      ref={timerRef}
                       inputId="scheduleTime"
                       showIcon={true}
                       placeholder="Pick the appointment time"
@@ -321,24 +492,33 @@ const AppointmentForm = () => {
           <div className="grid md:grid-cols-2 grid-cols-1 gap-4 py-3 mt-2">
             <div className="md:col-span-1 col-span-2">
               <label htmlFor="testReason" className="input-label">
-                Reason for test*
+                Reason For Test*
               </label>
               <div className="flex flex-row rounded-md">
                 <Controller
                   name="testReason"
                   control={control}
                   rules={{
-                    required: "Date of appointment is required",
+                    required: "Reason For Test is  required",
                   }}
                   render={({ field }) => (
                     <Dropdown
                       {...field}
+                      onChange={(event) => {
+                        clearErrors("otherReasonForTest");
+                        setValue("testReason", event.value);
+                        if (event.value.name !== "Other") {
+                          setValue("otherReasonForTest", "");
+                          trigger("testReason");
+                          trigger("otherReasonForTest");
+                        }
+                      }}
                       inputId="testReason"
                       options={reasonsForTest}
                       optionLabel="name"
-                      placeholder="Select test reason"
+                      placeholder="Select Test Reason"
                       aria-label="Select test reason"
-                      className="w-full border border-gray-300 rounded-lg pe-2 h-[2.5rem]"
+                      className="w-full border border-gray-300 rounded-lg pe-2 h-[2.5rem] test-dropdown"
                     />
                   )}
                 />
@@ -347,37 +527,60 @@ const AppointmentForm = () => {
                 <ErrorMessage message={errors.testReason.message} />
               )}
             </div>
-            <div className="md:col-span-1 col-span-2">
+            <div className="md:col-span-1 col-span-2 relative">
               <label htmlFor="reasonDetails" className="input-label">
                 Other reason
               </label>
-              <input
-                id="reasonDetails"
-                disabled={reasonForTest?.name !== "Other"}
-                {...register("otherReasonForTest")}
-                name={`otherReasonForTest`}
-                onChange={(e) => setValue("otherReasonForTest", e.target.value)}
-                type="text"
-                className="cimpar-input py-[.6rem] h-[2.5rem] focus:outline-none font-tertiary"
-                placeholder="Type the reason here (optional)"
+
+              <Controller
+                name="otherReasonForTest"
+                control={control}
+                rules={{
+                  required:
+                    reasonForTest?.name === "Other"
+                      ? "Other reason is required"
+                      : false,
+                }}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    id="reasonDetails"
+                    onChange={(e) => {
+                      setValue("otherReasonForTest", e.target.value);
+                      trigger("otherReasonForTest");
+                    }}
+                    disabled={reasonForTest?.name !== "Other"}
+                    type="text"
+                    className="cimpar-input py-[.6rem] h-[2.5rem] focus:outline-none font-tertiary"
+                    placeholder="Type the test reason here"
+                  />
+                )}
               />
+              {errors.otherReasonForTest && (
+                <ErrorMessage message={errors.otherReasonForTest?.message} />
+              )}
             </div>
           </div>
           <div className="font-primary text-xl py-2">Medical Condition</div>
           <>
             <label htmlFor="medicalConditions" className="block input-label">
               Please select the medical conditions you currently have.
+              <Controller
+                name="medicalConditions"
+                control={control}
+                render={({ field }) => (
+                  <CustomAutoComplete
+                    handleSearch={searchMedicalConditions}
+                    inputId="medicalConditions"
+                    handleSelection={handleSelectMedicalConditons}
+                    items={filteredConditions}
+                    selectedItems={field.value}
+                  />
+                )}
+              />
             </label>
-            <CustomAutoComplete
-              handleSearch={searchMedicalConditions}
-              inputId="medicalConditions"
-              placeholder="Add one or more medical conditions"
-              handleSelection={handleSelectMedicalConditons}
-              items={filteredConditions}
-              selectedItems={selectedMedicalConditions}
-            />
           </>
-          <div className="pt-4">
+          <div className="pt-4 relative">
             <label
               className="block input-label"
               htmlFor="otherMedicalConditions"
@@ -388,18 +591,33 @@ const AppointmentForm = () => {
               name="otherMedicalConditions"
               control={control}
               render={({ field }) => (
-                <Chips
-                  inputId="otherMedicalConditions"
-                  {...field}
-                  className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
-                  placeholder={
-                    !field?.value?.length
-                      ? "Enter your medication name(s), separated by commas"
-                      : ""
-                  }
-                  removeIcon={"pi pi-times"}
-                  separator=","
-                />
+                <>
+                  <Chips
+                    {...field}
+                    value={field.value}
+                    addOnBlur={true}
+                    allowDuplicate={false}
+                    inputId="otherMedicalConditions"
+                    className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
+                    placeholder={
+                      !field?.value?.length
+                        ? "Enter your Medical Condition(s), seperated by commos"
+                        : ""
+                    }
+                    removeIcon={"pi pi-times"}
+                    separator=","
+                  />
+                  {!!field?.value?.length && (
+                    <div className="flex top-[1.2rem] items-center clear-button">
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => setValue("otherMedicalConditions", [])}
+                      >
+                        Clear all
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             />
           </div>
@@ -407,17 +625,26 @@ const AppointmentForm = () => {
           <>
             <label className="block input-label" htmlFor="allergies">
               Please select the allergies you currently have.
+              <Controller
+                name="allergies"
+                control={control}
+                render={({ field }) => (
+                  <CustomAutoComplete
+                    handleSearch={searchAllergies}
+                    inputId="allergies"
+                    items={
+                      filteredAllergies
+                        ? filteredAllergies
+                        : ([] as IMedicine[])
+                    }
+                    selectedItems={field.value}
+                    handleSelection={handleSelectedAllergies}
+                  />
+                )}
+              />
             </label>
-            <CustomAutoComplete
-              handleSearch={searchAllergies}
-              inputId="allergies"
-              placeholder="Add one or more allergies"
-              items={filteredAllergies ? filteredAllergies : ([] as string[])}
-              selectedItems={selectedAllergies}
-              handleSelection={handleSelectedAllergies}
-            />
           </>
-          <div className="pt-4">
+          <div className="pt-4 relative">
             <label className="block input-label" htmlFor="otherAllergies">
               Other allergies.
             </label>
@@ -425,43 +652,52 @@ const AppointmentForm = () => {
               name="otherAllergies"
               control={control}
               render={({ field }) => (
-                <Chips
-                  inputId="otherAllergies"
-                  {...field}
-                  className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
-                  placeholder={
-                    !field?.value?.length
-                      ? "Enter your allergies name(s), separated by commas"
-                      : ""
-                  }
-                  removeIcon={"pi pi-times"}
-                  separator=","
-                />
+                <>
+                  <Chips
+                    {...field}
+                    addOnBlur={true}
+                    allowDuplicate={false}
+                    inputId="otherAllergies"
+                    className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
+                    placeholder={
+                      !field?.value?.length
+                        ? "Enter your allergy(ies) names, separated by commas."
+                        : ""
+                    }
+                    removeIcon={"pi pi-times"}
+                    separator=","
+                  />
+                  {!!field?.value?.length && (
+                    <div className="flex top-[1.2rem] items-center clear-button">
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => setValue("otherAllergies", [])}
+                      >
+                        Clear all
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="font-primary text-xl pt-4 pb-2">
+          <div className="font-primary flex  items-center text-xl pt-4 pb-2">
             Basic Details
-            <Button
-              style="link"
-              className="ps-3  text-[#61277F]"
-              onClick={handleEditUser}
-            >
-              <i className="pi pi-pencil px-2" /> Edit
-            </Button>
+            <span>
+              <ConfirmDialog />
+              <span className="card flex flex-wrap gap-2 justify-content-center">
+                <Button
+                  style="link"
+                  className="ps-3  inline text-[#61277F]"
+                  onClick={confirmEdit}
+                >
+                  <i className="pi pi-pencil px-2" /> Edit
+                </Button>
+              </span>
+            </span>
           </div>
           <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
-            <DetailColumn
-              label="Name (Gender)"
-              content={
-                patient?.basicDetails?.firstName +
-                " " +
-                patient?.basicDetails?.middleName +
-                "(" +
-                patient?.basicDetails?.gender +
-                ")"
-              }
-            />
+            <DetailColumn label="Name (Gender)" content={getNameAndGender()} />
             <DetailColumn
               label="DOB (Age)"
               content={getDobAndAge(patient?.basicDetails?.dob) || ""}
@@ -481,6 +717,7 @@ const AppointmentForm = () => {
           styleClass="w-[30rem] h-[15rem] bg-white"
           handleClose={() => {
             setShowDialog(false);
+            navigate(PATH_NAME.HOME);
           }}
         >
           <AppointmentStatus />
@@ -488,13 +725,18 @@ const AppointmentForm = () => {
       )}
       {showConfirmDialog && (
         <CustomModal
+          isDismissable="no"
+          closeButtonTitle={DIALOG_WARNING}
           header={
             <div className="font-primary text-2xl w-full py-2 px-2">
               Appointment Summary
             </div>
           }
           showCloseButton={true}
-          handleClose={() => setShowConfirmDialog(false)}
+          handleClose={() => {
+            setShowConfirmDialog(false);
+            navigate(PATH_NAME.HOME);
+          }}
           styleClass="md:w-[40rem] md:h-[35rem] bg-white"
         >
           <PreviewAppointment
@@ -503,6 +745,7 @@ const AppointmentForm = () => {
           />
         </CustomModal>
       )}
+      <Toast ref={toast} />
     </>
   );
 };
@@ -521,7 +764,9 @@ const DetailColumn = ({
       <label className="uppercase block text-[#283956] opacity-65 text-sm font-secondary">
         {label || "-"}
       </label>
-      <div className="w-full font-primary text-md">{content || "-"}</div>
+      <div className="w-full font-primary text-md capitalize">
+        {content || "-"}
+      </div>
     </div>
   );
 };
@@ -542,13 +787,22 @@ const AppointmentStatus = () => {
       <label className="font-primary py-4 text-center">
         Your Appointment has been Successfully fixed.
       </label>
-      <div className="flex justify-center">
+      <div className="flex justify-between text-sm w-full">
         <Button
+          setFocus={true}
           onClick={handleResponse}
-          className="font-primary w-[12rem]"
+          className="font-primary w-[13rem] focus:border focus:border-purple-1000 "
           style="outline"
         >
-          <i className="pi pi-check me-2"></i>Go to Lab Results
+          <HomeIcon className="stroke-purple-900 pe-1" />
+          Go to Health Records
+        </Button>
+        <Button
+          className="font-primary w-[13rem] bg-white justify-center"
+          onClick={() => navigate(PATH_NAME.HOME)}
+          style="outline"
+        >
+          <AddRecord className="stroke-purple-900 pe-1" /> Add New Service
         </Button>
       </div>
     </div>

@@ -7,4 +7,5 @@ export const SLICE_NAME = {
   commonSlice: "commonSlice",
   patinetSlice: "patient",
   immunizationSlice: "immunizationSlice",
+  appointmentSlice: "appointmentSlice",
 };

@@ -12,11 +12,9 @@ export const CustomAutoComplete = ({
   selectedItems,
   items,
   handleSelection,
-  placeholder,
   inputId,
   handleSearch,
 }: {
-  placeholder?: string;
   selectedItems: IMedicine[];
   items: IMedicine[];
   handleSelection: (value: IMedicine[]) => void;
@@ -31,12 +29,21 @@ export const CustomAutoComplete = ({
     }
   };
   const autoRef = useRef<AutoComplete>(null);
+  const inputReferences = useRef<HTMLInputElement>(null);
+  const getTitle = () => {
+    if (selectedItems?.length) {
+      const title = selectedItems?.map((item) => item.display).join(", ");
+      return title;
+    }
+    return "";
+  };
   return (
-    <div className="custom-autocomplete">
+    <div className="custom-autocomplete" title={getTitle()}>
       <AutoComplete
         inputId={inputId}
         delay={750}
         ref={autoRef}
+        inputRef={inputReferences}
         className="w-[90%] min-h-[2.3rem]"
         multiple
         value={selectedItems}
@@ -45,13 +52,18 @@ export const CustomAutoComplete = ({
         onChange={(event) => handleValueSelect(event)}
         completeMethod={handleSearch}
         itemTemplate={(option) => <ItemTemplate item={option} />}
-        placeholder={!selectedItems?.length && placeholder ? placeholder : ""}
+        placeholder={
+          !selectedItems?.length ? "Enter at least 3 characters" : ""
+        }
         emptyMessage="No result found"
         showEmptyMessage={true}
         itemProp="py-0"
         removeTokenIcon={"pi pi-times"}
         panelClassName={`custom-autocomplete-panel ${items?.length && "panel-header"}`}
-        panelStyle={{ paddingTop: "40px" }}
+        panelStyle={{
+          paddingTop: "40px",
+          minWidth: "40rem",
+        }}
         inputClassName="w-auto"
         appendTo="self"
         loadingIcon={<></>}
@@ -59,9 +71,12 @@ export const CustomAutoComplete = ({
       {Boolean(selectedItems?.length) && (
         <span
           className="px-2 text-red-500 text-sm font-tertiary cursor-pointer min-w-[5rem]"
-          onClick={() =>
-            handleValueSelect({ value: [] } as AutoCompleteChangeEvent)
-          }
+          onClick={() => {
+            handleValueSelect({ value: [] } as AutoCompleteChangeEvent);
+            if (inputReferences.current) {
+              inputReferences.current.value = "";
+            }
+          }}
         >
           Clear all
         </span>
@@ -79,7 +94,7 @@ const ItemTemplate = ({ item }: { item: IMedicine }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="capitalize font-secondary">{item.display}</div>
+      <div className="capitalize font-secondary text-wrap">{item.display}</div>
       {isHovered && <img className="pe-1" src={plus} />}
     </div>
   );

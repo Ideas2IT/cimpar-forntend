@@ -10,9 +10,16 @@ import {
   logoutThunk,
 } from "../../store/slices/loginSlice";
 import { AppDispatch } from "../../store/store";
-import { CLIENT_ID, MESSAGE, RESPONSE } from "../../utils/AppConstants";
+import {
+  CLIENT_ID,
+  MESSAGE,
+  PATH_NAME,
+  RESPONSE,
+} from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
+import { ErrorResponse } from "../../interfaces/common";
+import { useNavigate } from "react-router-dom";
 
 const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
   const profile = useSelector(selectUserProfile);
@@ -28,8 +35,8 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
   } = useForm({ defaultValues: {} as IChangePassword });
   const { errorToast, toast, successToast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
-  //TODO: Handle Password change API call
   const handlePasswordChange = (data: IChangePassword) => {
     if (
       data.oldPassword &&
@@ -52,25 +59,23 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
         old_password: data.oldPassword,
         username: profile.email,
       };
-      dispatch(changePasswordThunk(payload)).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.FULFILLED) {
+      dispatch(changePasswordThunk(payload)).then((response) => {
+        if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
           successToast(
             "Password Changed Successfully",
             "Your password has been changed successfully. Login with new credentials"
           );
           setTimeout(() => {
-            dispatch(logoutThunk());
-          }, 2000);
+            dispatch(logoutThunk()).then(() => {
+              navigate(PATH_NAME.HOME);
+              handleClose();
+            });
+          }, 1000);
         } else {
-          errorToast(
-            "Password Updation Failed",
-            "You password has not been updated successfully"
-          );
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Password Updation Failed", errorResponse.message);
         }
       });
-      setTimeout(() => {
-        handleClose();
-      }, 3000);
     }
   };
 

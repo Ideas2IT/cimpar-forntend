@@ -25,16 +25,12 @@ export const getUserProfileThunk = createAsyncThunk(
       const userResponse = await getUserDetails();
       return userResponse.data;
     } catch (error) {
-      if (isAxiosError(error) && error.response?.data?.message) {
-        const errorMessage = error.response?.data?.message?.split(":")[0];
+      if (isAxiosError(error)) {
+        const errorMessage = error.response?.data?.error || "Unknown Error";
         return rejectWithValue({
           message: errorMessage,
-          response: error.response.status,
+          response: error.message,
         } as ErrorResponse);
-      } else {
-        return rejectWithValue({
-          message: "Unknown Error",
-        });
       }
     }
   }

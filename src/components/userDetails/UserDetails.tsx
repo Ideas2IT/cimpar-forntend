@@ -1,12 +1,11 @@
+import React from "react";
+import { useSelector } from "react-redux";
 import {
   convertToFeetAndInches,
   createFullName,
-  getFullPhoneNumber,
 } from "../../services/commonFunctions";
-import { useSelector } from "react-redux";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
 import { dateFormatter } from "../../utils/Date";
-import React from "react";
 
 const UserDetails = () => {
   const selectedPatient = useSelector(selectSelectedPatient);
@@ -26,7 +25,13 @@ const UserDetails = () => {
         value: dateFormatter(selectedPatient?.basicDetails?.dob) || "",
       },
       { label: "GENDER", value: selectedPatient?.basicDetails?.gender || "" },
-      { label: "RACE", value: selectedPatient?.basicDetails?.race || "" },
+      {
+        label: "RACE",
+        value:
+          selectedPatient?.basicDetails?.race?.toLowerCase() === "white"
+            ? "white or caucasian"
+            : selectedPatient?.basicDetails?.race,
+      },
       {
         label: "HEIGHT",
         value:
@@ -37,7 +42,7 @@ const UserDetails = () => {
       },
       {
         label: "WEIGHT",
-        value: selectedPatient?.basicDetails?.weight || "0" + " Pounds",
+        value: (selectedPatient?.basicDetails?.weight || "0") + " Pounds",
       },
       {
         label: "ETHNICITY",
@@ -51,20 +56,19 @@ const UserDetails = () => {
     () => [
       {
         label: "PHONE NUMBER",
-        value: selectedPatient.basicDetails?.phoneNo,
+        value:
+          selectedPatient.basicDetails?.phoneNo &&
+          "+1-" + selectedPatient.basicDetails?.phoneNo,
       },
       {
         label: "ALTERNATIVE NUMBER",
-        value: selectedPatient?.basicDetails?.alternateNo
-          ? getFullPhoneNumber(
-              selectedPatient?.basicDetails?.alternateCode,
-              selectedPatient.basicDetails?.alternateNo.toString()
-            )
-          : "None",
+        value:
+          selectedPatient?.basicDetails?.alternativeNumber &&
+          "+1-" + selectedPatient?.basicDetails?.alternativeNumber,
       },
       {
         label: "FULL ADDRESS",
-        value: selectedPatient?.basicDetails?.address,
+        value: selectedPatient?.basicDetails?.address ?? "",
       },
       { label: "ZIP CODE", value: selectedPatient?.basicDetails?.zipCode },
       { label: "CITY", value: selectedPatient?.basicDetails?.city },
@@ -119,7 +123,7 @@ export const PatientDetails = ({
       </div>
       <div
         title={value}
-        className="font-primary pb-2 text-[#283956] capitalize text-clip"
+        className="font-primary pb-2 text-[#283956] truncate max-w-[90%] capitalize"
       >
         {value ? value : "-"}
       </div>

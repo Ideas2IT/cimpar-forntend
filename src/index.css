@@ -139,7 +139,7 @@ div {
 }
 
 .p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
-  @apply px-2 py-0 mx-0 my-2;
+  @apply px-2 py-0 mx-0 my-2 !min-w-[40rem] !max-w-[40rem];
 }
 
 .input-field {
@@ -176,4 +176,17 @@ div {
 
 .border-purple {
   @apply border-[#61277F];
+}
+
+input::placeholder {
+  font-family: "futuraMdBt";
+  @apply text-[#9BA5B7];
+}
+
+.p-autocomplete .p-autocomplete-pane {
+  @apply !min-w-[40rem];
+}
+
+.p-chips-token {
+  @apply mt-[1px];
 }

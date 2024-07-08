@@ -1,22 +1,23 @@
 import { createBrowserRouter } from "react-router-dom";
 import AppointmentForm from "./components/appointmentForm/AppointmentForm";
-import LabTestResults from "./components/LabTestResults";
-import UserProfilePage, {
-  user,
-} from "./components/userProfilePage/UserProfilePage";
-import EditUserDetails from "./components/userDetails/EditUserDetails";
-import EditMedicationDetails from "./components/medication/EditMedicationDetails";
-import Layout from "./components/Layout";
-import EditInsurance from "./components/insuranceDetails/EditInsurance";
-import HomePage from "./components/homePage/HomePage";
-import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
-import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
-import { PATH_NAME } from "./utils/AppConstants";
-import SignUpForm from "./components/loginForm/SignUpForm";
-import SetPassword from "./components/setPassword/SetPassword";
-import LoginForm from "./components/loginForm/LoginForm";
-import ForgotPassword from "./components/forgotPassword/ForgotPassword";
 import Appointments from "./components/appointments/Appointments";
+import RoleBasedRoute from "./components/AuthorizeUser";
+import ForgotPassword from "./components/forgotPassword/ForgotPassword";
+import HomePage from "./components/homePage/HomePage";
+import EditInsurance from "./components/insuranceDetails/EditInsurance";
+import LabTestResults from "./components/LabTestResults";
+import Layout from "./components/Layout";
+import LoginForm from "./components/loginForm/LoginForm";
+import SignUpForm from "./components/loginForm/SignUpForm";
+import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
+import EditMedicationDetails from "./components/medication/EditMedicationDetails";
+import PageNotFound from "./components/PageNotFound";
+import ResetPassword from "./components/setPassword/ResetPassowrd";
+import SetPassword from "./components/setPassword/SetPassword";
+import EditUserDetails from "./components/userDetails/EditUserDetails";
+import UserProfilePage from "./components/userProfilePage/UserProfilePage";
+import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
+import { PATH_NAME, ROLE } from "./utils/AppConstants";
 const router = createBrowserRouter([
   {
     path: PATH_NAME.HOME,
@@ -28,47 +29,102 @@ const router = createBrowserRouter([
       },
       {
         path: PATH_NAME.PROFILE,
-        element: <UserProfilePage />,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<UserProfilePage />}
+          />
+        ),
       },
       {
         path: PATH_NAME.EDIT_PROFILE,
-        element: <EditUserDetails user={user} />,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<EditUserDetails />}
+          />
+        ),
       },
       {
         path: PATH_NAME.EIDT_MEDICATION,
-        element: <EditMedicationDetails />,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<EditMedicationDetails />}
+          />
+        ),
       },
       {
         path: `${PATH_NAME.EDIT_INSURANCE}/:id`,
-        element: <EditInsurance />,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<EditInsurance />}
+          />
+        ),
       },
       {
         path: PATH_NAME.EDIT_INSURANCE,
-        element: <EditInsurance />,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<EditInsurance />}
+          />
+        ),
       },
       {
         path: PATH_NAME.HEALTH_RECORDS,
-        element: <AppointmentForm />,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<AppointmentForm />}
+          />
+        ),
       },
       {
         path: PATH_NAME.TEST_RESULT,
-        element: <LabTestResults />,
+        element: (
+          <RoleBasedRoute
+            element={<LabTestResults />}
+            requiredRole={ROLE.PATIENT}
+          />
+        ),
       },
       {
         path: PATH_NAME.EDIT_MEDICAL_CONDITIONS,
-        element: <EditMedicalConditions />,
+        element: (
+          <RoleBasedRoute
+            element={<EditMedicalConditions />}
+            requiredRole={ROLE.PATIENT}
+          />
+        ),
       },
       {
-        path: `/${PATH_NAME.EDIT_VISIT_HISTORY}/:id`,
-        element: <EditVisitHistory />,
+        path: `${PATH_NAME.EDIT_VISIT_HISTORY}/:id`,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<EditVisitHistory />}
+          />
+        ),
       },
       {
         path: PATH_NAME.EDIT_VISIT_HISTORY,
-        element: <EditVisitHistory />,
+        element: (
+          <RoleBasedRoute
+            element={<EditVisitHistory />}
+            requiredRole={ROLE.PATIENT}
+          />
+        ),
       },
       {
         path: PATH_NAME.APPOINTMENTS,
-        element: <Appointments />,
+        element: (
+          <RoleBasedRoute
+            element={<Appointments />}
+            requiredRole={ROLE.ADMIN}
+          />
+        ),
       },
     ],
   },
@@ -85,8 +141,16 @@ const router = createBrowserRouter([
     element: <SetPassword />,
   },
   {
+    path: `${PATH_NAME.RESET_PASSWORD}/:id`,
+    element: <ResetPassword />,
+  },
+  {
     path: PATH_NAME.FORGOT_PASSWORD,
     element: <ForgotPassword />,
+  },
+  {
+    path: "*",
+    element: <PageNotFound />,
   },
 ]);
 

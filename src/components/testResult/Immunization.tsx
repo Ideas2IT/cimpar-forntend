@@ -1,18 +1,21 @@
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import "./Immunization.css";
 import { Sidebar } from "primereact/sidebar";
 import { useState } from "react";
-import CustomPaginator from "../customPagenator/CustomPaginator";
-import { getRowClasses } from "../../services/commonFunctions";
-import { PaginatorPageChangeEvent } from "primereact/paginator";
-import EyeIcon from "../../assets/icons/eye.svg?react";
 import { useSelector } from "react-redux";
+import EyeIcon from "../../assets/icons/eye.svg?react";
 import { IImmunization } from "../../interfaces/immunization";
-import { dateFormatter } from "../../utils/Date";
+import { getRowClasses, getStatusColor } from "../../services/commonFunctions";
 import { selectImmunizations } from "../../store/slices/serviceHistorySlice";
+import { dateFormatter } from "../../utils/Date";
+import "./Immunization.css";
+import CustomPaginator from "../customPagenator/CustomPaginator";
 
-const TestResult = () => {
+const Immunization = ({
+  handlePageChange,
+}: {
+  handlePageChange: (value: number) => void;
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedImmunization, setSelectedImmunization] = useState(
     {} as IImmunization
@@ -43,10 +46,6 @@ const TestResult = () => {
     setIsSidebarOpen(true);
   };
 
-  const handlePageChange = (event: PaginatorPageChangeEvent) => {
-    console.log("page changed", event);
-  };
-
   const ImmunizationHeader = () => {
     return (
       <div>
@@ -60,96 +59,81 @@ const TestResult = () => {
     );
   };
 
-  const getStatusColor = (value: string) => {
-    if (value) {
-      switch (value.toLowerCase()) {
-        case "vaccinated":
-          return "bg-[#FCEBDB]";
-        case "icare":
-          return "bg-[#D3EADD]";
-        default:
-          return "bg-white";
-      }
-    } else return "bg-white";
-  };
-
   return (
     <>
-      <DataTable
-        selection={selectedImmunization}
-        value={immunizations}
-        emptyMessage={
-          <div className="flex justify-center font-secondary">
-            No Immunization available.
-          </div>
-        }
-        selectionMode="single"
-        dataKey="id"
-        tableStyle={{ minWidth: "50rem" }}
-        className="mt-2 max-h-[50%] rowHoverable"
-        rowClassName={() => getRowClasses("h-10 border-b")}
-        scrollHeight="30rem"
-      >
-        {!!columnsConfig.length &&
-          columnsConfig.map((column) => {
-            return (
-              <Column
-                key={column.header}
-                field={column.field}
-                header={column.header}
-                bodyClassName="py-4"
-                headerClassName="text-sm font-secondary py-1 border-b bg-white"
-                body={(rowData) =>
-                  column.header === "ADMINISTRATION DATE" ? (
-                    <ColumnData
-                      content={dateFormatter(
-                        rowData[column.field],
-                        "dd MMM, yyyy"
-                      )}
-                    />
-                  ) : (
-                    <ColumnData content={rowData[column.field]} />
-                  )
-                }
-              />
-            );
-          })}
-        <Column
-          field="status"
-          header="Status"
-          bodyClassName="py-4"
-          headerClassName="text-sm font-secondary py-1 border-b bg-white"
-          body={(rowData) => (
-            <span
-              className={`sidebar-header ${getStatusColor(rowData.status)}`}
-            >
-              {rowData.status || "-"}
-            </span>
-          )}
-        />
-        <Column
-          field="view"
-          header=""
-          bodyClassName="py-5  max-w-[3rem]"
-          headerClassName="text-sm font-secondary py-1 border-b bg-white"
-          body={(rowData) => (
-            <ViewColumn
-              data={rowData}
-              handleViewRecord={() => handleViewRecord(rowData)}
-            />
-          )}
-        />
-      </DataTable>
-      {
-        //TODO: show the pagenator only if total records are more than page limit
-        immunizations.length > 20 && (
-          <CustomPaginator
-            handlePageChange={handlePageChange}
-            totalRecords={immunizations.length}
-            rowLimit={20}
+      <div className="h-[calc(100vh-200px)] overflow-auto">
+        <DataTable
+          selection={selectedImmunization}
+          value={immunizations.data}
+          emptyMessage={
+            <div className="flex justify-center">
+              No Immunization available.
+            </div>
+          }
+          selectionMode="single"
+          dataKey="id"
+          tableStyle={{ minWidth: "50rem" }}
+          className="mt-2 rowHoverable"
+          rowClassName={() => getRowClasses("h-10 border-b")}
+        >
+          {!!columnsConfig.length &&
+            columnsConfig.map((column) => {
+              return (
+                <Column
+                  key={column.header}
+                  field={column.field}
+                  header={column.header}
+                  bodyClassName="py-4"
+                  headerClassName="text-sm font-secondary py-1 border-b bg-white"
+                  body={(rowData) =>
+                    column.header === "ADMINISTRATION DATE" ? (
+                      <ColumnData
+                        content={dateFormatter(
+                          rowData[column.field],
+                          "dd MMM, yyyy"
+                        )}
+                      />
+                    ) : (
+                      <ColumnData content={rowData[column.field]} />
+                    )
+                  }
+                />
+              );
+            })}
+          <Column
+            field="status"
+            header="STATUS"
+            bodyClassName="py-4"
+            headerClassName="text-sm font-secondary py-1 border-b bg-white"
+            body={(rowData) => (
+              <span
+                className={`sidebar-header ${getStatusColor(rowData.status)}`}
+              >
+                {rowData.status || "-"}
+              </span>
+            )}
           />
-        )
-      }
+          <Column
+            field="view"
+            header=""
+            bodyClassName="py-5  max-w-[3rem]"
+            headerClassName="text-sm font-secondary py-1 border-b bg-white"
+            body={(rowData) => (
+              <ViewColumn
+                data={rowData}
+                handleViewRecord={() => handleViewRecord(rowData)}
+              />
+            )}
+          />
+        </DataTable>
+      </div>
+      {immunizations?.pagination?.total_pages > 1 && (
+        <CustomPaginator
+          totalPages={immunizations?.pagination?.total_pages || 0}
+          currentPage={immunizations?.pagination?.current_page || 0}
+          handlePageChange={handlePageChange}
+        />
+      )}
       <Sidebar
         className="detailed-view w-[28rem]"
         header={<ImmunizationHeader />}
@@ -212,29 +196,31 @@ export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
 
   return (
     <div className="pt-6">
-      <label className="font-primary text-sm">Vaccine details</label>
+      <label className="font-primary text-xl">Vaccine details</label>
       <div className="border-b">
         <DetailRow label="VACCINE NAME" value={data.vaccineName} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         {Boolean(columnKeys.length) &&
-          columnKeys.map((column) => {
-            return <DetailRow label={column} value={getValue(column)} />;
+          columnKeys?.map((column, index) => {
+            return (
+              <DetailRow key={index} label={column} value={getValue(column)} />
+            );
           })}
       </div>
       <div className="font-primary text-primary pt-4">Manufacturer details</div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="border-b">
+        <div className="border-b mt-1">
           <div className="input-label font-secondary pt-4">
             MANUFACTURER NAME
           </div>
-          <label className="font-primary">{data.vaccineName}</label>
+          <label className="font-primary">
+            {data?.manufacturerName || "-"}
+          </label>
         </div>
         <div className="border-b mt-1">
-          <div className="input-label font-secondary pt-4 pb-1">
-            EXPIRATION DATE
-          </div>
-          <label className="font-primary">{data.vaccineName}</label>
+          <div className="input-label font-secondary pt-4">EXPIRATION DATE</div>
+          <label className="font-primary">{data?.expirationDate || "-"}</label>
         </div>
       </div>
     </div>
@@ -267,4 +253,4 @@ const ColumnData = ({ content }: { content: string }) => {
     <div className="text-[16px] font-tertiary">{content ? content : "-"}</div>
   );
 };
-export default TestResult;
+export default Immunization;

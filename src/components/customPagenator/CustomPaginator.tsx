@@ -1,35 +1,31 @@
-import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
-import { useState } from "react";
+import { Button } from "primereact/button";
 
 const CustomPaginator = ({
-  rowLimit,
   handlePageChange,
-  totalRecords,
+  totalPages,
+  currentPage,
 }: {
-  handlePageChange: (event:PaginatorPageChangeEvent)=>void;
-  totalRecords: number;
-  rowLimit?: number;
+  handlePageChange: (value: number) => void;
+  totalPages: number;
+  currentPage: number;
 }) => {
-  const [first, setFirst] = useState(0);
-  const [page, setPage] = useState(1);
-
-  const onPageChange = (event: PaginatorPageChangeEvent) => {
-    setFirst(event.first);
-    setPage(event.page + 1);
-    handlePageChange(event);
-  };
-
   return (
-    <Paginator
-      first={first}
-      rows={rowLimit ? rowLimit : 20}
-      totalRecords={totalRecords}
-      onPageChange={(event:PaginatorPageChangeEvent) => onPageChange(event)}
-      prevPageLinkIcon={<i className="pi pi-arrow-left" />}
-      nextPageLinkIcon={<i className="pi pi-arrow-right" />}
-      template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
-      currentPageReportTemplate={`${page} of ${Math.ceil(totalRecords / (rowLimit ? rowLimit : 10))} pages`}
-    />
+    <div className="flex w-full h-[2rem] my-2 justify-center items-center">
+      <Button
+        disabled={currentPage <= 1}
+        className="pi pi-arrow-left py-2 shadow-none"
+        onClick={() => handlePageChange(currentPage - 1)}
+      />
+      <span className="px-2">
+        {currentPage} of {totalPages} pages
+      </span>
+      <Button
+        disabled={currentPage >= totalPages}
+        onClick={() => handlePageChange(currentPage + 1)}
+        className="pi pi-arrow-right py-2 shadow-none"
+      />
+    </div>
   );
 };
+
 export default CustomPaginator;

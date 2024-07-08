@@ -1,5 +1,5 @@
 .icon-wrapper {
-  @apply flex sticky bottom-1 left-0 right-0 flex-row justify-center items-center cursor-pointer gap-x-4;
+  @apply flex sticky bottom-0 py-1 bg-white left-0 right-0 flex-row justify-center items-center cursor-pointer gap-x-4;
 }
 
 .close-icon {

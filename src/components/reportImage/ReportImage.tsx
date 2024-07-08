@@ -1,37 +1,42 @@
 import { Image } from "primereact/image";
 import CustomModal from "../customModal/CustomModal";
 import "./ReportsImage.css";
-
 const ReportImage = ({
-  file,
   closeModal,
+  image_url,
 }: {
-  file: File;
   closeModal: () => void;
+  image_url?: string;
 }) => {
-  const imageUrl = URL.createObjectURL(file);
-
+  const imageUrl = image_url && image_url;
   const downloadDocument = () => {
-    if (file) {
-      const downloadUrl = URL.createObjectURL(file);
+    if (image_url) {
+      const downloadUrl = image_url;
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = file.name;
+      link.download = "document";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(downloadUrl);
     }
   };
+
   return (
     <CustomModal
       styleClass=""
       handleClose={() => {
         closeModal();
       }}
+      contentStyle="pb-0"
     >
       <>
-        <Image src={imageUrl} zoomSrc={imageUrl} alt={file.name} preview />
+        <Image
+          indicatorIcon="none"
+          src={imageUrl}
+          zoomSrc={imageUrl}
+          alt={"document"}
+        />
         <div className="icon-wrapper">
           <div className="download-icon" onClick={downloadDocument}>
             <i className="pi pi-download" title="Download File" />
@@ -42,7 +47,6 @@ const ReportImage = ({
         </div>
       </>
     </CustomModal>
-    // </div>
   );
 };
 export default ReportImage;

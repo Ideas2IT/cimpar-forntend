@@ -1,5 +1,6 @@
 import { LabTestResult } from "../components/LabTestResults";
 import { IItem } from "../components/appointmentForm/AppointmentForm";
+import { IService } from "../interfaces/immunization";
 import { IMedicine } from "../interfaces/medication";
 import { dateFormatter } from "../utils/Date";
 
@@ -96,13 +97,13 @@ export interface ITest {
   name: string;
 }
 
-export const tests: ITest[] = [
-  { id: 1, name: "LFT" },
-  { id: 4, name: "spanish flu or Influenza" },
-  { id: 2, name: "Bubonic Plague" },
-  { id: 3, name: "Coronavirus" },
-  { id: 5, name: "hIV/AIDS" },
-  { id: 6, name: "Cholera" },
+export const tests: IMedicine[] = [
+  { code: "1", display: "LFT", system: "" },
+  { code: "4", display: "spanish flu or Influenza", system: "" },
+  { code: "2", display: "Bubonic Plague", system: "" },
+  { code: "3", display: "Coronavirus", system: "" },
+  { code: "5", display: "hIV/AIDS", system: "" },
+  { code: "6", display: "Cholera", system: "" },
 ];
 
 export const medicalConditons: IItem[] = [
@@ -127,13 +128,6 @@ export const ethnicities = [
   "Chinese",
   "Indian",
   "Arabic",
-];
-
-export const insuranceCompanies = [
-  { id: 1, value: "Medicare" },
-  { id: 2, value: "Cure All" },
-  { id: 3, value: "Health care" },
-  { id: 4, value: "Live long" },
 ];
 
 export const insurances = [
@@ -173,51 +167,23 @@ export const patientMedicalDetails: IPatientMedicalDetails = {
   areFamilyConditions: true,
 };
 
-export interface IService {
-  serviceId: number;
-  category: string;
-  serviceFor: string;
-  dateOfService: string;
-  status: string;
-}
 export const serviceData: IService[] = [
   {
-    serviceId: 1,
+    id: 1,
     category: "Lab Test",
     serviceFor: "Blood Count",
     dateOfService: "01 April,2024 ",
     status: "Upcoming appointment",
   },
   {
-    serviceId: 2,
+    id: 2,
     category: "Lab Test",
     serviceFor: "Blood Count",
     dateOfService: "01 April,2024 ",
     status: "Under processing",
   },
   {
-    serviceId: 3,
-    category: "Lab Test",
-    serviceFor: "Blood Count",
-    dateOfService: "01 April,2024 ",
-    status: "Upcoming appointment",
-  },
-  {
-    serviceId: 4,
-    category: "Lab Test",
-    serviceFor: "Blood Count",
-    dateOfService: "01 April,2024 ",
-    status: "Available",
-  },
-  {
-    serviceId: 5,
-    category: "Lab Test",
-    serviceFor: "Blood Count",
-    dateOfService: "01 April,2024 ",
-    status: "Upcoming appointment",
-  },
-  {
-    serviceId: 6,
+    id: 3,
     category: "Lab Test",
     serviceFor: "Blood Count",
     dateOfService: "01 April,2024 ",
@@ -550,199 +516,13 @@ export const reportFiles = [
   { fileName: "CBC report.pdf", id: 6, uploadDate: "11 mar, 2022" },
 ];
 
-export const reasonsForTest: IItem[] = [
-  { id: 1, name: "Usual checkup" },
-  { id: 2, name: "Advised by doctor" },
-  { id: 3, name: "Other" },
-];
-
-export const appointments: IAppointment[] = [
-  {
-    id: 1,
-    patientName: "Jhon doe",
-    insurance: "available",
-    dateAndTime: "12 mar,2024 - 02:32",
-    appointmentFor: ["Urine analysis"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-  {
-    id: 2,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/2001",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-  {
-    id: 3,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-  {
-    id: 4,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-  {
-    id: 5,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-
-  {
-    id: 6,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-  {
-    id: 7,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-  {
-    id: 8,
-    patientName: "Rahul david",
-    insurance: "not available",
-    dateAndTime: "12 mar,2024 - 08:32",
-    appointmentFor: ["Thyroid", "EEG", "covid-19"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12-12-1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-];
-
-export interface IAppointment {
-  id: number;
-  patientName: string;
-  insurance: string;
-  dateAndTime: string;
-  appointmentFor: string[];
-  age: number;
-  gender: string;
-  dateOfBirth: string;
-  insuranceProvider: string;
-  insuranceNumber: string;
-  dateOfAppointment: string;
-  medicalConditions: string[];
-  phoneNumber: string;
-  countryCode: string;
-  testReason: string;
-}
-
-export const mockAppointments: IAppointment[] = [
-  {
-    id: 1,
-    patientName: "John Doe",
-    insurance: "available",
-    dateAndTime: "12 Mar, 2024 - 02:32",
-    appointmentFor: ["Urine analysis"],
-    age: 12,
-    gender: "male",
-    dateOfBirth: "12/12/1988",
-    insuranceProvider: "American Family Insurance",
-    insuranceNumber: "10*******982",
-    dateOfAppointment: "12/06/2002",
-    medicalConditions: ["coronaVirus", "cold", "cough"],
-    phoneNumber: "9192900867",
-    countryCode: "91-us",
-    testReason: "Advised by doctor",
-  },
-];
-
-export const _appointments = mockAppointments;
-
 export const mockautocomplateDate = [
   "allergy one",
   "allergy two",
   "long allergy e",
 ];
 
-export const autoCompleteMock:IMedicine[] = [
+export const autoCompleteMock: IMedicine[] = [
   {
     code: "1232",
     system: "system",

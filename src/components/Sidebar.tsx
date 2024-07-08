@@ -1,16 +1,16 @@
-import ReyaLogo from "../assets/reya-logo.svg?react";
+import { useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink, useLocation } from "react-router-dom";
+import AddRecord from "../assets/icons/addrecord.svg?react";
 import Home from "../assets/icons/home.svg?react";
 import Profile from "../assets/icons/profile.svg?react";
-import AddRecord from "../assets/icons/addrecord.svg?react";
-import { useContext, useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import ReyaLogo from "../assets/reya-logo.svg?react";
 import HeaderContext from "../context/HeaderContext";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../store/store";
-import { setSelectedSidebarTab } from "../store/slices/commonSlice";
-import { PATH_NAME } from "../utils/AppConstants";
 import { selectProfileName } from "../store/slices/UserSlice";
+import { setSelectedSidebarTab } from "../store/slices/commonSlice";
 import { selectRole } from "../store/slices/loginSlice";
+import { AppDispatch } from "../store/store";
+import { ABSOLUTE_PATH, PATH_NAME, ROLE } from "../utils/AppConstants";
 interface Tab {
   key: string;
   icon: React.ReactNode;
@@ -25,13 +25,13 @@ const Sidebar = () => {
         header: "Home",
         key: "home",
         icon: <Home />,
-        routerLink: "/",
+        routerLink: PATH_NAME.HOME,
       },
       {
         header: "Health Records",
         key: "labTestResults",
         icon: <AddRecord />,
-        routerLink: "/test-result",
+        routerLink: PATH_NAME.TEST_RESULT,
       },
       {
         header: "Profile",
@@ -68,7 +68,7 @@ const Sidebar = () => {
     } else {
       updateHeaderTitle(tab.header);
     }
-    dispatch(setSelectedSidebarTab("personal"));
+    dispatch(setSelectedSidebarTab("Personal"));
   };
 
   useEffect(() => {
@@ -79,23 +79,26 @@ const Sidebar = () => {
     const pathname = location.pathname.split("/")[1];
     let tabIndex;
     switch (pathname) {
-      case "profile":
-      case "editProfile":
-      case "editMedication":
-      case "editInsurance":
+      case ABSOLUTE_PATH.PROFILE:
+      case ABSOLUTE_PATH.EDIT_PROFILE:
+      case ABSOLUTE_PATH.EDIT_MEDICATION:
+      case ABSOLUTE_PATH.EDIT_MEDICAL_CONDITION:
+      case ABSOLUTE_PATH.EDIT_INSURANCE:
+      case ABSOLUTE_PATH.EDIT_VISIT_HISTORY:
         tabIndex = 2;
         break;
-      case "":
-        tabIndex = 0;
-        break;
-      case "test-result":
+      case ABSOLUTE_PATH.TEST_RESULT:
         tabIndex = 1;
         break;
       default:
-        tabIndex = null;
+        tabIndex = 0;
     }
     if (tabIndex) {
-      setSelectedTab(tabs[role][tabIndex]);
+      if (role === ROLE.ADMIN) {
+        setSelectedTab(tabs[role][0]);
+      } else {
+        setSelectedTab(tabs[role][tabIndex]);
+      }
     }
   };
 
@@ -105,15 +108,15 @@ const Sidebar = () => {
         <ReyaLogo />
       </div>
       <div className="flex-grow m-3">
-        {tabs[role].map((tab) => (
-          <NavLink to={tab.routerLink} key={tab.key}>
+        {tabs[role]?.map((tab) => (
+          <NavLink to={tab.routerLink} key={tab?.key}>
             <button
-              key={tab.key}
-              className={`flex justify-center items-center h-12 rounded-lg w-14 mb-4 text-sm ${selectedTab.key === tab.key ? "bg-purple-800" : ""}`}
+              key={tab?.key}
+              className={`flex justify-center items-center h-12 rounded-lg w-14 mb-4 text-sm ${selectedTab?.key === tab?.key ? "bg-purple-800" : ""}`}
               onClick={() => handleOnTabClick(tab)}
             >
               <span
-                className={`${selectedTab.key === tab.key ? "stroke-white text-white" : "stroke-gray-500 text-gray-500"}`}
+                className={`${selectedTab?.key === tab?.key ? "stroke-white text-white" : "stroke-gray-500 text-gray-500"}`}
               >
                 {tab.icon}
               </span>

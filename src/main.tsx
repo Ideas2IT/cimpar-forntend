@@ -6,6 +6,7 @@ import App from "./App";
 import { injectStore } from "./services/common.services";
 import store from "./store/store";
 import { Provider } from "react-redux";
+import ErrorBoundary from "./components/ErrorBoundry";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +21,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </Provider>
     </QueryClientProvider>
   </React.StrictMode>

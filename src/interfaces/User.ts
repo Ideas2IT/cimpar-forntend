@@ -1,3 +1,5 @@
+import { IOptionValue } from "./common";
+
 export interface IUserBasicDetails {}
 export interface IUserContactDetails {}
 
@@ -47,14 +49,28 @@ export interface IMedication {
 
 export interface IInsurance {
   id: string;
-  insuranceType: number;
+  insuranceType: string;
   insuranceNumber: string;
   policyNumber: string;
   groupNumber: string;
   insuranceCompany: string;
+  otherCompany?: string;
   insuranceCard?: File;
-  insuranceId?: File;
+  insuranceId?: string;
 }
+
+export interface IInsuranceResponse {
+  id: string;
+  insuranceType: string;
+  insuranceNumber: string;
+  policyNumber: string;
+  groupNumber: string;
+  insuranceCompany: string;
+  otherCompany?: string;
+  insuranceCard?: string | File;
+  insuranceId?: string;
+}
+
 export interface ISignupPayload {
   firstName: string;
   lastName: string;
@@ -95,18 +111,17 @@ export interface IEditProfile {
   zipCode: string;
   city: string;
   country: string;
-  state: string;
+  state: IOptionValue;
   phoneNo: number | null;
   phoneCode: string;
-  alternateNo: number;
-  alternateCode: string;
+  alternateNo: number | null;
   email: string;
   height: {
     inches: number;
     feet: number;
   };
   weight: number;
-  race: string;
-  ethnicity: string;
+  race: IOptionValue;
+  ethnicity: IOptionValue;
   fullAddress: string;
 }

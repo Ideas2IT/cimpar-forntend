@@ -1,15 +1,15 @@
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { useContext, useRef, useState } from "react";
+import { SyntheticEvent, useContext, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import LogoutImage from "../assets/icons/logout.svg?react";
 import HeaderContext from "../context/HeaderContext";
-import localStorageService from "../services/localStorageService";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../store/store";
-import CustomModal from "./customModal/CustomModal";
-import ChangePassword from "./changePassword/ChangePassword";
 import { logoutThunk, signOut } from "../store/slices/loginSlice";
 import { selectUserProfile } from "../store/slices/UserSlice";
+import { AppDispatch } from "../store/store";
+import { PATH_NAME } from "../utils/AppConstants";
+import ChangePassword from "./changePassword/ChangePassword";
+import CustomModal from "./customModal/CustomModal";
 const Header = () => {
   const { username } = useContext(HeaderContext);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -20,10 +20,11 @@ const Header = () => {
 
   const handleChangePassword = () => {
     setIsChangePasswordOpen(true);
+    op?.current?.toggle({} as SyntheticEvent<Element, Event>);
   };
   return (
     <div className="flex text-black justify-between items-center mb-6 mx-6">
-      <p className="font-bold text-2xl font-primary text-gray-700">
+      <p className="font-bold text-2xl font-primary truncate max-w-[20rem] text-gray-700">
         {username}
       </p>
       <div
@@ -68,8 +69,6 @@ const Header = () => {
   );
 };
 
-//TODO: Need to write the password change logic
-
 export const LogoutPopover = ({
   handleChangePassword,
 }: {
@@ -77,10 +76,8 @@ export const LogoutPopover = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
-  //TODO: Need to write the logic to delete all the credentials from storage
   const handleLogout = () => {
-    localStorageService.logout();
-    location.pathname = "/";
+    location.pathname = PATH_NAME.HOME;
     dispatch(signOut());
     dispatch(logoutThunk());
   };

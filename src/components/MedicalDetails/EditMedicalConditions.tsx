@@ -1,66 +1,197 @@
-import {
-  IPatientMedicalDetails,
-  patientMedicalDetails,
-} from "../../assets/MockData";
-import { InputText } from "primereact/inputtext";
+import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import { Button as PrimeButton } from "primereact/button";
 import { Chips } from "primereact/chips";
 import { RadioButton } from "primereact/radiobutton";
-import { Controller, useForm } from "react-hook-form";
-import BackButton from "../backButton/BackButton";
-import { Link, useNavigate } from "react-router-dom";
-import Button from "../Button";
-import { Button as PrimeButton } from "primereact/button";
-import { PATH_NAME } from "../../utils/AppConstants";
-import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
-import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
-import { user } from "../userProfilePage/UserProfilePage";
-import { handleKeyPress } from "../../services/commonFunctions";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import { Link, useNavigate } from "react-router-dom";
+import { IMedicine } from "../../interfaces/medication";
+import { handleKeyPress } from "../../services/commonFunctions";
+import {
+  createMedicalConditionsThunk,
+  selectHasMedicalConditions,
+  selectSelectedPatient,
+  updateMedicalConditonsThunk,
+} from "../../store/slices/PatientSlice";
 import {
   getAllergiesByQueryThunk,
   getMedicalConditionsByQueryThunk,
   selectAllergies,
   selectConditions,
 } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
+import { CODE, PATH_NAME, RESPONSE, SYSTEM } from "../../utils/AppConstants";
+import Button from "../Button";
+import BackButton from "../backButton/BackButton";
+import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
+import useToast from "../useToast/UseToast";
+import {
+  ICreateMedicalCondtion,
+  IUpdateAllergiesAndConditionsPayload,
+} from "../../interfaces/patient";
+import { ErrorResponse } from "../../interfaces/common";
+
+interface IConditionFormValue {
+  medicalConditions: IMedicine[];
+  otherMedicalConditions: IMedicine[];
+  allergies: IMedicine[];
+  otherAllergies: IMedicine[];
+  familyMedicalConditions: IMedicine[];
+  areFamilyConditions: boolean;
+}
 
 const EditMedicalConditions = () => {
-  const { control, handleSubmit, setValue, watch } = useForm({
-    defaultValues: patientMedicalDetails,
-  });
-  const areFamilyConditions = watch("areFamilyConditions");
-  const { toast, successToast } = useToast();
-  const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
+  const hasCondtions = useSelector(selectHasMedicalConditions);
   const filteredAllergies = useSelector(selectAllergies);
   const filteredConditions = useSelector(selectConditions);
-  const handleFormSubmit = (data: IPatientMedicalDetails) => {
-    successToast(
-      "Updated Successfully",
-      "Medical conditions updated successfully"
-    );
+  const patient = useSelector(selectSelectedPatient);
+  const { control, handleSubmit, setValue, watch, reset } = useForm({
+    defaultValues: {} as IConditionFormValue,
+  });
 
+  useEffect(() => {
+    const conditionDetails: IConditionFormValue = {
+      allergies:
+        patient?.medicalConditionsAndAllergies?.allergies ||
+        ([] as IMedicine[]),
+      otherAllergies: patient?.medicalConditionsAndAllergies?.otherAllergies,
+      familyMedicalConditions:
+        patient?.medicalConditionsAndAllergies?.familyMedicalConditions ||
+        ([] as IMedicine[]),
+      areFamilyConditions:
+        !!patient?.medicalConditionsAndAllergies?.familyMedicalConditions
+          ?.length || false,
+      medicalConditions:
+        patient?.medicalConditionsAndAllergies?.medicalConditions ||
+        ([] as IMedicine[]),
+      otherMedicalConditions:
+        patient?.medicalConditionsAndAllergies?.otherMedicalConditions ||
+        ([] as IMedicine[]),
+    };
+    reset({ ...conditionDetails });
+  }, [patient.medicalConditionsAndAllergies]);
+  const areFamilyConditions = watch("areFamilyConditions");
+  const { toast, successToast, errorToast } = useToast();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleFormSubmit = (data: IConditionFormValue) => {
+    const payload: ICreateMedicalCondtion = {
+      additional_allergy: data?.otherAllergies,
+      additional_condition: data?.otherMedicalConditions,
+      current_allergy: data?.allergies,
+      current_condition: data?.medicalConditions,
+      family_condition: data?.areFamilyConditions,
+      family_medications: data?.familyMedicalConditions,
+    };
+    if (!hasCondtions) {
+      dispatch(
+        createMedicalConditionsThunk({
+          patinetId: patient?.basicDetails?.id,
+          payload: payload,
+        })
+      ).then((response) => {
+        if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "Updated Successfully",
+            "Medical conditions updated successfully"
+          );
+        } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
+          const errorResponse = response?.payload as ErrorResponse;
+          errorToast("Request Failed", errorResponse?.message);
+        }
+      });
+    } else {
+      const payload: IUpdateAllergiesAndConditionsPayload = {
+        additional_allergy: data?.otherAllergies,
+        additional_condition: data?.otherMedicalConditions,
+        current_allergy: data?.allergies,
+        family_condition: data?.areFamilyConditions,
+        current_condition: data?.medicalConditions,
+        additional_allergy_id:
+          patient?.medicalConditionsAndAllergies?.additional_allergy_id || "",
+        additional_condition_id:
+          patient?.medicalConditionsAndAllergies?.additional_condition_id || "",
+        current_allergy_id:
+          patient?.medicalConditionsAndAllergies?.current_allergy_id || "",
+        current_condition_id:
+          patient?.medicalConditionsAndAllergies?.current_condition_id || "",
+        family_condition_id:
+          patient?.medicalConditionsAndAllergies?.family_condition_id || "",
+        family_medical_condition: data?.familyMedicalConditions,
+        patient_id: patient.basicDetails.id || "",
+      };
+
+      dispatch(updateMedicalConditonsThunk(payload)).then((response) => {
+        if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            "Updated Successfully",
+            "Medical Conditions and Allergies have been updated successfully"
+          );
+        } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Updation Failed", errorResponse.message);
+        }
+      });
+    }
     setTimeout(() => {
       navigate(PATH_NAME.PROFILE);
-    }, 1500);
-    console.log(data);
+    }, 2000);
+  };
+
+  const getStringValues = (chips: IMedicine[] | undefined | null) => {
+    if (!chips) {
+      return "";
+    }
+    const chipNames = chips?.map((chip: IMedicine) => {
+      return chip.display;
+    });
+    return chipNames;
   };
 
   const searchMedicalConditions = (event: AutoCompleteCompleteEvent) => {
     setTimeout(() => {
-      if (event.query.trim().length > 1) {
+      if (event?.query?.trim()?.length > 1) {
         dispatch(getMedicalConditionsByQueryThunk(event.query));
       }
     }, 300);
   };
   const searchAllergies = (event: AutoCompleteCompleteEvent) => {
     setTimeout(() => {
-      if (event.query.trim().length > 1) {
+      if (event?.query?.trim()?.length > 1) {
         dispatch(getAllergiesByQueryThunk(event.query));
       }
     }, 300);
+  };
+
+  const handleRemoveChip = (
+    chip: string,
+    fieldName: "otherAllergies" | "otherMedicalConditions",
+    values: IMedicine[]
+  ) => {
+    const newValues = values?.filter((item) => item.display !== chip[0]);
+    setValue(fieldName, [...newValues]);
+  };
+
+  const handleAddChip = (
+    chip: string,
+    fieldName: "otherAllergies" | "otherMedicalConditions",
+    values: IMedicine[]
+  ) => {
+    if (chip?.trim()) {
+      const matches = values?.some((item) => item?.display === chip?.trim());
+      if (!matches) {
+        const newValues: IMedicine = {
+          code: CODE,
+          display: chip,
+          system: SYSTEM,
+        };
+        const objValues = [...(values ?? []), newValues];
+        setValue(fieldName, [...objValues]);
+      }
+    }
   };
   return (
     <>
@@ -91,8 +222,10 @@ const EditMedicalConditions = () => {
               outlined
               type="submit"
             >
-              <i className="pi pi-check me-2"></i>
-              {user.hasMedicalConditions ? "Save" : "Add"}
+              <i className="pi pi-check me-2" />
+              {patient?.medicalConditionsAndAllergies?.medicalConditions?.length
+                ? "Save"
+                : "Add"}
             </PrimeButton>
           </div>
         </div>
@@ -105,26 +238,25 @@ const EditMedicalConditions = () => {
               className="input-label mb-1 block"
               htmlFor="medicalConditions"
             >
-              Please Select the medical conditions you currently have.
+              Please select the medical conditions you currently have.
+              <Controller
+                name="medicalConditions"
+                control={control}
+                render={({ field }) => (
+                  <CustomAutoComplete
+                    handleSearch={searchMedicalConditions}
+                    inputId="medicalConditions"
+                    handleSelection={(data) =>
+                      setValue("medicalConditions", data)
+                    }
+                    items={filteredConditions}
+                    selectedItems={field.value}
+                  />
+                )}
+              />
             </label>
-            <Controller
-              name="medicalConditions"
-              control={control}
-              defaultValue={patientMedicalDetails.medicalConditions}
-              render={({ field }) => (
-                <CustomAutoComplete
-                  handleSearch={searchMedicalConditions}
-                  inputId="medicalConditions"
-                  handleSelection={(data) =>
-                    setValue("medicalConditions", data)
-                  }
-                  items={filteredConditions}
-                  selectedItems={field.value}
-                />
-              )}
-            />
           </div>
-          <div className="pt-6 pb-4">
+          <div className="pt-6 pb-4 relative">
             <label
               className="input-label pb-1 block"
               htmlFor="otherMedicalConditions"
@@ -134,21 +266,66 @@ const EditMedicalConditions = () => {
             <Controller
               name="otherMedicalConditions"
               control={control}
-              defaultValue={patientMedicalDetails.otherMedicalConditions}
               render={({ field }) => (
-                <Chips
-                  {...field}
-                  inputId="otherMedicalConditions"
-                  className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
-                  placeholder={
-                    !field.value.length
-                      ? "Enter your medication name(s), separated by commas"
-                      : ""
-                  }
-                  removeIcon={"pi pi-times"}
-                  separator=","
-                  value={field.value}
-                />
+                <>
+                  <Chips
+                    onRemove={(e) =>
+                      handleRemoveChip(
+                        e.value,
+                        "otherMedicalConditions",
+                        field.value
+                      )
+                    }
+                    onAdd={(e) =>
+                      handleAddChip(
+                        e?.value,
+                        "otherMedicalConditions",
+                        field?.value
+                      )
+                    }
+                    onBlur={(event) => {
+                      if (event?.target?.value) {
+                        if (
+                          !field.value?.some(
+                            (item) =>
+                              item.display === event?.target?.value?.trim()
+                          )
+                        ) {
+                          const values: IMedicine[] = [
+                            ...(field?.value ? field?.value : []),
+                            {
+                              display: event?.target?.value?.trim(),
+                              code: CODE,
+                              system: SYSTEM,
+                            },
+                          ];
+                          setValue("otherMedicalConditions", values);
+                        }
+                        event.target.value = "";
+                      }
+                    }}
+                    inputId="otherMedicalConditions"
+                    className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
+                    placeholder={
+                      !field?.value?.length
+                        ? "Enter your Medical Condition(s), seperated by commos"
+                        : ""
+                    }
+                    removeIcon={"pi pi-times"}
+                    separator=","
+                    value={getStringValues(field.value) || ([] as string[])}
+                  />
+                  {!!field?.value?.length && (
+                    <div className="flex top-[1.2rem] h-full text-sm  font-normal right-5 items-center absolute text-red-500">
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => setValue("otherMedicalConditions", [])}
+                      >
+                        Clear all
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             />
           </div>
@@ -156,47 +333,83 @@ const EditMedicalConditions = () => {
 
           <div className="py-4">
             <label className="input-label block pb-1" htmlFor="allergies">
-              Please Select the allergies you currently have.
+              Please select the allergies you currently have.
+              <Controller
+                name="allergies"
+                control={control}
+                render={({ field }) => (
+                  <CustomAutoComplete
+                    handleSearch={searchAllergies}
+                    inputId="allergies"
+                    handleSelection={(data) => setValue("allergies", data)}
+                    items={filteredAllergies}
+                    selectedItems={field.value}
+                  />
+                )}
+              />
             </label>
-            <Controller
-              name="allergies"
-              control={control}
-              defaultValue={patientMedicalDetails.allergies}
-              render={({ field }) => (
-                <CustomAutoComplete
-                  handleSearch={searchAllergies}
-                  inputId="allergies"
-                  handleSelection={(data) => setValue("allergies", data)}
-                  items={filteredAllergies}
-                  selectedItems={field.value}
-                />
-              )}
-            />
           </div>
-          <div className="py-3">
+          <div className="py-3 relative">
             <label className="input-label block pb-1" htmlFor="otherAllergies">
               Other Allergies (if any).
+              <Controller
+                name="otherAllergies"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <Chips
+                      inputId="otherAllergies"
+                      className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
+                      placeholder={
+                        !field?.value?.length
+                          ? "Enter your allergy(ies) names, separated by commas."
+                          : ""
+                      }
+                      removeIcon={"pi pi-times"}
+                      separator=","
+                      value={getStringValues(field.value) || ([] as string[])}
+                      onRemove={(e) =>
+                        handleRemoveChip(e.value, "otherAllergies", field.value)
+                      }
+                      onAdd={(e) =>
+                        handleAddChip(e.value, "otherAllergies", field.value)
+                      }
+                      onBlur={(event) => {
+                        if (event?.target?.value) {
+                          if (
+                            !field.value?.some(
+                              (item) =>
+                                item.display === event?.target?.value?.trim()
+                            )
+                          ) {
+                            const values: IMedicine[] = [
+                              ...(field?.value ? field?.value : []),
+                              {
+                                display: event?.target?.value?.trim(),
+                                code: CODE,
+                                system: SYSTEM,
+                              },
+                            ];
+                            setValue("otherAllergies", values);
+                          }
+                          event.target.value = "";
+                        }
+                      }}
+                    />
+                    {!!field?.value?.length && (
+                      <div className="flex top-[.7rem] h-full right-5 items-center absolute text-red-500">
+                        <span
+                          className="cursor-pointer"
+                          onClick={() => setValue("otherAllergies", [])}
+                        >
+                          Clear all
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+              />
             </label>
-            <Controller
-              name="otherAllergies"
-              control={control}
-              defaultValue={patientMedicalDetails.otherAllergies}
-              render={({ field }) => (
-                <Chips
-                  {...field}
-                  inputId="otherAllergies"
-                  className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
-                  placeholder={
-                    !field.value.length
-                      ? "Enter your allergy(s), separated by commas"
-                      : ""
-                  }
-                  removeIcon={"pi pi-times"}
-                  separator=","
-                  value={field.value}
-                />
-              )}
-            />
           </div>
           <div className="pt-4">
             <label className="ont-primary text-xl block pb-3">
@@ -209,7 +422,6 @@ const EditMedicalConditions = () => {
               <Controller
                 name="areFamilyConditions"
                 control={control}
-                defaultValue={patientMedicalDetails.areFamilyConditions}
                 render={({ field }) => (
                   <>
                     <RadioButton
@@ -239,17 +451,20 @@ const EditMedicalConditions = () => {
             {areFamilyConditions && (
               <>
                 <label className="input-label">
-                  Family Medications(if any)
+                  Family Medical Condition(if any)
                 </label>
                 <Controller
                   name="familyMedicalConditions"
                   control={control}
-                  defaultValue={patientMedicalDetails.familyMedicalConditions}
                   render={({ field }) => (
-                    <InputText
-                      {...field}
-                      placeholder="Enter family medical conditions"
-                      className="border min-h-[5rem] w-full border-gray-300 rounded-lg placeholder:font-light"
+                    <CustomAutoComplete
+                      selectedItems={field.value}
+                      handleSearch={searchMedicalConditions}
+                      inputId="familyMedicalConditions"
+                      handleSelection={(data) =>
+                        setValue("familyMedicalConditions", data)
+                      }
+                      items={filteredConditions}
                     />
                   )}
                 />

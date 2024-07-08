@@ -27,9 +27,11 @@ import {
 import {
   ICreateMedication,
   IMedicationFormValues,
+  IMedicine,
   IUpdateMedicationPayload,
 } from "../../interfaces/medication";
 import { useEffect, useRef } from "react";
+import { ErrorResponse } from "../../interfaces/common";
 const EditMedicationDetails = () => {
   const selectedPatinet = useSelector(selectSelectedPatient);
   const initialRef = useRef(true);
@@ -39,6 +41,7 @@ const EditMedicationDetails = () => {
     setValue,
     watch,
     reset,
+    trigger,
     formState: { errors },
   } = useForm({
     defaultValues: {} as IMedicationFormValues,
@@ -73,14 +76,18 @@ const EditMedicationDetails = () => {
   const handleFormSubmit = (data: IMedicationFormValues) => {
     const payload: IUpdateMedicationPayload = {
       patient_id: selectedPatinet?.basicDetails?.id || "",
-      request: data?.currentMedication || "",
-      statement: data?.medicationTakenBefore || "",
-      request_approved: data?.hasMedicalHistory,
-      statement_approved: data?.isOnMedicine,
+      request: data?.medicationTakenBefore || [],
+      statement: data?.currentMedication || [],
+      request_approved:
+        data?.medicationTakenBefore?.length == 0
+          ? false
+          : data.hasMedicalHistory,
+      statement_approved:
+        data?.currentMedication?.length == 0 ? false : data?.isOnMedicine,
       request_id: selectedPatinet?.medicationDetails?.requestId || "",
       statement_id: selectedPatinet?.medicationDetails?.statementId || "",
     };
-    if (payload.statement_id || payload.request_id) {
+    if (payload?.statement_id || payload?.request_id) {
       dispatch(updateMedicationByPatientIdThunk(payload)).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.FULFILLED) {
           successToast(
@@ -93,24 +100,22 @@ const EditMedicationDetails = () => {
       });
     } else {
       const payload: ICreateMedication = {
-        request: data.medicationTakenBefore,
-        statement: data.currentMedication,
-        request_approved: data.isOnMedicine,
-        statement_approved: data.hasMedicalHistory,
+        request: data?.medicationTakenBefore,
+        statement: data?.currentMedication,
+        request_approved: data?.hasMedicalHistory,
+        statement_approved: data?.isOnMedicine,
         patient_id: selectedPatinet?.basicDetails?.id || "",
       };
       payload.patient_id &&
-        dispatch(addMedicationDetailsThunk(payload)).then(({ meta }) => {
-          if (meta.requestId === RESPONSE.FULFILLED) {
+        dispatch(addMedicationDetailsThunk(payload)).then((response) => {
+          if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
             successToast(
               "Created Successfully",
               "Medication has been created successfully"
             );
           } else {
-            errorToast(
-              "Failed to Create Medication",
-              "Failed to create medication for the patient. Please try again. "
-            );
+            const errorResponse = response?.payload as ErrorResponse;
+            errorToast("Medication Creation Failed", errorResponse.message);
           }
         });
     }
@@ -130,6 +135,22 @@ const EditMedicationDetails = () => {
 
   const hasMedicalHistory = watch("hasMedicalHistory");
   const isOnMedication = watch("isOnMedicine");
+
+  const validateCurrentMedication = (
+    IMedicationFormValues: IMedicine[] | undefined | null
+  ) => {
+    if (isOnMedication && !IMedicationFormValues?.length) {
+      return "Medication name is required";
+    }
+  };
+
+  const validateBeforeMedication = (
+    IMedicationFormValues: IMedicine[] | undefined | null
+  ) => {
+    if (hasMedicalHistory && !IMedicationFormValues?.length) {
+      return "Medication name is required";
+    }
+  };
   return (
     <>
       <div className="px-6 h-[100%]">
@@ -228,27 +249,35 @@ const EditMedicationDetails = () => {
                   className="mb-1 pt-4 block input-label"
                   htmlFor="currentMedication"
                 >
-                  Medication Names
-                </label>
-                <div className="rounded-lg">
-                  <Controller
-                    name="currentMedication"
-                    control={control}
-                    render={({ field }) => (
-                      <CustomAutoComplete
-                        {...field}
-                        handleSearch={searchMedications}
-                        selectedItems={field.value}
-                        handleSelection={(medicines) => {
-                          setValue("currentMedication", medicines);
-                        }}
-                        placeholder="Select Medicine"
-                        items={filteredMedications}
-                        inputId="currentMedication"
+                  Medication Names*
+                  <div className="rounded-lg">
+                    <Controller
+                      name="currentMedication"
+                      control={control}
+                      rules={{
+                        validate: validateCurrentMedication,
+                      }}
+                      render={({ field }) => (
+                        <CustomAutoComplete
+                          {...field}
+                          handleSearch={searchMedications}
+                          selectedItems={field.value}
+                          handleSelection={(medicines) => {
+                            setValue("currentMedication", medicines);
+                            trigger("currentMedication");
+                          }}
+                          items={filteredMedications}
+                          inputId="currentMedication"
+                        />
+                      )}
+                    />
+                    {errors.currentMedication && (
+                      <ErrorMessage
+                        message={errors.currentMedication.message}
                       />
                     )}
-                  />
-                </div>
+                  </div>
+                </label>
               </>
             )}
             <div className="mt-4">
@@ -297,27 +326,35 @@ const EditMedicationDetails = () => {
                   className="pt-4 mb-1 block input-label"
                   htmlFor="beforeMedication"
                 >
-                  Medication Names
-                </label>
-                <div className="rounded-lg">
-                  <Controller
-                    name="medicationTakenBefore"
-                    control={control}
-                    render={({ field }) => (
-                      <CustomAutoComplete
-                        {...field}
-                        handleSearch={searchMedications}
-                        selectedItems={field.value}
-                        handleSelection={(medicines) => {
-                          setValue("medicationTakenBefore", medicines);
-                        }}
-                        placeholder="Select Medicine"
-                        items={filteredMedications}
-                        inputId="beforeMedication"
+                  Medication Names*
+                  <div className="rounded-lg">
+                    <Controller
+                      name="medicationTakenBefore"
+                      control={control}
+                      rules={{
+                        validate: validateBeforeMedication,
+                      }}
+                      render={({ field }) => (
+                        <CustomAutoComplete
+                          {...field}
+                          handleSearch={searchMedications}
+                          selectedItems={field.value}
+                          handleSelection={(medicines) => {
+                            setValue("medicationTakenBefore", medicines);
+                            trigger("medicationTakenBefore");
+                          }}
+                          items={filteredMedications}
+                          inputId="beforeMedication"
+                        />
+                      )}
+                    />
+                    {errors.medicationTakenBefore && (
+                      <ErrorMessage
+                        message={errors.medicationTakenBefore.message}
                       />
                     )}
-                  />
-                </div>
+                  </div>
+                </label>
               </>
             )}
           </div>

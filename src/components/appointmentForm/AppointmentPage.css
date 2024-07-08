@@ -17,10 +17,6 @@
   @apply bg-gray-100;
 }
 
-.custom-autocomplete-panel {
-  @apply !min-w-[27rem];
-}
-
 .p-autocomplete-multiple-container {
   @apply rounded-lg;
 }
@@ -63,4 +59,29 @@
 
 .custom-autocomplete {
   @apply border relative block border-gray-300 rounded-md flex min-h-[2.5rem] flex-row justify-between items-center;
+}
+
+.p-autocomplete-token-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 20rem;
+  text-wrap: nowrap;
+}
+
+.clear-button {
+  @apply absolute text-red-500 text-sm font-tertiary right-5 h-full;
+}
+
+.test-list span {
+  max-width: 90%;
+  display: block;
+  white-space: pre-wrap;
+}
+
+.test-dropdown .p-dropdown-label.p-placeholder {
+  @apply text-gray-400 font-medium;
+}
+
+.test-multiselect .p-multiselect-label.p-placeholder {
+  @apply text-gray-400 font-medium;
 }

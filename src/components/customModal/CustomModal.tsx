@@ -1,6 +1,7 @@
 import { Dialog } from "primereact/dialog";
 import { ReactElement } from "react";
 import "./CustomModal.css";
+import { Button } from "primereact/button";
 
 const CustomModal = ({
   children,
@@ -8,11 +9,20 @@ const CustomModal = ({
   styleClass,
   header,
   showCloseButton,
+  closeButtonTitle,
+  isDismissable,
+  contentStyle,
 }: IModalProps) => {
   return (
     <>
       <Dialog
-        dismissableMask={true}
+        closeIcon={
+          <Button
+            className="pi pi-times p-2"
+            title={closeButtonTitle ? closeButtonTitle : "close"}
+          />
+        }
+        dismissableMask={isDismissable === "no" ? false : true}
         headerStyle={{ borderRadius: "16px 16px 0 0" }}
         closable={showCloseButton}
         header={header && header}
@@ -22,7 +32,7 @@ const CustomModal = ({
         draggable={false}
         style={{ borderRadius: "20px" }}
         maskClassName="bg-gray-500 bg-opacity-50"
-        contentClassName="pb-1"
+        contentClassName={`${contentStyle ? contentStyle : "pb-1 bg-white"}`}
         headerClassName={`p-2 ${header ? "border-b" : "border-none"}`}
         onHide={() => handleClose()}
       >
@@ -40,5 +50,8 @@ interface IModalProps {
   styleClass: string;
   header?: ReactElement;
   showCloseButton?: boolean;
+  closeButtonTitle?: string;
+  isDismissable?: "yes" | "no";
+  contentStyle?: string;
 }
 export default CustomModal;

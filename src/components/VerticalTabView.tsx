@@ -43,11 +43,11 @@ const VerticalTabView: React.FC<VerticalTabProps> = ({
   return (
     <div className="flex flex-grow">
       {!hideTabs && (
-        <ul className="w-52 bg-gray-50">
+        <ul className="min-w-[12rem] max-w-[12rem] bg-gray-50">
           {tabs.map((tab) => (
             <li
               key={tab.key}
-              className={`cursor-pointer px-6 py-4 text-md font-secondary border-b ${selectedTab.key === tab.key ? "bg-cyan-700 text-white" : "text-gray-600"}`}
+              className={`cursor-pointer w-full px-6 py-4 text-md font-secondary border-b ${selectedTab.key === tab.key ? "bg-cyan-700 text-white" : "text-gray-600"}`}
               onClick={() => handleOnTabClick(tab)}
             >
               {tab.value}

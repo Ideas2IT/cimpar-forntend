@@ -1,30 +1,29 @@
-import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { IInsurance } from "../../interfaces/User";
-import { useEffect, useRef, useState } from "react";
-import { NavLink } from "react-router-dom";
-import useToast from "../useToast/UseToast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectedRole } from "../../store/slices/commonSlice";
-import { RESPONSE, ROLE } from "../../utils/AppConstants";
-import {
-  getInsuranceTypeLabel,
-  getRowClasses,
-} from "../../services/commonFunctions";
-import { AppDispatch } from "../../store/store";
+import { NavLink } from "react-router-dom";
+import { IInsurance } from "../../interfaces/User";
+import { deleteInsurancePayload } from "../../interfaces/insurance";
+import { getRowClasses } from "../../services/commonFunctions";
 import {
   deleteInsuranceByIdThunk,
   getPatientInsuranceThunk,
   selectSelectedPatient,
 } from "../../store/slices/PatientSlice";
-import { deleteInsurancePayload } from "../../interfaces/insurance";
+import { selectIsAdmin } from "../../store/slices/loginSlice";
+import { AppDispatch } from "../../store/store";
+import { PATH_NAME, RESPONSE } from "../../utils/AppConstants";
+import useToast from "../useToast/UseToast";
+import { ErrorResponse } from "../../interfaces/common";
 
 const InsuranceDetails = () => {
   const [selectedPolicy] = useState({} as IInsurance);
   const dispatch = useDispatch<AppDispatch>();
   const selectedPatient = useSelector(selectSelectedPatient);
-
+  const { toast, errorToast } = useToast();
   const columns = [
     {
       field: "insuranceName",
@@ -51,7 +50,7 @@ const InsuranceDetails = () => {
       field: "insuranceType",
       header: "TYPE",
       body: (rowData: IInsurance) => (
-        <PolicyColumn value={getInsuranceTypeLabel(rowData.insuranceType)} />
+        <PolicyColumn value={rowData.insuranceType?.toUpperCase()} />
       ),
     },
     {
@@ -65,46 +64,54 @@ const InsuranceDetails = () => {
       ),
     },
   ];
-  const initialRender = useRef(true);
 
   useEffect(() => {
-    if (initialRender.current) {
-      initialRender.current = false;
-      return;
-    }
     selectedPatient?.basicDetails?.id &&
-      dispatch(getPatientInsuranceThunk(selectedPatient.basicDetails.id));
+      dispatch(getPatientInsuranceThunk(selectedPatient.basicDetails.id)).then(
+        (response) => {
+          if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
+            errorToast(
+              "Failed to Load",
+              "Failed to fetch insurance details. Please try again later."
+            );
+          }
+        }
+      );
   }, [selectedPatient?.basicDetails?.id]);
 
   return (
-    <DataTable
-      selection={selectedPolicy}
-      value={selectedPatient.InsuranceDetails}
-      selectionMode="single"
-      dataKey="id"
-      emptyMessage={
-        <div className="flex justify-center">
-          It looks like you don't have any insurance records at the moment.
-        </div>
-      }
-      tableStyle={{ minWidth: "50rem" }}
-      className="mt-2 max-h-[50%] rowHoverable"
-      rowClassName={() => getRowClasses("h-10 border-b")}
-      scrollHeight="30rem"
-    >
-      {columns.map((column, index) => {
-        return (
-          <Column
-            key={index}
-            field={column.field}
-            bodyClassName="py-4"
-            header={column.header}
-            headerClassName="text-sm font-secondary py-1 border-b bg-white"
-            body={column.body}
-          />
-        );
-      })}
-    </DataTable>
+    <>
+      <DataTable
+        selection={selectedPolicy}
+        value={selectedPatient.InsuranceDetails}
+        selectionMode="single"
+        dataKey="id"
+        emptyMessage={
+          <div className="flex justify-center">
+            It looks like you don't have any insurance records at the moment.
+          </div>
+        }
+        tableStyle={{ minWidth: "50rem" }}
+        className="mt-2 max-h-[50%] rowHoverable"
+        rowClassName={() => getRowClasses("h-10 border-b")}
+        scrollHeight="30rem"
+      >
+        {columns.map((column, index) => {
+          return (
+            <Column
+              key={index}
+              field={column.field}
+              bodyClassName="py-4"
+              header={column.header}
+              headerClassName="text-sm font-secondary py-1 border-b bg-white"
+              body={column.body}
+            />
+          );
+        })}
+      </DataTable>
+      <Toast ref={toast} />
+      <ConfirmDialog />
+    </>
   );
 };
 
@@ -119,44 +126,61 @@ const PolicyHandler = ({
   data: IInsurance;
   patinetId: string;
 }) => {
-  const role = useSelector(selectedRole);
-  const { toast, successToast } = useToast();
+  const isAdmin = useSelector(selectIsAdmin);
+  const { toast, successToast, errorToast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
+
   const handleDeleteInsurance = () => {
     if (patinetId && data) {
       const payload: deleteInsurancePayload = {
         patinetId: patinetId,
         insuranceId: data.id,
       };
-      dispatch(deleteInsuranceByIdThunk(payload)).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.FULFILLED) {
+      dispatch(deleteInsuranceByIdThunk(payload)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           successToast(
             "Insurance deleted",
             "Insurance has been deleted successfully"
           );
           dispatch(getPatientInsuranceThunk(patinetId));
+        } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Failed to Delete", errorResponse.message);
         }
       });
     }
   };
+
+  const confirmDelete = () => {
+    confirmDialog({
+      header: "Confirmation",
+      className: "max-w-[50vw]",
+      message: "Are you sure want to delete this insurance?",
+      icon: "pi pi-info-circle",
+      defaultFocus: "reject",
+      rejectClassName:
+        "py-2 px-5 bg-purple-100 text-purple rounded-lg border-purple-900 mx-2",
+      acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
+      acceptLabel: "Continue",
+      rejectLabel: "Cancel",
+      accept() {
+        handleDeleteInsurance();
+      },
+    });
+  };
+
   return (
     <div className="flex flex-row max-w-[4rem] items-center justify-between">
-      <NavLink to={`/edit-insurance/${data.id}`}>
-        <button
-          disabled={role === ROLE.ADMIN}
-          className={`${role === ROLE.ADMIN && "cursor-not-allowed"}`}
-        >
+      <NavLink to={`${PATH_NAME.EDIT_INSURANCE}/${data.id}`}>
+        <button disabled={isAdmin} className={`${isAdmin && "hidden"}`}>
           <i className="pi pi-pen-to-square text-purple-800" />
         </button>
       </NavLink>
       <button
-        disabled={role === ROLE.ADMIN}
-        className={`${role === ROLE.ADMIN && "cursor-not-allowed"}`}
+        disabled={isAdmin}
+        className={`${isAdmin && "cursor-not-allowed hidden"}`}
       >
-        <i
-          className="pi pi-trash  mx-2 text-red-500"
-          onClick={handleDeleteInsurance}
-        />
+        <i className="pi pi-trash  mx-2 text-red-500" onClick={confirmDelete} />
       </button>
       <Toast ref={toast} />
     </div>

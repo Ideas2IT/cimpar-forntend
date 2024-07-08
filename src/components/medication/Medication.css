@@ -6,14 +6,13 @@
   @apply text-gray-200;
 }
 
-.p-inputwrapper,
-.p-chips-multiple-container {
+.p-inputwrapper {
   width: 100%;
 }
-
-.chips .p-chips-token {
-  @apply mb-1;
+.p-chips-multiple-container {
+  width: 95%;
 }
+
 .p-chips-multiple-container {
   @apply rounded-lg;
 }

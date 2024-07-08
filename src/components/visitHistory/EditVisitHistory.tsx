@@ -1,103 +1,147 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import BackButton from "../backButton/BackButton";
-import Button from "../Button";
 import { Button as PrimeButton } from "primereact/button";
-import { Controller, useForm } from "react-hook-form";
-import { useEffect, useRef, useState } from "react";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
-import "./VisitHistory.css";
-import { InputTextarea } from "primereact/inputtextarea";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Dropdown } from "primereact/dropdown";
 import { FileUpload, FileUploadFilesEvent } from "primereact/fileupload";
-import { MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
 import { Toast } from "primereact/toast";
-import useToast from "../useToast/UseToast";
-import ReportImage from "../reportImage/ReportImage";
-import ErrorMessage from "../errorMessage/ErrorMessage";
-import { handleKeyPress } from "../../services/commonFunctions";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import {
-  createVistiHistoryThunk,
-  selectSelectedPatient,
-  updateVisitHistoryByIdThunk,
-} from "../../store/slices/PatientSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { ErrorResponse } from "../../interfaces/common";
 import {
   ICreateVisitHistoryPayload,
   IUpdateVisitHistoryPayload,
   IVisitHistory,
 } from "../../interfaces/visitHistory";
+import {
+  compareDates,
+  handleKeyPress,
+  splitCodeWithPhoneNumber,
+} from "../../services/commonFunctions";
+import {
+  createVistiHistoryThunk,
+  deleteVisitHistoryFileThunk,
+  getVisitHistoryByIdThunk,
+  selectSelectedPatient,
+  updateVisitHistoryByIdThunk,
+} from "../../store/slices/PatientSlice";
+import { AppDispatch } from "../../store/store";
+import { MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
+import BackButton from "../backButton/BackButton";
+import Button from "../Button";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import useToast from "../useToast/UseToast";
+import "./VisitHistory.css";
+// import CustomModal from "../customModal/CustomModal";
+// import PdfViewer from "../PdfViewer/PdfViewer";
 
 const EditVisitHistory = () => {
-  const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
-  const location = useLocation();
   const { toast, successToast, errorToast } = useToast();
   const uploaderRef = useRef<FileUpload | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [showReport, setShowReport] = useState(false);
-  const [selectedFile, setSelectedFile] = useState({} as File);
+  const [isDisabed, setIsDisabled] = useState(false);
+  // const [showReport, setShowReport] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<string>({} as string);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const selectedpatient = useSelector(selectSelectedPatient);
-
-  useEffect(() => {
-    if (selectedpatient?.visitHistory.length) {
-      const visit = selectedpatient?.visitHistory.find(
-        (vst) => vst.id == location.pathname.split("/")[2]
-      );
-      if (visit !== undefined) {
-        setSelectedHistory(visit);
-      }
-    }
-  }, [location.pathname]);
+  const { id } = useParams();
+  const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
 
   const {
     control,
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
+    watch,
+    formState: { errors, isDirty },
     trigger,
   } = useForm({
-    defaultValues: selectedHistory,
+    defaultValues: {
+      admissionDate: new Date().toString(),
+      dischargeDate: new Date().toString(),
+    } as IVisitHistory,
   });
 
   useEffect(() => {
-    reset({ ...selectedHistory });
-  }, [selectedHistory]);
+    fetchVisitHistory();
+  }, [selectedpatient?.basicDetails?.id, id]);
 
-  //TODO: Need to write the logic to handle API
+  const fetchVisitHistory = () => {
+    if (selectedpatient?.basicDetails?.id && id)
+      dispatch(
+        getVisitHistoryByIdThunk({
+          patinetId: selectedpatient?.basicDetails?.id,
+          visitHistoryId: id,
+        })
+      ).then((response) => {
+        const oldDetails = response.payload as IVisitHistory;
+        setUploadedDocs(oldDetails?.files || []);
+        reset({
+          ...oldDetails,
+          hospitalContact: splitCodeWithPhoneNumber(
+            oldDetails?.hospitalContact
+          )?.toString(),
+        });
+      });
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  const navigateBackMenu = () => {
+    setTimeout(() => {
+      navigate(PATH_NAME.PROFILE);
+    }, 1000);
+  };
+  const admissionDate = watch("admissionDate");
+
   const handleFormSubmit = (formData: IVisitHistory) => {
+    setIsDisabled(true);
     const payload: ICreateVisitHistoryPayload = {
       admission_date: dateFormatter(formData?.admissionDate, "yyyy-MM-dd"),
       class_code: "R",
       discharge_date: dateFormatter(formData?.dischargeDate, "yyyy-MM-dd"),
-      location: formData.visitLocation,
-      patient_id: selectedpatient?.basicDetails?.id,
-      phone_number: "+1" + formData.hospitalContact,
-      primary_care_team: formData.primaryCareTeam,
-      reason: formData.visitReason,
+      location: formData?.visitLocation || "",
+      patient_id: selectedpatient?.basicDetails?.id || "",
+      phone_number: formData?.hospitalContact || "",
+      primary_care_team: formData?.primaryCareTeam || "",
+      reason: formData?.visitReason || "",
       status: "in-progress",
-      treatment_summary: formData.treatmentSummary,
-      follow_up_care: formData.followUpCare,
+      treatment_summary: formData?.treatmentSummary || "",
+      follow_up_care: formData?.followUpCare || "",
+      activity_notes: formData?.patientNotes || "",
+      files: uploadedFiles,
     };
-    if (!Object.keys(selectedHistory).length) {
-      dispatch(
-        createVistiHistoryThunk(payload as ICreateVisitHistoryPayload)
-      ).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.FULFILLED) {
+    if (!id) {
+      dispatch(createVistiHistoryThunk(payload)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           successToast(
             "Created Successfully",
             "Visit history is added successfully"
           );
+          navigateBackMenu();
+        } else {
+          setIsDisabled(false);
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Creation Failed", errorResponse.message);
         }
       });
     } else {
       const updationPayload: IUpdateVisitHistoryPayload = {
         ...payload,
-        id: selectedHistory.id,
+        id: id,
       };
       dispatch(updateVisitHistoryByIdThunk(updationPayload)).then(
         ({ meta }) => {
@@ -106,7 +150,9 @@ const EditVisitHistory = () => {
               "Updated Successfully",
               "Visit history has been updated successfully"
             );
+            navigateBackMenu();
           } else {
+            setIsDisabled(false);
             errorToast("Updation failed", "Visit history updation failed");
           }
         }
@@ -123,20 +169,30 @@ const EditVisitHistory = () => {
 
   const handleFileUpload = (event: FileUploadFilesEvent) => {
     let invalidFile = false;
-    !!event.files.length &&
+    !!event?.files?.length &&
       event.files.map((file: File) => {
-        if (file.type.split("/")[0] !== "image") {
+        if (file.type !== "application/pdf") {
           invalidFile = true;
         }
       });
     if (invalidFile) {
+      const validFiles: File[] = event?.files?.filter((file) => {
+        return file.type === "application/pdf";
+      });
+      if (validFiles?.length) {
+        uploaderRef.current && uploaderRef.current.setFiles(validFiles);
+        setUploadedFiles(validFiles);
+      } else {
+        uploaderRef.current?.clear();
+        setUploadedFiles([]);
+      }
+
       errorToast(
         MESSAGE.INVALID_FILE_FORMAT_TITLE,
-        MESSAGE.INVALID_FILE_FORMAT
+        "Report should be in PDF format only"
       );
     } else {
       setUploadedFiles([...event.files]);
-      successToast(MESSAGE.FILE_UPLOAD_TOAST_TITLE, MESSAGE.FILE_UPLOAD_TOAST);
     }
   };
 
@@ -146,9 +202,95 @@ const EditVisitHistory = () => {
     }
   }, [uploadedFiles]);
 
-  const viewReport = (index: number) => {
-    setShowReport(true);
-    setSelectedFile(uploadedFiles[index]);
+  // const viewReport = (file: File) => {
+  //   setShowReport(true);
+  //   setSelectedFile(URL.createObjectURL(file));
+  // };
+
+  // const viewUrl = (url: string) => {
+  //   setShowReport(true);
+  //   setSelectedFile(url);
+  // };
+
+  const handleDeleteRemoteFile = (file: string) => {
+    const path = file.split("?")[0];
+    const filePath = path.split("/").slice(-2).join("/");
+    filePath &&
+      dispatch(deleteVisitHistoryFileThunk(filePath)).then(({ meta }) => {
+        if (meta.requestStatus === RESPONSE.FULFILLED) {
+          successToast(
+            MESSAGE.FILE_DELETE_TOAST_TITLE,
+            MESSAGE.FILE_DELETE_TOAST
+          );
+          setUploadedDocs(uploadedDocs.filter((f) => f !== file));
+        } else {
+          errorToast("Failed to delete file", "Failed to delete document file");
+        }
+      });
+  };
+
+  const validateDischargeDate = (date: string) => {
+    if (compareDates(admissionDate, date)) {
+      return true;
+    } else {
+      return "Discharge date can't be before admission date ";
+    }
+  };
+
+  const confirmCancle = () => {
+    confirmDialog({
+      header: "Confirmation",
+      message:
+        "Are you sure you want to leave? Any unsaved changes will be lost",
+      icon: "pi pi-info-circle",
+      defaultFocus: "reject",
+      rejectClassName: "hidden",
+      acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
+      acceptLabel: "Continue",
+      accept() {
+        goBack();
+      },
+    });
+  };
+
+  const goBack = () => {
+    navigate(PATH_NAME.PROFILE);
+  };
+  // const downloadDocument = () => {
+  //   if (!Object.keys(selectedFile).length) {
+  //     return;
+  //   }
+  //   const url = selectedFile;
+  //   if (url) {
+  //     const downloadUrl = url;
+  //     const link = document.createElement("a");
+  //     link.href = downloadUrl;
+  //     link.download = "document";
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     URL.revokeObjectURL(downloadUrl);
+  //   }
+  // };
+
+  const downloadDocument = (fileUrl: string) => {
+    if (!fileUrl) {
+      return;
+    }
+    if (fileUrl) {
+      const downloadUrl = fileUrl;
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    }
+  };
+
+  const validateFileSize = () => {
+    errorToast("File Size Exceeded", "File size should not exceed 5MB");
   };
 
   return (
@@ -159,27 +301,25 @@ const EditVisitHistory = () => {
       >
         <div className="flex flex-row justify-between px-6">
           <BackButton
+            popupText="Your changes have not been saved. Are you sure you want to go back and discard the current details?"
+            showConfirmDialog={true}
             backLink={PATH_NAME.PROFILE}
             previousPage="visit History"
-            currentPage={
-              Boolean(Object.keys(selectedHistory).length)
-                ? "Edit Visit History"
-                : "Add Visit History"
-            }
+            currentPage={id ? "Edit Visit History" : "Add Visit History"}
           />
           <div className="flex py-2 justify-between items-center">
-            <Link to={PATH_NAME.PROFILE}>
-              <Button
-                className="ml-3 font-primary text-purple-800"
-                variant="primary"
-                type="reset"
-                style="link"
-              >
-                <i className="p" />
-                <i className="pi pi-times me-2"></i>Cancel
-              </Button>
-            </Link>
+            <ConfirmDialog />
+            <Button
+              onClick={confirmCancle}
+              className="ml-3 font-primary text-purple-800"
+              variant="primary"
+              style="link"
+            >
+              <i className="p" />
+              <i className="pi pi-times me-2"></i>Cancel
+            </Button>
             <PrimeButton
+              disabled={isDisabed}
               className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
               outlined
               type="submit"
@@ -192,20 +332,19 @@ const EditVisitHistory = () => {
           <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-4">
             <div className="relative">
               <label className="input-label block pb-1" htmlFor="visitLocation">
-                Visit Location*
+                Hospital Name*
               </label>
               <Controller
                 name="visitLocation"
                 control={control}
-                defaultValue={selectedHistory.visitLocation}
                 rules={{
-                  required: "Visit location can't be empty",
+                  required: "Hospital Name is required",
                 }}
                 render={({ field }) => (
                   <InputText
                     {...field}
                     id="visitLocation"
-                    placeholder="Enter Hospitan Name"
+                    placeholder="Enter Hospital Name"
                     className="input-field w-full"
                   />
                 )}
@@ -218,45 +357,35 @@ const EditVisitHistory = () => {
             </div>
             <div>
               <label className="block input-label pb-1" htmlFor="phoneNumber">
-                Phone Number*
+                Hospital Contact*
               </label>
               <div className="p-inputgroup buttonGroup  flex-1 w-full">
                 <span className="country-code w-[40%] p-inputgroup-addon h-[2.5rem]">
-                  {/* <Controller
-                    name="phoneCode"
-                    control={control}
-                    defaultValue={selectedHistory?.hospitalContact}
-                    rules={{
-                      required: "Country code is required",
-                      minLength: {
-                        value: 2,
-                        message: "Country code can't be empty",
-                      },
-                    }}
-                    render={({ field }) => ( */}
                   <Dropdown
-                    value="+!"
+                    value="+1"
                     placeholder="+1-US"
                     disabled
                     className="border p-0 w-full h-full border border-gray-300 text-xs px-0 shadow-none !border-r-0"
                   />
-                  {/* )}
-                  /> */}
                 </span>
                 <Controller
                   name="hospitalContact"
                   control={control}
-                  defaultValue={selectedHistory.hospitalContact}
                   rules={{
-                    required: "Phone number is required",
+                    required: "Phone Number must be 10 digits",
                     minLength: {
-                      value: 6,
-                      message: "Phone number can't be less than 6 digit",
+                      value: 10,
+                      message: "Phone Number must be 10 digits",
+                    },
+                    maxLength: {
+                      value: 10,
+                      message: "Phone Number must be 10 digits",
                     },
                   }}
                   render={({ field }) => (
                     <InputText
                       {...field}
+                      value={field.value || ""}
                       id="phoneNumber"
                       keyfilter="pint"
                       onChange={(e) => {
@@ -271,7 +400,7 @@ const EditVisitHistory = () => {
               </div>
               {(errors.hospitalContact || errors.hospitalContact) && (
                 <span className="text-red-500 text-xs">
-                  Invalid Phone Number/Code
+                  {errors.hospitalContact.message}
                 </span>
               )}
             </div>
@@ -282,24 +411,26 @@ const EditVisitHistory = () => {
               <Controller
                 name="admissionDate"
                 control={control}
-                defaultValue={selectedHistory.admissionDate}
                 rules={{
-                  required: "Admission date is required",
+                  required: "Admission Date is required",
                 }}
                 render={({ field }) => (
                   <Calendar
                     {...field}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       e?.target?.value &&
-                      setValue("admissionDate", e.target.value.toString())
-                    }
-                    value={new Date(field.value)}
+                        setValue("admissionDate", e.target.value.toString());
+                      trigger("dischargeDate");
+                      trigger("admissionDate");
+                    }}
+                    value={field.value ? new Date(field?.value) : new Date()}
                     inputId="admissionDate"
                     dateFormat="dd MM, yy"
                     className="calander border rounded-lg h-[2.5rem]"
                     showIcon={true}
                     icon="pi pi-calendar-minus"
                     placeholder="Selet Date"
+                    maxDate={new Date()}
                   />
                 )}
               />
@@ -316,24 +447,27 @@ const EditVisitHistory = () => {
               <Controller
                 name="dischargeDate"
                 control={control}
-                defaultValue={selectedHistory.dischargeDate}
                 rules={{
-                  required: "Discharge date is required",
+                  validate: (value) => validateDischargeDate(value),
+                  required: "Discharge Date is required",
                 }}
                 render={({ field }) => (
                   <Calendar
                     {...field}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       e?.target?.value &&
-                      setValue("dischargeDate", e.target.value.toString())
-                    }
+                        setValue("dischargeDate", e.target.value.toString());
+                      trigger("dischargeDate");
+                      trigger("admissionDate");
+                    }}
                     inputId="dischargeDate"
-                    value={new Date(field.value)}
+                    value={field.value ? new Date(field?.value) : new Date()}
                     dateFormat="dd MM, yy"
                     className="calander input-field"
                     showIcon={true}
                     icon="pi pi-calendar-minus"
                     placeholder="Select Date"
+                    minDate={new Date(admissionDate)}
                   />
                 )}
               />
@@ -345,21 +479,20 @@ const EditVisitHistory = () => {
             </div>
             <div className="relative col-span-2">
               <label className="input-label block pb-1" htmlFor="visitReason">
-                Reason for visit*
+                Reason For Visit*
               </label>
               <Controller
                 name="visitReason"
                 control={control}
                 rules={{
-                  required: "Visit reason can't be empty",
+                  required: "Reason For Visit is required",
                 }}
-                defaultValue={selectedHistory.visitReason}
                 render={({ field }) => (
                   <InputText
                     {...field}
                     id="visitReason"
                     className="input-field w-full"
-                    placeholder="Enter reason for visit"
+                    placeholder="Enter Reason For Visit"
                   />
                 )}
               />
@@ -375,9 +508,8 @@ const EditVisitHistory = () => {
                 name="primaryCareTeam"
                 control={control}
                 rules={{
-                  required: "Test list can't be empty",
+                  required: "Primary Care Team is required",
                 }}
-                defaultValue={selectedHistory.primaryCareTeam}
                 render={({ field }) => (
                   <InputText
                     {...field}
@@ -402,9 +534,8 @@ const EditVisitHistory = () => {
                 name="treatmentSummary"
                 control={control}
                 rules={{
-                  required: "Treatment summary can't be empty",
+                  required: "Treatment Summary is required",
                 }}
-                defaultValue={selectedHistory.treatmentSummary}
                 render={({ field }) => (
                   <InputTextarea
                     {...field}
@@ -426,14 +557,13 @@ const EditVisitHistory = () => {
                 name="followUpCare"
                 control={control}
                 rules={{
-                  required: "Follow-up care can't be empty",
+                  required: "Follow-up Care is required",
                 }}
-                defaultValue={selectedHistory.followUpCare}
                 render={({ field }) => (
                   <InputTextarea
                     id="followUpCare"
                     {...field}
-                    placeholder="Enter Follow-up care"
+                    placeholder="Enter Follow-up Care"
                     className="large-input pt-2"
                   />
                 )}
@@ -450,14 +580,13 @@ const EditVisitHistory = () => {
                 name="patientNotes"
                 control={control}
                 rules={{
-                  required: "Active notes can't be empty",
+                  required: "Activity Notes is required",
                 }}
-                defaultValue={selectedHistory.patientNotes}
                 render={({ field }) => (
                   <InputTextarea
                     id="activityNotes"
                     {...field}
-                    placeholder="Enter activity notes"
+                    placeholder="Enter Activity Notes"
                     autoResize={false}
                     className="large-input pt-2"
                   />
@@ -470,22 +599,40 @@ const EditVisitHistory = () => {
           </div>
           <div className="w-[100%]">
             <label className="input-label pb-2">
-              If you have any documents related,Please add them (optional)
+              If you have any documents related,Please add them (Max 5MB)
             </label>
             <div className="grid md:grid-cols-4 md:grid-cols-2 gap-x-4 gap-y-5 py-4 max-w-[100%] overflow-wrap">
-              {!!uploadedFiles.length &&
+              {!!uploadedFiles?.length &&
                 uploadedFiles.map((file, index) => {
                   return (
                     <FileTile
-                      handleView={viewReport}
+                      key={file.name}
+                      // handleView={() => viewReport(file)}
+                      handleView={() =>
+                        downloadDocument(URL.createObjectURL(file))
+                      }
                       handleRemoveFile={handleRemoveFile}
                       fileName={file.name}
                       index={index}
                     />
                   );
                 })}
+              {!!uploadedDocs?.length &&
+                uploadedDocs.map((file, index) => {
+                  return (
+                    <FileTile
+                      key={file}
+                      // handleView={() => viewUrl(file)}
+                      handleView={() => downloadDocument(file)}
+                      handleRemoveFile={() => handleDeleteRemoteFile(file)}
+                      fileName={"Document-" + [index]}
+                      index={index}
+                    />
+                  );
+                })}
             </div>
             <FileUpload
+              name="pdf[]"
               ref={uploaderRef}
               auto
               customUpload
@@ -496,19 +643,24 @@ const EditVisitHistory = () => {
                 icon: <i className="pi pi-file-plus pe-2" />,
                 className: "custom-file-uploader",
               }}
-              accept="image/*"
-              maxFileSize={1000000}
+              accept="application/pdf"
+              maxFileSize={6000000}
+              onValidationFail={validateFileSize}
             />
           </div>
         </div>
       </form>
-      <Toast ref={toast} onHide={() => navigate(PATH_NAME.PROFILE)} />
-      {showReport && (
-        <ReportImage
-          closeModal={() => setShowReport(false)}
-          file={selectedFile}
-        />
-      )}
+      <Toast ref={toast} />
+      {/* {showReport && selectedFile && (
+        <CustomModal
+          handleClose={() => {
+            setShowReport(false);
+          }}
+          styleClass="h-[90%] w-[90%]"
+        >
+          <PdfViewer fileUrl={selectedFile} />
+        </CustomModal>
+      )} */}
     </div>
   );
 };

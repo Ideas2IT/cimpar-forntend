@@ -1,10 +1,14 @@
-import telehealth from "../../assets/icons/Telehealth.svg";
-import laboratoryIcon from "../../assets/icons/laboratoryIcon.svg";
-import vaccinationIcon from "../../assets/icons/vaccination.svg";
-import imagingIcon from "../../assets/icons/imagingicon.svg";
-import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
-import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
+import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
+import telehealth from "../../assets/icons/Telehealth.svg";
+import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
+import imagingIcon from "../../assets/icons/imagingicon.svg";
+import laboratoryIcon from "../../assets/icons/laboratoryIcon.svg";
+import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
+import vaccinationIcon from "../../assets/icons/vaccination.svg";
+import car from "../../assets/icons/car.svg";
+import { selectServiceTitle } from "../../store/slices/loginSlice";
+import { PATH_NAME } from "../../utils/AppConstants";
 
 interface ICard {
   id: number;
@@ -22,7 +26,7 @@ const HomePage = () => {
       icon: laboratoryIcon,
       color: "bg-[#FDEFE5] text-[#545F71]",
       disabled: false,
-      link: "/health-records",
+      link: PATH_NAME.HEALTH_RECORDS,
     },
     {
       id: 2,
@@ -42,9 +46,9 @@ const HomePage = () => {
     },
     {
       id: 4,
-      title: "Home Health",
+      title: "Home Care",
       icon: healthRecordIcon,
-      color: "bg-[#D3E4D3]",
+      color: "bg-[#D3E4ff]",
       disabled: true,
       link: "",
     },
@@ -64,13 +68,21 @@ const HomePage = () => {
       disabled: true,
       link: "",
     },
+    {
+      id: 7,
+      title: "Transportation",
+      icon: car,
+      color: "bg-[#E7E0EF]",
+      disabled: true,
+      link: "",
+    },
   ];
-
+  const title = useSelector(selectServiceTitle);
   return (
     <>
       <div className="px-6 color-primary font-primary text-xl">
-        Our Services
-        <div className="mt-4 flex grid lg:grid-cols-4 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
+        {title}
+        <div className="mt-4 flex grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
           {cards.map((card: ICard) => {
             return <Card card={card} key={card.id} />;
           })}
@@ -92,7 +104,7 @@ const Card = ({ card }: { card: ICard }) => {
         <div className={`${card.disabled && "text-gray-300"} px-4`}>
           <span>{card.title}</span>
           {card.disabled && (
-            <span className="px-2 text-xl font-light">(coming soon)</span>
+            <span className="px-2 text-xl font-light">(Coming Soon)</span>
           )}
         </div>
       </div>

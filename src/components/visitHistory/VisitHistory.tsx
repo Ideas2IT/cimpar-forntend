@@ -1,12 +1,17 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
-import { PATH_NAME, RESPONSE, ROLE } from "../../utils/AppConstants";
+import {
+  PAGE_LIMIT,
+  PATH_NAME,
+  RESPONSE,
+  ROLE,
+} from "../../utils/AppConstants";
 import { useDispatch, useSelector } from "react-redux";
-import { selectedRole } from "../../store/slices/commonSlice";
+// import { selectedRole } from "../../store/slices/commonSlice";
 import { getRowClasses } from "../../services/commonFunctions";
 import {
   deleteVisitHistoryByIdThunk,
@@ -21,23 +26,51 @@ import {
 import { dateFormatter } from "../../utils/Date";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
+import { selectRole } from "../../store/slices/loginSlice";
+import { IGetEncounterPaylaod } from "../../interfaces/patient";
+import CustomPaginator from "../customPagenator/CustomPaginator";
+import { ErrorResponse } from "../../interfaces/common";
+// import CustomModal from "../customModal/CustomModal";
+// import PdfViewer from "../PdfViewer/PdfViewer";
 
 const VisitHistory = () => {
   const selectedPatinet = useSelector(selectSelectedPatient);
   const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
+  // const [selectedReport, setSelectedReport] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
-  const initialRender = useRef(true);
   const { toast, errorToast, successToast } = useToast();
+  const [encounterPayload, setEncounterPayload] = useState({
+    count: PAGE_LIMIT,
+    page: 1,
+    patient_id: selectedPatinet?.basicDetails?.id,
+  } as IGetEncounterPaylaod);
 
   useEffect(() => {
-    if (initialRender?.current) {
-      initialRender.current = false;
+    encounterPayload?.patient_id &&
+      dispatch(getVisitHistoryByPatientIdThunk(encounterPayload)).then(
+        ({ meta }) => {
+          if (meta.requestStatus === RESPONSE.REJECTED) {
+            errorToast("Failed to fetch", "Not able to load Visit History");
+          }
+        }
+      );
+  }, [encounterPayload]);
+
+  const downloadDocument = (fileUrl: string) => {
+    if (!fileUrl) {
       return;
     }
-    dispatch(
-      getVisitHistoryByPatientIdThunk(selectedPatinet?.basicDetails?.id)
-    );
-  }, []);
+    if (fileUrl) {
+      const downloadUrl = fileUrl;
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    }
+  };
 
   const handleDeleteEncounter = (id: string) => {
     if (selectedPatinet?.basicDetails?.id && id) {
@@ -45,16 +78,14 @@ const VisitHistory = () => {
         patinetId: selectedPatinet.basicDetails.id,
         visitHistoryId: id,
       };
-      dispatch(deleteVisitHistoryByIdThunk(payload)).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.REJECTED) {
-          errorToast(
-            "Failed to delete service history",
-            "Error: Unable to delete service history."
-          );
+      dispatch(deleteVisitHistoryByIdThunk(payload)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.REJECTED) {
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Failed to delete Visit History", errorResponse.message);
         } else {
           successToast(
-            "Service history successfully deleted",
-            "Service history has been removed successfully"
+            "Deleted Visit History",
+            "Visit history has been removed successfully"
           );
         }
       });
@@ -148,7 +179,9 @@ const VisitHistory = () => {
   ];
 
   const TableCell = ({ value }: { value: string }) => {
-    return <div className="font-tertiary text-[16px]">{value}</div>;
+    return (
+      <div className="font-tertiary text-[16px]">{value ? value : "-"}</div>
+    );
   };
 
   const viewRecord = (record: IVisitHistory) => {
@@ -158,65 +191,85 @@ const VisitHistory = () => {
   const DetailedHistory = () => {
     return (
       <div className="grid grid-cols-2 gap-4">
-        {historyField.map((field) => {
+        {historyField.map((field, index) => {
           return (
-            <div className={`${field.full ? "col-span-2" : ""}`}>
-              <FiledDetails label={field.field} value={field.value} />
+            <div key={index} className={`${field.full ? "col-span-2" : ""}`}>
+              <FiledDetails label={field.field} value={field?.value || ""} />
             </div>
           );
         })}
-        <div className="col-span-2">
-          <label className="text-lg pb-4 font-primary block">
-            Related Documents
-          </label>
-
-          <Button style="outline" className="font-primary bg-white text-lg">
-            <>
-              <i className="pi pi-eye px-2" />
-              Medical Report2.pdf
-            </>
-          </Button>
-          <Button
-            style="outline"
-            className="font-primary bg-white text-lg mx-5"
+        {selectedHistory?.files?.length && (
+          <div className="col-span-2">
+            <label className="text-lg pb-4 font-primary block">
+              Related Documents
+            </label>
+            {selectedHistory?.files?.map((report, index) => {
+              {
+                return (
+                  <Button
+                    style="outline"
+                    className="font-primary bg-white text-lg m-1"
+                    onClick={() => downloadDocument(report)}
+                    // onClick={() => setSelectedReport(report)}
+                  >
+                    <>
+                      <i className="pi pi-eye px-2" />
+                      {`Medical Report${index + 1}.pdf`}
+                    </>
+                  </Button>
+                );
+              }
+            })}
+          </div>
+        )}
+        {/* {selectedReport && (
+          <CustomModal
+            closeButton={true}
+            handleClose={() => {
+              setSelectedReport("");
+            }}
+            styleClass="h-full w-[90%]"
           >
-            <>
-              <i className="pi pi-eye px-2" />
-              Medical Report1.pdf
-            </>
-          </Button>
-        </div>
+            <PdfViewer fileUrl={selectedReport} />
+          </CustomModal>
+        )} */}
       </div>
     );
   };
 
+  const handlePageChange = (value: number) => {
+    setEncounterPayload((prev) => ({ ...prev, page: value }));
+  };
+
   return (
     <>
-      <DataTable
-        selection={selectedHistory}
-        emptyMessage={
-          <div className="flex justify-center">No visit history to show!</div>
-        }
-        value={selectedPatinet.visitHistory}
-        selectionMode="single"
-        dataKey="id"
-        tableStyle={{ minWidth: "50rem" }}
-        className="mt-2 max-h-[90%] rowHoverable"
-        rowClassName={() => getRowClasses("h-10 border-b")}
-        scrollHeight="40rem"
-      >
-        {columnList.map((column) => {
-          return (
-            <Column
-              headerClassName="py-1 border-b"
-              key={column.id}
-              field={column.field}
-              header={column.header}
-              body={column.body}
-            />
-          );
-        })}
-      </DataTable>
+      <div className="h-[calc(100vh-200px)] overflow-auto">
+        <DataTable
+          selection={selectedHistory}
+          emptyMessage={
+            <div className="flex justify-center">No visit history to show!</div>
+          }
+          value={selectedPatinet?.visitHistory?.data}
+          selectionMode="single"
+          dataKey="id"
+          tableStyle={{ minWidth: "50rem" }}
+          className="mt-2 max-h-[90%] rowHoverable"
+          rowClassName={() => getRowClasses("h-10 border-b")}
+          scrollHeight="40rem"
+        >
+          {columnList.map((column) => {
+            return (
+              <Column
+                headerClassName="py-1 border-b"
+                key={column.id}
+                field={column.field}
+                header={column.header}
+                body={column.body}
+              />
+            );
+          })}
+        </DataTable>
+      </div>
       <Sidebar
         onHide={() => setSelectedHistory({} as IVisitHistory)}
         className="detailed-view w-[35rem]"
@@ -226,6 +279,13 @@ const VisitHistory = () => {
       >
         <DetailedHistory />
       </Sidebar>
+      {selectedPatinet?.visitHistory?.pagination?.total_pages > 1 && (
+        <CustomPaginator
+          currentPage={selectedPatinet?.visitHistory?.pagination?.current_page}
+          handlePageChange={handlePageChange}
+          totalPages={selectedPatinet?.visitHistory?.pagination?.total_pages}
+        />
+      )}
       <Toast ref={toast} />
     </>
   );
@@ -240,23 +300,30 @@ const MediaColumn = ({
   handleView: (data: IVisitHistory) => void;
   handleDelete: (encounterId: string) => void;
 }) => {
-  const role = useSelector(selectedRole);
+  const role = useSelector(selectRole);
   const navigate = useNavigate();
   return (
-    <div className="flex flex-row font-bold justify-between items-center font-bold max-w-[5rem] text-purple-800">
+    <div
+      className={`flex flex-row font-bold justify-between items-center font-bold max-w-[5rem] text-purple-800`}
+    >
       <button className="flex items-center" onClick={() => handleView(data)}>
         <i className="pi pi-eye" />
       </button>
-      <button className="items-center p-0 m-0" disabled={role === ROLE.ADMIN}>
+      <button
+        className={`items-center p-0 m-0 ${role === ROLE.ADMIN && "hidden"}`}
+        disabled={role === ROLE.ADMIN}
+      >
         <i
-          className={`pi pi-pen-to-square px-3 ${role === ROLE.ADMIN && "cursor-not-allowed	"}`}
+          className={`pi pi-pen-to-square px-3 ${role === ROLE.ADMIN && "hidden"}`}
           onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}/${data.id}`)}
         />
       </button>
-      <i
-        onClick={() => handleDelete(data?.id || "")}
-        className={`pi pi-trash text-red-500 me-2 ${role === ROLE.ADMIN && "cursor-not-allowed"}`}
-      />
+      <button className={`${role === ROLE.ADMIN && "hidden"}`}>
+        <i
+          onClick={() => handleDelete(data?.id || "")}
+          className={`pi pi-trash text-red-500 me-2 ${role === ROLE.ADMIN && "hidden"}`}
+        />
+      </button>
     </div>
   );
 };
