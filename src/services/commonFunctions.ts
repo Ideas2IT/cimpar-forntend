@@ -338,3 +338,7 @@ export const getStringArrayFromObjectArray = (values: IMedicine[]) => {
     return stringValues;
   } else return [];
 };
+
+export const cleanString = (str: string | undefined) => {
+  return str ? str.replace(/\s+/g, " ").trim() : "";
+};

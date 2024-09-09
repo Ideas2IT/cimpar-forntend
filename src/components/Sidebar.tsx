@@ -10,7 +10,12 @@ import { selectProfileName } from "../store/slices/UserSlice";
 import { setSelectedSidebarTab } from "../store/slices/commonSlice";
 import { selectRole } from "../store/slices/loginSlice";
 import { AppDispatch } from "../store/store";
-import { ABSOLUTE_PATH, PATH_NAME, ROLE } from "../utils/AppConstants";
+import {
+  ABSOLUTE_PATH,
+  HEADER_TITLE,
+  PATH_NAME,
+  SYMBOL,
+} from "../utils/AppConstants";
 interface Tab {
   key: string;
   icon: React.ReactNode;
@@ -22,19 +27,19 @@ const Sidebar = () => {
   const tabs = {
     patient: [
       {
-        header: "Home",
+        header: HEADER_TITLE.HOME,
         key: "home",
         icon: <Home />,
         routerLink: PATH_NAME.HOME,
       },
       {
-        header: "Health Records",
+        header: HEADER_TITLE.HEALTH_RECORD,
         key: "labTestResults",
         icon: <AddRecord />,
         routerLink: PATH_NAME.TEST_RESULT,
       },
       {
-        header: "Profile",
+        header: HEADER_TITLE.PROFILE,
         key: "profile",
         icon: <Profile />,
         routerLink: PATH_NAME.PROFILE,
@@ -42,10 +47,16 @@ const Sidebar = () => {
     ],
     admin: [
       {
-        header: "Appointments",
+        header: HEADER_TITLE.APPOINTMENT,
         key: "appointment",
         icon: <i className="pi pi-calendar-minus text-2xl" />,
         routerLink: PATH_NAME.APPOINTMENTS,
+      },
+      {
+        header: HEADER_TITLE.MASTER,
+        key: "master",
+        icon: <i className="pi pi-wallet text-2xl" />,
+        routerLink: PATH_NAME.MASTER_TABLES,
       },
     ],
     other: [],
@@ -58,12 +69,14 @@ const Sidebar = () => {
   const username = useSelector(selectProfileName);
 
   useEffect(() => {
-    updateHeaderTitle("Hi, " + username);
+    if (location.pathname === SYMBOL.SLASH) {
+      updateHeaderTitle("Hi, " + username);
+    }
   }, [username]);
 
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);
-    if (tab.header === "Home") {
+    if (tab.header === HEADER_TITLE.HOME) {
       updateHeaderTitle("Hi, " + username);
     } else {
       updateHeaderTitle(tab.header);
@@ -76,7 +89,7 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   const changeMenuOption = () => {
-    const pathname = location.pathname.split("/")[1];
+    const pathname = location.pathname.split(SYMBOL.SLASH)[1];
     let tabIndex;
     switch (pathname) {
       case ABSOLUTE_PATH.PROFILE:
@@ -88,17 +101,14 @@ const Sidebar = () => {
         tabIndex = 2;
         break;
       case ABSOLUTE_PATH.TEST_RESULT:
+      case ABSOLUTE_PATH.MASTER_TABS:
         tabIndex = 1;
         break;
       default:
         tabIndex = 0;
     }
     if (tabIndex) {
-      if (role === ROLE.ADMIN) {
-        setSelectedTab(tabs[role][0]);
-      } else {
-        setSelectedTab(tabs[role][tabIndex]);
-      }
+      setSelectedTab(tabs[role][tabIndex]);
     }
   };
 

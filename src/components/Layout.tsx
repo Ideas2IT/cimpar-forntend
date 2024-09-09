@@ -1,3 +1,4 @@
+import { Toast } from "primereact/toast";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
@@ -15,22 +16,62 @@ import {
   selectRole,
 } from "../store/slices/loginSlice";
 import { AppDispatch } from "../store/store";
-import { RESPONSE, ROLE } from "../utils/AppConstants";
+import {
+  HEADER_TITLE,
+  PATH_NAME,
+  RESPONSE,
+  ROLE,
+  SYMBOL,
+} from "../utils/AppConstants";
 import Main from "./Main";
 import Sidebar from "./Sidebar";
 import LoginForm from "./loginForm/LoginForm";
 import SetPassword from "./setPassword/SetPassword";
 import useToast from "./useToast/UseToast";
-import { Toast } from "primereact/toast";
 
 const Layout = () => {
   const user = useSelector(selectProfileName);
   const [username, setUsername] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const { toast, errorToast } = useToast();
+  const isLoggedIn = useSelector(selectIsEmailVerified);
+  const role = useSelector(selectRole);
+  const profileId = useSelector(selectUserProfile)?.id;
+
+  const getHeaderTitle = () => {
+    const path = location.pathname;
+    switch (true) {
+      case path === PATH_NAME.PROFILE:
+      case path === PATH_NAME.EDIT_INSURANCE:
+      case path === PATH_NAME.EDIT_MEDICAL_CONDITIONS:
+      case path === PATH_NAME.EDIT_PROFILE:
+      case path === PATH_NAME.EIDT_MEDICATION:
+      case path === PATH_NAME.EDIT_VISIT_HISTORY:
+      case path.startsWith(PATH_NAME.EDIT_INSURANCE):
+      case path.startsWith(PATH_NAME.EDIT_VISIT_HISTORY):
+        return HEADER_TITLE.PROFILE;
+      case path === PATH_NAME.TEST_RESULT:
+        return HEADER_TITLE.HEALTH_RECORD;
+      case path === PATH_NAME.MASTER_TABLES:
+        return HEADER_TITLE.MASTER;
+      case path === PATH_NAME.APPOINTMENTS:
+        return HEADER_TITLE.APPOINTMENT;
+      case path === PATH_NAME.ALL_TESTS:
+        return HEADER_TITLE.LAB_TESTS;
+      default:
+        return "Home";
+    }
+  };
 
   useEffect(() => {
-    setUsername("Hi, " + user);
+    if (
+      location.pathname === SYMBOL.SLASH ||
+      location.pathname === PATH_NAME.HEALTH_RECORDS
+    ) {
+      setUsername("Hi, " + user);
+    } else {
+      setUsername(getHeaderTitle());
+    }
   }, [user]);
 
   const updateHeaderTitle = (newValue: string) => {
@@ -38,10 +79,6 @@ const Layout = () => {
       setUsername(newValue);
     }
   };
-
-  const isLoggedIn = useSelector(selectIsEmailVerified);
-  const role = useSelector(selectRole);
-  const profileId = useSelector(selectUserProfile)?.id;
 
   useEffect(() => {
     if (profileId && role === ROLE.PATIENT) {

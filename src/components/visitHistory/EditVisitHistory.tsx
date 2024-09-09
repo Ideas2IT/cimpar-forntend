@@ -17,6 +17,7 @@ import {
   IVisitHistory,
 } from "../../interfaces/visitHistory";
 import {
+  cleanString,
   compareDates,
   handleKeyPress,
   splitCodeWithPhoneNumber,
@@ -113,15 +114,15 @@ const EditVisitHistory = () => {
       admission_date: dateFormatter(formData?.admissionDate, "yyyy-MM-dd"),
       class_code: "R",
       discharge_date: dateFormatter(formData?.dischargeDate, "yyyy-MM-dd"),
-      location: formData?.visitLocation || "",
+      location: cleanString(formData?.visitLocation) || "",
       patient_id: selectedpatient?.basicDetails?.id || "",
       phone_number: formData?.hospitalContact || "",
-      primary_care_team: formData?.primaryCareTeam || "",
-      reason: formData?.visitReason || "",
+      primary_care_team: cleanString(formData?.primaryCareTeam) || "",
+      reason: cleanString(formData?.visitReason) || "",
       status: "in-progress",
-      treatment_summary: formData?.treatmentSummary || "",
-      follow_up_care: formData?.followUpCare || "",
-      activity_notes: formData?.patientNotes || "",
+      treatment_summary: cleanString(formData?.treatmentSummary) || "",
+      follow_up_care: cleanString(formData?.followUpCare) || "",
+      activity_notes: cleanString(formData?.patientNotes) || "",
       files: uploadedFiles,
     };
     if (!id) {
@@ -293,6 +294,14 @@ const EditVisitHistory = () => {
     errorToast("File Size Exceeded", "File size should not exceed 5MB");
   };
 
+  const validateRequiredField = (value: string, field: string) => {
+    if (value?.trim()) {
+      return true;
+    } else {
+      return `${field} is required`;
+    }
+  };
+
   return (
     <div>
       <form
@@ -338,7 +347,8 @@ const EditVisitHistory = () => {
                 name="visitLocation"
                 control={control}
                 rules={{
-                  required: "Hospital Name is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Hospital Name"),
                 }}
                 render={({ field }) => (
                   <InputText
@@ -486,6 +496,8 @@ const EditVisitHistory = () => {
                 control={control}
                 rules={{
                   required: "Reason For Visit is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Reason For Visit"),
                 }}
                 render={({ field }) => (
                   <InputText
@@ -509,6 +521,8 @@ const EditVisitHistory = () => {
                 control={control}
                 rules={{
                   required: "Primary Care Team is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Primary Care Team"),
                 }}
                 render={({ field }) => (
                   <InputText
@@ -535,6 +549,8 @@ const EditVisitHistory = () => {
                 control={control}
                 rules={{
                   required: "Treatment Summary is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Treatment Summary"),
                 }}
                 render={({ field }) => (
                   <InputTextarea
@@ -558,6 +574,8 @@ const EditVisitHistory = () => {
                 control={control}
                 rules={{
                   required: "Follow-up Care is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Follow-up Care"),
                 }}
                 render={({ field }) => (
                   <InputTextarea
@@ -581,6 +599,8 @@ const EditVisitHistory = () => {
                 control={control}
                 rules={{
                   required: "Activity Notes is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Activity Notes"),
                 }}
                 render={({ field }) => (
                   <InputTextarea

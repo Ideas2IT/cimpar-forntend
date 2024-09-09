@@ -2,13 +2,15 @@ import { createBrowserRouter } from "react-router-dom";
 import AppointmentForm from "./components/appointmentForm/AppointmentForm";
 import Appointments from "./components/appointments/Appointments";
 import RoleBasedRoute from "./components/AuthorizeUser";
+import ConditionalRoute from "./components/ConditionalRoute";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
-import HomePage from "./components/homePage/HomePage";
 import EditInsurance from "./components/insuranceDetails/EditInsurance";
 import LabTestResults from "./components/LabTestResults";
 import Layout from "./components/Layout";
 import LoginForm from "./components/loginForm/LoginForm";
 import SignUpForm from "./components/loginForm/SignUpForm";
+import MasterTables from "./components/masterTables/MasterTables";
+import TestList from "./components/masterTables/Tests";
 import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
 import EditMedicationDetails from "./components/medication/EditMedicationDetails";
 import PageNotFound from "./components/PageNotFound";
@@ -24,7 +26,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       {
-        element: <HomePage />,
+        element: <ConditionalRoute />,
         index: true,
       },
       {
@@ -124,6 +126,21 @@ const router = createBrowserRouter([
             element={<Appointments />}
             requiredRole={ROLE.ADMIN}
           />
+        ),
+      },
+      {
+        path: PATH_NAME.MASTER_TABLES,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.ADMIN}
+            element={<MasterTables />}
+          />
+        ),
+      },
+      {
+        path: PATH_NAME.ALL_TESTS,
+        element: (
+          <RoleBasedRoute requiredRole={ROLE.ADMIN} element={<TestList />} />
         ),
       },
     ],

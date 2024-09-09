@@ -1,0 +1,11 @@
+.tests-wrapper .p-datatable-wrapper {
+  @apply rounded-xl;
+}
+
+.p-inputswitch .p-inputswitch-slider {
+  @apply bg-gray-300;
+}
+
+.p-inputswitch.p-highlight .p-inputswitch-slider {
+  @apply bg-[#0078d4];
+}

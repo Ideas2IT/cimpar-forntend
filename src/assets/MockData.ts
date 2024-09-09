@@ -469,38 +469,6 @@ export const labResults: LabTestResult[] = [
       physicianPhone: "99991111232",
     },
   },
-  // {
-  //   orderId: "RI 0122887",
-  //   testName: "Blood count",
-  //   testedAt: "State Hygiene Labarotory",
-  //   dateOfTest: dateFormatter(new Date()),
-  //   status: "Available",
-  //   data: {},
-  // },
-  // {
-  //   orderId: "RI 0122888",
-  //   testName: "Blood count",
-  //   testedAt: "Ames Laboratory",
-  //   dateOfTest: dateFormatter(new Date()),
-  //   status: "Under Processing",
-  //   data: {},
-  // },
-  // {
-  //   orderId: "RI 0122889",
-  //   testName: "Blood count",
-  //   testedAt: "Ames Laboratory",
-  //   dateOfTest: dateFormatter(new Date()),
-  //   status: "Under Processing",
-  //   data: {},
-  // },
-  // {
-  //   orderId: "RI 0122890",
-  //   testName: "Blood count",
-  //   testedAt: "Ames Laboratory",
-  //   dateOfTest: dateFormatter(new Date()),
-  //   status: "Under Processing",
-  //   data: {},
-  // },
 ];
 
 export const reportFiles = [

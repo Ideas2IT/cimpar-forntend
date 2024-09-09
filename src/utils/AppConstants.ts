@@ -29,6 +29,8 @@ export const PATH_NAME = {
   HEALTH_RECORDS: "/create-appointment",
   APPOINTMENTS: "/appointments",
   RESET_PASSWORD: "/reset-password",
+  MASTER_TABLES: "/master-tabs",
+  ALL_TESTS: "/master-tabs/tests",
 };
 
 export const ABSOLUTE_PATH = {
@@ -39,6 +41,8 @@ export const ABSOLUTE_PATH = {
   EDIT_INSURANCE: "edit-insurance",
   EDIT_VISIT_HISTORY: "edit-visit-history",
   TEST_RESULT: "test-result",
+  APPOINTMENT: "appointment",
+  MASTER_TABS: "master-tabs",
 };
 
 export const RESPONSE = {
@@ -125,6 +129,19 @@ export const GENDER = {
 
 export const ERROR_CODES = {
   EXPIRED_TOKEN: 401,
+};
+
+export const HEADER_TITLE = {
+  LAB_TESTS: "Lab Tests",
+  MASTER: "Masters",
+  HEALTH_RECORD: "Health Records",
+  PROFILE: "Profile",
+  APPOINTMENT: "Appointments",
+  HOME: "Home",
+};
+
+export const SYMBOL = {
+  SLASH: "/",
 };
 
 export const REFRESH_TOKEN = "refresh_token";

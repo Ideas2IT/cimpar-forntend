@@ -12,6 +12,7 @@ import { ErrorResponse, IOptionValue } from "../../interfaces/common";
 import { IUpdatePatientPayload } from "../../interfaces/patient";
 import { IEditProfile } from "../../interfaces/User";
 import {
+  cleanString,
   combineHeight,
   getDecimalPartPart,
   getFractionalPart,
@@ -190,14 +191,14 @@ const EditUserDetails = () => {
   const location = useLocation();
   const handleFormSubmit = (data: IEditProfile) => {
     const payload: IUpdatePatientPayload = {
-      city: data.city,
+      city: cleanString(data.city),
       country: data.country || "USA",
       dob: dateFormatter(data?.dob, "MM/dd/yyyy"),
       email: data?.email?.trim(),
-      firstName: data?.firstName?.trim(),
-      middleName: data?.middleName?.trim(),
-      lastName: data.lastName?.trim(),
-      address: data.fullAddress,
+      firstName: cleanString(data?.firstName),
+      middleName: cleanString(data?.middleName),
+      lastName: cleanString(data.lastName),
+      address: cleanString(data.fullAddress),
       gender:
         data?.gender?.toLowerCase() === GENDER.MALE
           ? "M"
@@ -207,7 +208,7 @@ const EditUserDetails = () => {
       patient_id: userDetails.id,
       phoneNo: data.phoneNo?.toString() || "",
       state: data.state.code,
-      zipCode: data.zipCode,
+      zipCode: cleanString(data.zipCode),
       weight: data.weight.toString() || "",
       height: combineHeight(data.height.feet, data.height.inches) || "0",
       ethnicity: data.ethnicity.code || "",
@@ -262,6 +263,15 @@ const EditUserDetails = () => {
       return "Alternate Number must be 10 digits";
     } else return true;
   };
+
+  const validateRequiredField = (value: string, field: string) => {
+    if (value?.trim()) {
+      return true;
+    } else {
+      return `${field} is required`;
+    }
+  };
+
   return (
     <div className="px-6">
       <form
@@ -318,6 +328,8 @@ const EditUserDetails = () => {
               <input
                 {...register("firstName", {
                   required: "First Name is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "First Name"),
                   pattern: {
                     value: PATTERN.NAME,
                     message: ERROR.NAME_ERROR,
@@ -364,6 +376,8 @@ const EditUserDetails = () => {
                     value: PATTERN.NAME,
                     message: ERROR.NAME_ERROR,
                   },
+                  validate: (value) =>
+                    validateRequiredField(value, "Last Name"),
                   required: "Last Name is required",
                 })}
                 name={`lastName`}
@@ -691,6 +705,7 @@ const EditUserDetails = () => {
               <input
                 {...register("city", {
                   required: "City is required",
+                  validate: (value) => validateRequiredField(value, "City"),
                 })}
                 name={`city`}
                 className="cimpar-input focus:outline-none"
@@ -717,6 +732,7 @@ const EditUserDetails = () => {
                     value: 5,
                     message: "Zip Code must be 5 digits",
                   },
+                  validate: (value) => validateRequiredField(value, "Zip Code"),
                 }}
                 render={({ field }) => (
                   <InputText
@@ -737,6 +753,8 @@ const EditUserDetails = () => {
               <input
                 {...register("fullAddress", {
                   required: "Full Address is required",
+                  validate: (value) =>
+                    validateRequiredField(value, "Full Address"),
                 })}
                 name={`fullAddress`}
                 className="cimpar-input focus:outline-none"

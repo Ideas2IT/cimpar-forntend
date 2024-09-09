@@ -1,12 +1,22 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { isAxiosError } from "axios";
-import { ErrorResponse } from "../../interfaces/common";
+import {
+  ErrorResponse,
+  IAddMasterRecordPayload,
+  IAllTestspayload,
+  IToggleRecordStatusPayload,
+  IUpdateMasterRecordPayload,
+} from "../../interfaces/common";
 import { IMedicine } from "../../interfaces/medication";
 import {
+  addMasterRecord,
   getAllergiesByQuery,
+  getAllTests,
   getInputData,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
+  toggleRecordStatus,
+  updateMasterRecord,
 } from "../../services/masterTable.service";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
@@ -173,6 +183,44 @@ export const getOptionValuesThunk = createAsyncThunk(
   }
 );
 
+export const getLabTestsForAdminThunk = createAsyncThunk(
+  "tests/get",
+  async (payload: IAllTestspayload, { rejectWithValue }) => {
+    try {
+      const response = await getAllTests(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to load Lab Tests";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const toggleRecordStatusThunk = createAsyncThunk(
+  "master/delete",
+  async (payload: IToggleRecordStatusPayload, { rejectWithValue }) => {
+    try {
+      const response = await toggleRecordStatus(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to change the status";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
 export const getAllTestsThunk = createAsyncThunk(
   "tests/get",
   async (tableName: string, { rejectWithValue }) => {
@@ -192,6 +240,44 @@ export const getAllTestsThunk = createAsyncThunk(
   }
 );
 
+export const updateMasterRecordThunk = createAsyncThunk(
+  "master/update",
+  async (payload: IUpdateMasterRecordPayload, { rejectWithValue }) => {
+    try {
+      const response = await updateMasterRecord(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to update master table";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const addMasterRecordThunk = createAsyncThunk(
+  "master/update",
+  async (payload: IAddMasterRecordPayload, { rejectWithValue }) => {
+    try {
+      const response = await addMasterRecord(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error ||
+          "Failed to add record to master table";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
 const userSlice = createSlice({
   name: SLICE_NAME.userSlice,
   initialState,
