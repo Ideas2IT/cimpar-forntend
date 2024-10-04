@@ -26,6 +26,8 @@ export interface IEntity {
 }
 
 export interface IAllTestspayload {
+  page_size: number;
+  page: number;
   code?: string;
   display?: string;
   tableName: string;
@@ -44,6 +46,9 @@ export interface IUpdateMasterRecordPayload {
   code: string;
 }
 
-export interface IAddMasterRecordPayload extends IAllTestspayload {
+export interface IAddMasterRecordPayload {
   is_active: boolean;
+  code?: string;
+  display?: string;
+  tableName: string;
 }

@@ -27,7 +27,7 @@ const getInputData = (tableName: string) => {
 
 const getAllTests = (payload: IAllTestspayload) => {
   return http.get(
-    `${API_URL.masterTable}/${payload.tableName}/filtered?display=${payload.display}`
+    `${API_URL.masterTable}/${payload.tableName}/filtered?page=${payload.page}&page_size=${payload.page_size}&display=${payload.display}`
   );
 };
 

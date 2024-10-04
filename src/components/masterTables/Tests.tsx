@@ -4,7 +4,8 @@ import { DataTable } from "primereact/datatable";
 import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { useContext, useEffect, useRef, useState } from "react";
+import { Toast } from "primereact/toast";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import HeaderContext from "../../context/HeaderContext";
@@ -27,11 +28,10 @@ import { HEADER_TITLE, RESPONSE, TABLE } from "../../utils/AppConstants";
 import SearchInput, { SearchInputHandle } from "../SearchInput";
 import BackButton from "../backButton/BackButton";
 import CustomModal from "../customModal/CustomModal";
-import "./Masters.css";
+import CustomPaginator from "../customPagenator/CustomPaginator";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
-import CustomPaginator from "../customPagenator/CustomPaginator";
+import "./Masters.css";
 
 interface ILabTest {
   serial: string;
@@ -40,38 +40,57 @@ interface ILabTest {
   is_active: boolean;
   id: string;
 }
-
+interface IPagging {
+  current_page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+}
 const TestList = () => {
   const { updateHeaderTitle } = useContext(HeaderContext);
   const [isOpenModal, setIsOpendModal] = useState(false);
   const [selectedTest, setSelectedTest] = useState({} as ILabTest);
   const dispatch = useDispatch<AppDispatch>();
   const [tests, setTests] = useState<ILabTest[]>([]);
-  const [searchValue, setSearchValue] = useState("");
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    total_items: 0,
+    total_pages: 0,
+    page_size: 20,
+  } as IPagging);
   const { toast, errorToast, successToast } = useToast();
   const searchInputRef = useRef<SearchInputHandle>(null);
+  const [fetchPayload, setFetchPayload] = useState({
+    tableName: TABLE.LAB_TEST,
+    page: 1,
+    page_size: 20,
+    current_page: 1,
+    display: "",
+  } as IAllTestspayload);
 
   useEffect(() => {
     updateHeaderTitle(HEADER_TITLE.LAB_TESTS);
   }, []);
 
-  useEffect(() => {
-    if (searchValue) {
-      fetchTests(searchValue);
-    } else {
-      fetchTests("");
-    }
-  }, [searchValue]);
+  const handlePageChange = useCallback(
+    (value: number) => {
+      setFetchPayload({ ...fetchPayload, page: value });
+    },
+    [fetchPayload]
+  );
 
-  const fetchTests = (searchValue: string) => {
-    dispatch(
-      getLabTestsForAdminThunk({
-        tableName: TABLE.LAB_TEST,
-        display: searchValue,
-      } as IAllTestspayload)
-    ).then((response) => {
+  useEffect(() => {
+    if (Object.keys(fetchPayload).length) {
+      fetchTests();
+    }
+  }, [fetchPayload]);
+
+  const fetchTests = () => {
+    dispatch(getLabTestsForAdminThunk(fetchPayload)).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        const payload = response.payload as ILabTest[];
+        const payload = response.payload.data as ILabTest[];
+        const pagingDetails = response.payload.pagination as IPagging;
+        setPagination(pagingDetails);
         payload?.length ? addTestSerials(payload) : setTests([]);
       } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
         const errorResponse = response.payload as ErrorResponse;
@@ -86,7 +105,9 @@ const TestList = () => {
       const updatedTests = allTests.map((test, index) => {
         return {
           ...test,
-          serial: String(index + 1),
+          serial: String(
+            (fetchPayload.page - 1) * fetchPayload.page_size + (index + 1)
+          ),
         };
       });
       setTests(updatedTests);
@@ -130,7 +151,7 @@ const TestList = () => {
             "Created successfully",
             "Test has been created successfully"
           );
-          fetchTests("");
+          setFetchPayload({ ...fetchPayload, page: 1 });
           if (searchInputRef?.current) {
             searchInputRef.current.clearInput();
           }
@@ -216,6 +237,10 @@ const TestList = () => {
     setSelectedTest({} as ILabTest);
   };
 
+  const handleSearch = (value: string) => {
+    setFetchPayload({ ...fetchPayload, display: value });
+  };
+
   return (
     <div className="px-6">
       <div className="flex w-full justify-between">
@@ -226,7 +251,7 @@ const TestList = () => {
         />
         <SearchInput
           ref={searchInputRef}
-          handleSearch={(value) => setSearchValue(value)}
+          handleSearch={(value) => handleSearch(value)}
         />
       </div>
       <div className="flex w-full py-2 box-content h-[2.5rem] justify-end">
@@ -238,11 +263,11 @@ const TestList = () => {
           className="bg-purple-800 rounded-lg px-2 text-white font-bold"
         />
       </div>
-      <div className="w-full h-[calc(100vh-240px)] bg-white">
+      <div className="w-full h-[calc(100vh-240px)] bg-white rounded-lg">
         <DataTable
           value={tests}
           tableClassName="border-b"
-          className="mt-2 tests-wrapper font-tertiary"
+          className="mt-2 tests-wrapper font-tertiary mx-2"
           emptyMessage={
             <div className="flex w-full justify-center">
               No lab tests available
@@ -267,9 +292,11 @@ const TestList = () => {
           })}
         </DataTable>
         <CustomPaginator
-          currentPage={1}
-          handlePageChange={() => {}}
-          totalPages={1}
+          currentPage={Number(pagination?.current_page)}
+          handlePageChange={(value) => {
+            handlePageChange(value);
+          }}
+          totalPages={Number(pagination?.total_pages)}
         />
       </div>
       {isOpenModal && (
@@ -281,7 +308,11 @@ const TestList = () => {
         >
           <AddMasterModal
             onCancel={handleCloseModal}
-            heading="Add Lab Test"
+            heading={
+              Object?.keys(selectedTest)?.length > 0
+                ? "Edit Lab Test"
+                : "Add Lab Test"
+            }
             selectedItem={selectedTest}
             handleSubmitForm={handleSubmit}
           />

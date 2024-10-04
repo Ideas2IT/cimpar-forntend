@@ -37,6 +37,7 @@ const Layout = () => {
   const isLoggedIn = useSelector(selectIsEmailVerified);
   const role = useSelector(selectRole);
   const profileId = useSelector(selectUserProfile)?.id;
+  const location = useLocation();
 
   const getHeaderTitle = () => {
     const path = location.pathname;
@@ -109,7 +110,6 @@ const Layout = () => {
       }
     }
   }, []);
-  const location = useLocation();
   return (
     <>
       {!isLoggedIn ? (

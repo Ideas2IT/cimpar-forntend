@@ -1,6 +1,6 @@
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchInput from "../SearchInput";
 import ServiceFilterPanel from "./ServiceFilterPanel";
 
@@ -9,7 +9,6 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { Sidebar } from "primereact/sidebar";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../../assets/icons/filter.svg?react";
-import HeaderContext from "../../context/HeaderContext";
 import { getRowClasses } from "../../services/commonFunctions";
 import { selectIsAdmin } from "../../store/slices/loginSlice";
 import {
@@ -21,7 +20,6 @@ import {
 import BackButton from "../backButton/BackButton";
 import DualCalendar from "../dualCalendar/DualCalendar";
 import Unauthorized from "../Unauthorised";
-// import { tabs } from "../userProfilePage/UserProfilePage";
 import { Checkbox } from "primereact/checkbox";
 import { Toast } from "primereact/toast";
 import {
@@ -75,7 +73,6 @@ const Appointments = () => {
   const appointments = useSelector(selectAppointments);
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
   const appointmentMeta = useSelector(getTotalAppointment);
-  const { updateHeaderTitle } = useContext(HeaderContext);
   const isAdmin = useSelector(selectIsAdmin);
 
   const services = [
@@ -147,8 +144,6 @@ const Appointments = () => {
       ),
     },
   ];
-
-  updateHeaderTitle("Appointments");
 
   const [selectedAppoinement, setSelectedAppointment] = useState(
     {} as IAppointmentList
@@ -612,10 +607,10 @@ const Appointments = () => {
                   className="mt-2 rowHoverable px-6 py-3"
                   rowClassName={() => getRowClasses("h-10 border-b")}
                 >
-                  {columns.map((column, index) => {
+                  {columns.map((column) => {
                     return (
                       <Column
-                        key={index}
+                        key={column.header}
                         headerClassName={
                           column.headerClassName
                             ? column.headerClassName

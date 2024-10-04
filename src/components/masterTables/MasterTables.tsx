@@ -1,6 +1,6 @@
+import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import tests from "../../assets/icons/microscope.svg";
-import { useContext, useEffect } from "react";
 import HeaderContext from "../../context/HeaderContext";
 import { HEADER_TITLE } from "../../utils/AppConstants";
 
@@ -16,6 +16,11 @@ const MasterTables = () => {
       icon: tests,
       routeLink: "tests",
     },
+    // {
+    //   title: "Pricing",
+    //   icon: dollarIcon,
+    //   routeLink: "tests",
+    // },
   ];
   return (
     <div className="grid md:grid-cols-3 lg:grid-cols-4 grid-cols-2 gap-3">
