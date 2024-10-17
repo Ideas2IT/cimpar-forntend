@@ -83,6 +83,12 @@ export const TABS = {
   IMMUNIZATION: "Immunization",
   SERVICE_HISTORY: "Service History",
 };
+
+export const SERVICE_TABS = {
+  LAB_RESULT: "lab results",
+  IMMUNIZATION: "immunization",
+  SERVICE_HISTORY: "service history",
+};
 export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
 export const SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
@@ -129,6 +135,7 @@ export const GENDER = {
 
 export const ERROR_CODES = {
   EXPIRED_TOKEN: 401,
+  FORBIDDEN: 403,
 };
 
 export const HEADER_TITLE = {

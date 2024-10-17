@@ -52,3 +52,10 @@ export interface IAddMasterRecordPayload {
   display?: string;
   tableName: string;
 }
+
+export interface ILabService {
+  serviceName: string;
+  code: string;
+  centerPricing: number;
+  homePricing: number;
+}

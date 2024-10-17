@@ -188,22 +188,20 @@ const TestList = () => {
   };
 
   const columns = [
-    { field: "serial", header: "ID", headerClassName: "border-b font-primary" },
+    { field: "serial", header: "ID" },
     {
       field: "display",
-      header: "DESCRIPTION",
-      bodyClassName: "max-w-[15rem]",
-      headerClassName: "border-b font-primary",
+      header: "test description",
+      bodyClassName: "max-w-[15rem] break-all",
     },
     {
       field: "code",
       header: "CODE",
-      headerClassName: "border-b font-primary",
+      bodyClassName: "max-w-[10rem] break-all",
     },
     {
       field: "is_active",
       header: "ACTIVE",
-      headerClassName: "border-b font-primary",
       body: (row: ILabTest) => (
         <div className="font-tertiary">
           <label className="block ps-2">{row.is_active ? "Yes" : "No"}</label>
@@ -238,7 +236,7 @@ const TestList = () => {
   };
 
   const handleSearch = (value: string) => {
-    setFetchPayload({ ...fetchPayload, display: value });
+    setFetchPayload({ ...fetchPayload, display: value, page: 1 });
   };
 
   return (
@@ -252,6 +250,7 @@ const TestList = () => {
         <SearchInput
           ref={searchInputRef}
           handleSearch={(value) => handleSearch(value)}
+          placeholder="Search for Test"
         />
       </div>
       <div className="flex w-full py-2 box-content h-[2.5rem] justify-end">
@@ -274,7 +273,7 @@ const TestList = () => {
             </div>
           }
           selectionMode={undefined}
-          scrollable={true}
+          scrollable
           scrollHeight="flex"
           rowClassName={() => getRowClasses("h-10 border-b")}
         >
@@ -284,20 +283,22 @@ const TestList = () => {
                 key={column.header}
                 field={column.field}
                 header={column.header}
-                headerClassName={column.headerClassName}
                 bodyClassName={column.bodyClassName}
                 body={column.body}
+                headerClassName="border-b font-primary uppercase"
               />
             );
           })}
         </DataTable>
-        <CustomPaginator
-          currentPage={Number(pagination?.current_page)}
-          handlePageChange={(value) => {
-            handlePageChange(value);
-          }}
-          totalPages={Number(pagination?.total_pages)}
-        />
+        {pagination != undefined && pagination.total_pages > 1 && (
+          <CustomPaginator
+            currentPage={Number(pagination?.current_page)}
+            handlePageChange={(value) => {
+              handlePageChange(value);
+            }}
+            totalPages={Number(pagination?.total_pages)}
+          />
+        )}
       </div>
       {isOpenModal && (
         <CustomModal
@@ -365,7 +366,7 @@ export const AddMasterModal = ({
         </div>
         <div className="relative">
           <label className="input-label font-secondary" htmlFor="code">
-            Code
+            Code*
           </label>
           <Controller
             control={control}
@@ -379,7 +380,7 @@ export const AddMasterModal = ({
         </div>
         <div className="relative">
           <label className="input-label font-secondary" htmlFor="display">
-            Description
+            Description*
           </label>
           <Controller
             name="display"

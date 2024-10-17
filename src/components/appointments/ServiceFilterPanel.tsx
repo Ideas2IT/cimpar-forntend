@@ -50,6 +50,8 @@ const ServiceFilterPanel = ({
 
   const clearSelections = () => {
     op?.current?.hide && op?.current?.hide();
+    setSelectedServices([]);
+    onApplyFilter([]);
   };
 
   const applySelections = () => {

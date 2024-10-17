@@ -3,9 +3,9 @@
 }
 
 .p-inputswitch .p-inputswitch-slider {
-  @apply bg-gray-300;
+  @apply bg-purple-400;
 }
 
 .p-inputswitch.p-highlight .p-inputswitch-slider {
-  @apply bg-[#0078d4];
+  @apply bg-purple-900;
 }

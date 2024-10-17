@@ -383,11 +383,7 @@ const AppointmentForm = () => {
                 render={({ field }) => (
                   <MultiSelect
                     {...field}
-                    title={field?.value
-                      ?.map((test) => {
-                        return test.display;
-                      })
-                      .join(", ")}
+                    title={field?.value?.map((test) => test.display).join(", ")}
                     inputId="testToTake"
                     optionLabel="display"
                     ref={multiSelectRef}

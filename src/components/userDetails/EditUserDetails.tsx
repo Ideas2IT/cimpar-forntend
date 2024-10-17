@@ -412,7 +412,7 @@ const EditUserDetails = () => {
                     options={genders}
                     optionLabel="name"
                     placeholder="Select Gender"
-                    className="dropdown w-full md:w-[14rem] gender"
+                    className="dropdown w-full gender"
                   />
                 )}
               />

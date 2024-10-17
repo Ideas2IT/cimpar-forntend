@@ -37,7 +37,7 @@ export const tabs: Tab[] = [
     key: "medications",
     value: "Medications",
     content: (
-      <div className="px-6 py-1 h-full">
+      <div className="ps-6 py-1 h-full">
         <Medication />
       </div>
     ),
@@ -174,7 +174,7 @@ const UserProfilePage = () => {
                 </>
               ) : (
                 <>
-                  <i className=" pi pi-pencil stroke-purple-700 font-primary mr-2" />
+                  <i className="pi pi-pencil stroke-purple-700 mr-2" />
                   Edit Details
                 </>
               )}
@@ -186,7 +186,7 @@ const UserProfilePage = () => {
               style="outline"
               onClick={() => handleEdit()}
             >
-              <i className=" pi pi-pencil stroke-purple-700 mr-2" />
+              <i className="pi pi-pencil stroke-purple-700 mr-2" />
               Edit Details
             </Button>
           )}

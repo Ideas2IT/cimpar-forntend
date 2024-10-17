@@ -34,6 +34,7 @@ import {
   RECORD_TYPE,
   RESULT_STATUS,
   SERVICE_CATEGORY,
+  SERVICE_TABS,
 } from "../../utils/AppConstants";
 interface IServiceHistorySlice {
   immunizations: ImmunizationData;
@@ -316,10 +317,14 @@ export const getServiceHistoryThunk = createAsyncThunk(
   async (payload: IServiceHistoryPayload, { rejectWithValue }) => {
     try {
       const response = await getServiceHistory(payload);
-      if (payload?.selectedTab?.toLowerCase() === "service history") {
+      if (
+        payload?.selectedTab?.toLowerCase() === SERVICE_TABS.SERVICE_HISTORY
+      ) {
         const _response = transformServiceHistory(response.data);
         return { selectedTab: payload.selectedTab, data: _response };
-      } else if (payload?.selectedTab?.toLowerCase() === "lab results") {
+      } else if (
+        payload?.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT
+      ) {
         const _response = transformLabTests(response.data);
         return { selectedTab: payload.selectedTab, data: _response };
       } else {
@@ -433,7 +438,7 @@ const serviceHistorySlice = createSlice({
       .addCase(getServiceHistoryThunk.fulfilled, (state, { payload }) => {
         if (
           payload &&
-          payload.selectedTab?.toLowerCase() === "service history"
+          payload.selectedTab?.toLowerCase() === SERVICE_TABS.SERVICE_HISTORY
         ) {
           if (payload && payload?.data) {
             const serviceHistoryData =
@@ -445,7 +450,7 @@ const serviceHistorySlice = createSlice({
           }
         } else if (
           payload &&
-          payload.selectedTab?.toLowerCase() === "immunization"
+          payload.selectedTab?.toLowerCase() === SERVICE_TABS.IMMUNIZATION
         ) {
           if (payload?.data?.data) {
             const immunizations = payload?.data?.data?.filter(isIImmunization);
@@ -455,7 +460,7 @@ const serviceHistorySlice = createSlice({
           }
         } else if (
           payload &&
-          payload.selectedTab?.toLowerCase() === "lab results"
+          payload.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT
         ) {
           if (payload?.data) {
             const labTests = payload?.data?.data?.filter(isLabTest);
