@@ -7,7 +7,7 @@ import {
 import { obfuscateAccountNumber } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { AppDispatch } from "../../store/store";
-import { RESPONSE } from "../../utils/AppConstants";
+import { DATE_FORMAT, RESPONSE } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
@@ -76,7 +76,10 @@ const DetailedAppointmentView = ({
     {
       label: "DATE OF APPOINTMENT FOR TEST",
       value: selectedAppoinement?.appointmentDate
-        ? dateFormatter(selectedAppoinement?.appointmentDate, "dd MMM, yyyy")
+        ? dateFormatter(
+            selectedAppoinement?.appointmentDate,
+            DATE_FORMAT.DD_MMM_YYYY
+          )
         : "-",
     },
     {
@@ -128,7 +131,7 @@ const DetailedAppointmentView = ({
         })}
       </div>
       <label className="font-primary text-xl pt-6 pb-3 block">
-        Appointement
+        Appointment
       </label>
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
         {appointmentFields?.map((field, index) => {

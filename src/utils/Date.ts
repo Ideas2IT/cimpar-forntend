@@ -1,6 +1,7 @@
 import { format, isToday } from "date-fns";
+import { DATE_FORMAT } from "./AppConstants";
 
-export const DEFAULT_DATE_FORMAT = "dd MMMM, yyyy";
+export const DEFAULT_DATE_FORMAT = DATE_FORMAT.DD_MMM_YYYY;
 
 export const dateFormatter = (
   value: Date | string | null | undefined,

@@ -14,7 +14,7 @@ export interface IImmunization {
   expirationDate: string;
 }
 
-export interface ImmunizationPagination {
+export interface IPagination {
   page_size: number;
   total_items: number;
   total_pages: number;
@@ -22,7 +22,7 @@ export interface ImmunizationPagination {
 }
 export interface ImmunizationData {
   data: IImmunization[];
-  pagination: ImmunizationPagination;
+  pagination: IPagination;
 }
 
 export interface IServiceHistoryPayload {
@@ -45,7 +45,7 @@ export interface IServiceHistory {
 }
 
 export interface IServiceHistoryData {
-  pagination: ImmunizationPagination;
+  pagination: IPagination;
   data: IServiceHistory[];
 }
 export interface ITestResultPayload {
@@ -113,5 +113,5 @@ export interface ILabTest {
 
 export interface ILabTestData {
   data: ILabTest[];
-  pagination: ImmunizationPagination;
+  pagination: IPagination;
 }

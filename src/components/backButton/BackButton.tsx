@@ -44,7 +44,10 @@ const BackButton = ({
 
   return (
     <div className="flex justify-between items-center lg:flex-row md:flex-col sm:flex-col">
-      <div onClick={handleBackLink} className="flex item-center">
+      <div
+        onClick={handleBackLink}
+        className="flex align-items-center item-center"
+      >
         <PrimeButton
           type="button"
           className="p-2 bg-white shadow-none rounded-md"
@@ -53,7 +56,7 @@ const BackButton = ({
         >
           <i className="pi pi-arrow-left color-primary" />
         </PrimeButton>
-        <label className="text-blue-200 font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer px-1">
+        <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer px-1">
           {previousPage}
         </label>
       </div>

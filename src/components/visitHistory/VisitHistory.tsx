@@ -5,6 +5,7 @@ import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
 import {
+  DATE_FORMAT,
   PAGE_LIMIT,
   PATH_NAME,
   RESPONSE,
@@ -103,7 +104,9 @@ const VisitHistory = () => {
       field: "admissionDate",
       header: "ADMISSION DATE",
       body: (row: IVisitHistory) => (
-        <TableCell value={dateFormatter(row.admissionDate, "dd MMM,yyyy")} />
+        <TableCell
+          value={dateFormatter(row.admissionDate, DATE_FORMAT.DD_MMM_YYYY)}
+        />
       ),
     },
     {
@@ -111,7 +114,9 @@ const VisitHistory = () => {
       field: "dischargeDate",
       header: "DISCHARGE DATE",
       body: (row: IVisitHistory) => (
-        <TableCell value={dateFormatter(row.dischargeDate, "dd MMM,yyyy")} />
+        <TableCell
+          value={dateFormatter(row.dischargeDate, DATE_FORMAT.DD_MMM_YYYY)}
+        />
       ),
     },
     {
@@ -145,11 +150,17 @@ const VisitHistory = () => {
     },
     {
       field: "ADMISSION DATE",
-      value: dateFormatter(selectedHistory.admissionDate, "dd MMM,yyyy"),
+      value: dateFormatter(
+        selectedHistory.admissionDate,
+        DATE_FORMAT.DD_MMM_YYYY
+      ),
     },
     {
       field: "DISCHARGE DATE",
-      value: dateFormatter(selectedHistory.dischargeDate, "dd MMM,yyyy"),
+      value: dateFormatter(
+        selectedHistory.dischargeDate,
+        DATE_FORMAT.DD_MMM_YYYY
+      ),
     },
     {
       field: "REASON FOR VISIT",

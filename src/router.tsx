@@ -20,6 +20,9 @@ import EditUserDetails from "./components/userDetails/EditUserDetails";
 import UserProfilePage from "./components/userProfilePage/UserProfilePage";
 import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
 import { PATH_NAME, ROLE } from "./utils/AppConstants";
+import PricingDetails from "./components/masterTables/PricingDetails";
+import Transactions from "./Pages/Transactions";
+import LocationList from "./components/masterTables/LocationList";
 const router = createBrowserRouter([
   {
     path: PATH_NAME.HOME,
@@ -75,7 +78,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: PATH_NAME.HEALTH_RECORDS,
+        path: `${PATH_NAME.HEALTH_RECORDS}/:id`,
         element: (
           <RoleBasedRoute
             requiredRole={ROLE.PATIENT}
@@ -141,6 +144,33 @@ const router = createBrowserRouter([
         path: PATH_NAME.ALL_TESTS,
         element: (
           <RoleBasedRoute requiredRole={ROLE.ADMIN} element={<TestList />} />
+        ),
+      },
+      {
+        path: PATH_NAME.PRICING,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.ADMIN}
+            element={<PricingDetails />}
+          />
+        ),
+      },
+      {
+        path: PATH_NAME.TRANSACTIONS,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.ADMIN}
+            element={<Transactions />}
+          />
+        ),
+      },
+      {
+        path: PATH_NAME.LOCATION,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.ADMIN}
+            element={<LocationList />}
+          />
         ),
       },
     ],

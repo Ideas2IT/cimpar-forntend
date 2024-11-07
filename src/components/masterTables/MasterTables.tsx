@@ -1,30 +1,40 @@
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import tests from "../../assets/icons/microscope.svg";
+import tests from "../../assets/icons/microscope-icon.svg";
 import HeaderContext from "../../context/HeaderContext";
-import { HEADER_TITLE } from "../../utils/AppConstants";
+import { HEADER_TITLE, PATH_NAME } from "../../utils/AppConstants";
+import dollarIcon from "../../assets/icons/currency-icon.svg";
+import locationIcon from "../../assets/icons/locationIcon.svg";
+import "./Masters.css";
 
 const MasterTables = () => {
   const { updateHeaderTitle } = useContext(HeaderContext);
 
-  useEffect(() => {
-    updateHeaderTitle(HEADER_TITLE.MASTER);
-  }, []);
   const tables = [
     {
       title: "Lab Tests",
       icon: tests,
       routeLink: "tests",
     },
-    // {
-    //   title: "Pricing",
-    //   icon: dollarIcon,
-    //   routeLink: "tests",
-    // },
+    {
+      title: "Pricing",
+      icon: dollarIcon,
+      routeLink: PATH_NAME.PRICING,
+    },
+    {
+      title: "Service Center Location",
+      icon: locationIcon,
+      routeLink: PATH_NAME.LOCATION,
+    },
   ];
+
+  useEffect(() => {
+    updateHeaderTitle(HEADER_TITLE.MASTER);
+  }, []);
+
   return (
-    <div className="grid md:grid-cols-3 lg:grid-cols-4 grid-cols-2 gap-3">
-      {tables?.map((table, index) => {
+    <div className="tile-wrapper">
+      {tables.map((table, index) => {
         return (
           <Tile
             icon={table.icon}
@@ -51,17 +61,12 @@ const Tile = ({
   return (
     <div
       onClick={() => navigate(route)}
-      className={`flex bg-white cursor-pointer flex-col justify-start items-center w-full h-[12rem] p-4 corsor-pointer border-2 rounded-2xl text-white font-medium hover:bg-purple-800`}
+      className="tile-icon-container corsor-pointer"
     >
       <div className="flex w-full h-[50%] justify-start">
-        <img
-          src={icon}
-          className="h-[2rem] w-[2rem] bg-purple-100 p-4 box-content rounded-lg"
-        />
+        <img src={icon} className="tile-img" />
       </div>
-      <div className="ml-2 h-[50%] font-primary text-2xl w-full text-start flex items-end ">
-        {title}
-      </div>
+      <div className="tile-title">{title}</div>
     </div>
   );
 };

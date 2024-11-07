@@ -1,8 +1,9 @@
+import { ILabTestService } from "./common";
 import { IMedicine } from "./medication";
 
 export interface ICreateAppointmentPayload {
   patientid: string;
-  test_to_take: IMedicine[];
+  test_to_take: ILabTestService[];
   date_of_appointment: string;
   schedule_time: string;
   reason_for_test: string;

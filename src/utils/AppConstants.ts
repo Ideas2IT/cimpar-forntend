@@ -1,3 +1,5 @@
+import { IOptionValue } from "../interfaces/common";
+
 export const ERROR = {
   NAME_ERROR: "Numbers are not allowed in the name field.",
 };
@@ -31,6 +33,9 @@ export const PATH_NAME = {
   RESET_PASSWORD: "/reset-password",
   MASTER_TABLES: "/master-tabs",
   ALL_TESTS: "/master-tabs/tests",
+  PRICING: "/master-tabs/pricing",
+  LOCATION: "/master-tabs/locations",
+  TRANSACTIONS: "/transactions",
 };
 
 export const ABSOLUTE_PATH = {
@@ -43,6 +48,7 @@ export const ABSOLUTE_PATH = {
   TEST_RESULT: "test-result",
   APPOINTMENT: "appointment",
   MASTER_TABS: "master-tabs",
+  TRANSACTIONS: "transactions",
 };
 
 export const RESPONSE = {
@@ -82,6 +88,12 @@ export const TABS = {
   LAB_RESULT: "Lab Results",
   IMMUNIZATION: "Immunization",
   SERVICE_HISTORY: "Service History",
+};
+
+export const SERVICE_TABS = {
+  LAB_RESULT: "lab results",
+  IMMUNIZATION: "immunization",
+  SERVICE_HISTORY: "service history",
 };
 export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
@@ -129,6 +141,8 @@ export const GENDER = {
 
 export const ERROR_CODES = {
   EXPIRED_TOKEN: 401,
+  FORBIDDEN: 403,
+  VALIDATION_ERROR: "validation error",
 };
 
 export const HEADER_TITLE = {
@@ -138,6 +152,9 @@ export const HEADER_TITLE = {
   PROFILE: "Profile",
   APPOINTMENT: "Appointments",
   HOME: "Home",
+  TRANSACTION: "Transaction History",
+  PRICING: "Pricing",
+  CENTER_LOCATION: "Center Locations",
 };
 
 export const SYMBOL = {
@@ -145,3 +162,46 @@ export const SYMBOL = {
 };
 
 export const REFRESH_TOKEN = "refresh_token";
+
+export const PRICING_INDEX = {
+  CLINICAL_LABORATORY: 0,
+  XRAY_STUDIES: 1,
+  ULTRASOUND_STUDIES: 2,
+  EKG_SERVICES: 3,
+};
+
+export const PAYMENT_STATUS = {
+  REFUNDED: "refunded",
+  COMPLETED: "completed",
+  PENDING: "pending",
+};
+
+export const LAB_SERVICES = {
+  CLINICAL_LABORATORY: "Clinical Laboratory",
+  XRAY_STUDIES: "X Ray Studies",
+  ULTRASOUND_STUDIES: "Ultrasound Study",
+  EKG_SERVICES: "EKG Services",
+};
+
+export const SERVICE_LOCATION = {
+  HOME: "home",
+  CENTER: "service center",
+} as const;
+
+export const SERVICE_CATEGORIES = [
+  LAB_SERVICES.CLINICAL_LABORATORY,
+  LAB_SERVICES.EKG_SERVICES,
+  LAB_SERVICES.XRAY_STUDIES,
+  LAB_SERVICES.ULTRASOUND_STUDIES,
+];
+
+export const DATE_FORMAT = {
+  DD_MMM_YYYY: "dd MMM, yyyy",
+  DD_MMM_YYYY_HH_MM_A: "dd MMM, yyyy - hh:mm a",
+  DD_MMMM_YYYY: "dd MMMM, yyyy",
+  DD_MM_YY: "dd MM, yy",
+  DD_MMMM_YYYY_HH_MMA: "dd MMM yyyy, hh:mm a",
+  HH_MM_SS: "HH:mm:ss",
+  HH_MM_A: "hh:mm a",
+  YYYY_MM_DD_HH_MM_SS_Z: "yyyy-MM-dd'T'HH:mm:ss'Z'",
+};

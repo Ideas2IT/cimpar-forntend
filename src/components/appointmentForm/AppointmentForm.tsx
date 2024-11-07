@@ -19,7 +19,17 @@ import checkmark from "../../assets/icons/checkmark.svg";
 import HomeIcon from "../../assets/icons/home.svg?react";
 import HeaderContext from "../../context/HeaderContext";
 import { ICreateAppointmentPayload } from "../../interfaces/appointment";
-import { ErrorResponse } from "../../interfaces/common";
+import {
+  ErrorResponse,
+  IAllTestspayload,
+  ILabTestService,
+} from "../../interfaces/common";
+import {
+  IGetLocationPayload,
+  ILocation,
+  ILocationResponse,
+  TServiceLocationType,
+} from "../../interfaces/location";
 import { IMedicine } from "../../interfaces/medication";
 import {
   getDobAndAge,
@@ -35,7 +45,8 @@ import {
 import { createAppointmentThunk } from "../../store/slices/appointmentSlice";
 import {
   getAllergiesByQueryThunk,
-  getAllTestsThunk,
+  getLabTestsForAdminThunk,
+  getLocationsThunk,
   getMedicalConditionsByQueryThunk,
   selectAllergies,
   selectConditions,
@@ -43,9 +54,14 @@ import {
 import { AppDispatch } from "../../store/store";
 import {
   CODE,
+  DATE_FORMAT,
   DIALOG_WARNING,
+  LAB_SERVICES,
+  PAGE_LIMIT,
   PATH_NAME,
+  PRICING_INDEX,
   RESPONSE,
+  SERVICE_LOCATION,
   SYSTEM,
   TABLE,
 } from "../../utils/AppConstants";
@@ -57,6 +73,9 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
 import useToast from "../useToast/UseToast";
 import "./AppointmentPage.css";
+import LocationDropDown from "./LocationDropDown";
+import ServiceOptions from "./ServiceOptions";
+import TestPricing from "./TestPricing";
 
 export interface IItem {
   id: number;
@@ -64,7 +83,7 @@ export interface IItem {
 }
 
 export interface IFormData {
-  testToTake: IMedicine[];
+  testToTake: ILabTestService[];
   dateOfAppointment: Date;
   scheduledTime: Date;
   reasonForTest: string;
@@ -74,6 +93,8 @@ export interface IFormData {
   otherMedicalConditions: string[];
   allergies: IMedicine[];
   otherAllergies: string[];
+  location: ILocation;
+  serviceType: TServiceLocationType;
 }
 
 const AppointmentForm = () => {
@@ -82,6 +103,9 @@ const AppointmentForm = () => {
     { id: 2, name: "Advised by doctor" },
     { id: 3, name: "Other" },
   ];
+
+  const navigate = useNavigate();
+
   const {
     control,
     handleSubmit,
@@ -94,24 +118,27 @@ const AppointmentForm = () => {
   } = useForm({
     defaultValues: {} as IFormData,
   });
-  const patient = useSelector(selectSelectedPatient);
-  const [showDialog, setShowDialog] = useState(false);
+
   const multiSelectRef = useRef<MultiSelect>(null);
   const timerRef = useRef<Calendar>(null);
-  const reasonForTest = watch("testReason");
-  const appointmentDate = watch("dateOfAppointment");
-  const navigate = useNavigate();
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [formData, setFormData] = useState({} as IFormData);
-  const dispatch = useDispatch<AppDispatch>();
-  const [tests, setTests] = useState<IMedicine[]>([]);
-  const handleFormSubmit = (data: IFormData) => {
-    setShowConfirmDialog(true);
-    setFormData(data);
-  };
 
+  const dispatch = useDispatch<AppDispatch>();
+
+  const patient = useSelector(selectSelectedPatient);
   const filteredAllergies = useSelector(selectAllergies);
   const filteredConditions = useSelector(selectConditions);
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formData, setFormData] = useState({} as IFormData);
+  const [tests, setTests] = useState<ILabTestService[]>([]);
+  const [locations, setLocations] = useState<ILocation[]>([]);
+  const [totalCost, setTotalCost] = useState(0);
+
+  const reasonForTest = watch("testReason");
+  const appointmentDate = watch("dateOfAppointment");
+  const selectedTests = watch("testToTake");
+  const selectedServiceType = watch("serviceType");
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -124,12 +151,33 @@ const AppointmentForm = () => {
   }, [isDirty]);
 
   useEffect(() => {
-    dispatch(getAllTestsThunk(TABLE.LAB_TEST)).then((response) => {
-      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
-        setTests(response.payload as IMedicine[]);
-      } else if (response.meta.requestStatus == RESPONSE.REJECTED) {
-        errorToast("Failed to Load lab tests", "Could not load lab tests");
+    dispatch(
+      getLabTestsForAdminThunk({
+        service_type: LAB_SERVICES.CLINICAL_LABORATORY,
+        tableName: TABLE.LAB_TEST,
+        all_records: true,
+        page: 1,
+        page_size: PAGE_LIMIT,
+      } as IAllTestspayload)
+    ).then((response) => {
+      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+        if (response?.payload?.data?.length) {
+          const _response = response.payload.data;
+          setTests(_response);
+        } else {
+          setTests([]);
+        }
       }
+    });
+    dispatch(
+      getLocationsThunk({
+        active: true,
+        page: 1,
+        page_size: PAGE_LIMIT,
+      } as IGetLocationPayload)
+    ).then((response) => {
+      const locations = response.payload as ILocationResponse;
+      setLocations(locations.data);
     });
     if (patient?.basicDetails?.id) {
       dispatch(getPatientInsuranceThunk(patient?.basicDetails?.id)).then(
@@ -169,6 +217,35 @@ const AppointmentForm = () => {
       dateOfAppointment: new Date(),
     } as IFormData);
   }, [patient?.medicalConditionsAndAllergies]);
+
+  useEffect(() => {
+    trigger("otherReasonForTest");
+    trigger("scheduledTime");
+  }, [reasonForTest, appointmentDate]);
+
+  useEffect(() => {
+    calculateTotalCost();
+  }, [selectedTests, selectedServiceType]);
+
+  const calculateTotalCost = () => {
+    if (selectedTests?.length) {
+      const totalPrice = selectedTests.reduce((acc, service) => {
+        if (selectedServiceType === SERVICE_LOCATION.HOME) {
+          return acc + Number(service.home_price);
+        } else {
+          return acc + Number(service.center_price);
+        }
+      }, 0);
+      setTotalCost(totalPrice);
+    } else {
+      setTotalCost(0);
+    }
+  };
+
+  const handleFormSubmit = (data: IFormData) => {
+    setShowConfirmDialog(true);
+    setFormData(data);
+  };
 
   const searchAllergies = (event: AutoCompleteCompleteEvent) => {
     if (event.query.trim().length > 2) {
@@ -274,7 +351,6 @@ const AppointmentForm = () => {
         patientid: patient?.basicDetails?.id,
         reason_for_test: formData?.testReason?.name,
         schedule_time: formData?.scheduledTime.toISOString(),
-
         test_to_take: formData?.testToTake,
         other_allergy: formData?.otherAllergies?.length
           ? formData?.otherAllergies?.map((allergy) => {
@@ -298,11 +374,9 @@ const AppointmentForm = () => {
     const currentDate = new Date();
     const hours = appointmentTime.getHours();
     const minutes = appointmentTime.getMinutes();
-
     const selectedDateTime = new Date(appointmentDate);
     selectedDateTime.setHours(hours);
     selectedDateTime.setMinutes(minutes);
-
     if (selectedDateTime < currentDate) {
       return "Scheduled time must be in the future.";
     } else {
@@ -318,10 +392,56 @@ const AppointmentForm = () => {
     return `${firstName} ${middleName} ${lastName} (${gender})`;
   };
 
-  useEffect(() => {
-    trigger("otherReasonForTest");
-    trigger("scheduledTime");
-  }, [reasonForTest, appointmentDate]);
+  const validateLocation = (value: ILocation) => {
+    if (!value && selectedServiceType === SERVICE_LOCATION.CENTER) {
+      return "Location is required.";
+    } else {
+      return true;
+    }
+  };
+
+  const panelHeaderTemplate = () => {
+    const columnHeaders = [
+      { lable: "Test Name", classNames: "w-[50%]" },
+      { lable: "Service Center", classNames: "w-[20%] text-center" },
+      { lable: "At Home", classNames: "w-[10%] text-center" },
+      { lable: "Telehealth Visit", classNames: "w-[20%] text-center" },
+    ];
+    return (
+      <div className="w-[100%] border-b">
+        <div
+          className="header test-sm p-2 flex"
+          style={{ width: "calc(100% - 35px)" }}
+        >
+          {columnHeaders.map((columnHeader, index) => (
+            <div
+              key={index}
+              className={`${columnHeader.classNames} capitalize`}
+            >
+              {columnHeader.lable}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const itemTemplate = (value: ILabTestService) => {
+    return (
+      <div className="flex w-full">
+        <div className="w-[50%]">{value?.display || "-"}</div>
+        <div className="w-[20%] text-center">
+          {value.currency_symbol + value?.center_price || "0"}
+        </div>
+        <div className="w-[10%] text-center">
+          {value.currency_symbol + value?.home_price || "0"}
+        </div>
+        <div className="w-[20%] text-center capitalize">
+          {value?.is_telehealth_required ? "Yes" : "No"}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -365,9 +485,15 @@ const AppointmentForm = () => {
           </div>
         </div>
         <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%] overflow-auto">
-          <div className="font-primary text-xl">Appointment Details</div>
-          <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 mt-1 gap-4">
-            <div className="md:col-span-2 test w-full relative">
+          <div className="font-primary text-xl flex items-center">
+            Appointment Details
+            <TestPricing
+              tableHeader="View Test Pricing"
+              selectedIndex={PRICING_INDEX.CLINICAL_LABORATORY}
+            />
+          </div>
+          <div className="grid grid-cols-4 mt-1 gap-4">
+            <div className="xl:col-span-3 col-span-4 test w-full relative">
               <label
                 htmlFor="testToTake"
                 className="block text-sm font-medium input-label"
@@ -383,17 +509,15 @@ const AppointmentForm = () => {
                 render={({ field }) => (
                   <MultiSelect
                     {...field}
-                    title={field?.value
-                      ?.map((test) => {
-                        return test.display;
-                      })
-                      .join(", ")}
+                    title={field?.value?.map((test) => test.display).join(", ")}
                     inputId="testToTake"
                     optionLabel="display"
                     ref={multiSelectRef}
                     options={tests}
-                    filter
                     resetFilterOnHide
+                    filter
+                    itemTemplate={(value) => itemTemplate(value)}
+                    panelHeaderTemplate={panelHeaderTemplate}
                     showSelectAll={false}
                     panelFooterTemplate={<TestFooterFormat />}
                     placeholder="Select Tests"
@@ -403,6 +527,9 @@ const AppointmentForm = () => {
                     appendTo="self"
                     className="input-field font-secondary test-multiselect"
                     maxSelectedLabels={4}
+                    selectedItemsLabel={
+                      field?.value?.length + " Tests Selected"
+                    }
                   />
                 )}
               />
@@ -410,7 +537,53 @@ const AppointmentForm = () => {
                 <ErrorMessage message={errors.testToTake.message} />
               )}
             </div>
-            <div className="col-span-1 relative">
+            <div className="lg:col-span-1 md:col-span-2 col-span-4 relative">
+              <label className="input-label block capitalize">
+                total price
+              </label>
+              <div className="border-b h-[2.5rem] pt-3">
+                ${totalCost || "0"}
+              </div>
+            </div>
+            <div className="xl:col-span-1 md:col-span-2 col-span-4 relative">
+              <label className="input-label block">
+                Planning to take test at?
+              </label>
+              <Controller
+                control={control}
+                name="serviceType"
+                defaultValue="service center"
+                render={({ field }) => (
+                  <ServiceOptions
+                    value={field.value}
+                    onChange={(value: TServiceLocationType) => {
+                      setValue("serviceType", value);
+                    }}
+                  />
+                )}
+              />
+            </div>
+            <div className="xl:col-span-1 lg:col-span-2 col-span-4 relative">
+              <Controller
+                name="location"
+                control={control}
+                rules={{
+                  validate: (value) => validateLocation(value),
+                }}
+                render={({ field }) => (
+                  <LocationDropDown
+                    disabled={selectedServiceType === SERVICE_LOCATION.HOME}
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={locations}
+                  />
+                )}
+              />
+              {errors.location && (
+                <ErrorMessage message={errors.location?.message} />
+              )}
+            </div>
+            <div className="xl:col-span-1 lg:col-span-2 col-span-4 relative">
               <label htmlFor="appointmentDate" className="block input-label">
                 Date of appointment for test*
               </label>
@@ -437,7 +610,7 @@ const AppointmentForm = () => {
                       placeholder="Please pick the date of appointment"
                       aria-label="Please pick the date of appointment"
                       inputClassName="rounded-lg"
-                      dateFormat="dd MM, yy"
+                      dateFormat={DATE_FORMAT.DD_MM_YY}
                       className="input-field"
                       icon="pi pi-calendar-minus"
                       inputStyle={{ borderRadius: "16px" }}
@@ -448,7 +621,7 @@ const AppointmentForm = () => {
                 />
               </div>
             </div>
-            <div className="sm:col-span-full md:col-span-2 lg:col-span-1 relative">
+            <div className="xl:col-span-1 lg:col-span-2 col-span-4 relative">
               <label htmlFor="scheduleTime" className="block input-label">
                 Scheduled Time*
               </label>
@@ -489,8 +662,8 @@ const AppointmentForm = () => {
               </div>
             </div>
           </div>
-          <div className="grid md:grid-cols-2 grid-cols-1 gap-4 py-3 mt-2">
-            <div className="md:col-span-1 col-span-2">
+          <div className="grid grid-cols-2 gap-4 py-3 mt-2">
+            <div className="xl:col-span-1 col-span-2">
               <label htmlFor="testReason" className="input-label">
                 Reason For Test*
               </label>
@@ -527,7 +700,7 @@ const AppointmentForm = () => {
                 <ErrorMessage message={errors.testReason.message} />
               )}
             </div>
-            <div className="md:col-span-1 col-span-2 relative">
+            <div className="xl:col-span-1 lg:col-span-2 col-span-4 relative">
               <label htmlFor="reasonDetails" className="input-label">
                 Other reason
               </label>
@@ -696,14 +869,19 @@ const AppointmentForm = () => {
               </span>
             </span>
           </div>
-          <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
-            <DetailColumn label="Name (Gender)" content={getNameAndGender()} />
+          <div className="grid grid-cols-4">
+            <DetailColumn
+              label="Name (Gender)"
+              styleClass="lg:col-span-1 col-span-2"
+              content={getNameAndGender()}
+            />
             <DetailColumn
               label="DOB (Age)"
               content={getDobAndAge(patient?.basicDetails?.dob) || ""}
             />
             <div className="col-span-2">
               <DetailColumn
+                styleClass="lg:col-span-2 col-span-4"
                 label="insurance provider & number"
                 content={getPolicyDetails(patient?.InsuranceDetails) || ""}
               />
@@ -740,6 +918,7 @@ const AppointmentForm = () => {
           styleClass="md:w-[40rem] md:h-[35rem] bg-white"
         >
           <PreviewAppointment
+            totalCost={totalCost}
             details={formData}
             handleResponse={handleConfirmation}
           />
@@ -774,6 +953,7 @@ const DetailColumn = ({
 const AppointmentStatus = () => {
   const navigate = useNavigate();
   const { updateHeaderTitle } = useContext(HeaderContext);
+
   const handleResponse = () => {
     navigate(PATH_NAME.TEST_RESULT);
     updateHeaderTitle("Health Records");

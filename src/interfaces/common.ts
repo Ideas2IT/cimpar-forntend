@@ -27,10 +27,12 @@ export interface IEntity {
 
 export interface IAllTestspayload {
   page_size: number;
-  page: number;
+  page?: number;
   code?: string;
   display?: string;
   tableName: string;
+  service_type?: string;
+  all_records?: boolean;
 }
 
 export interface IToggleRecordStatusPayload {
@@ -44,6 +46,12 @@ export interface IUpdateMasterRecordPayload {
   resourceId: string;
   display: string;
   code: string;
+  is_active?: boolean;
+  is_lab: boolean;
+  is_telehealth_required: boolean;
+  center_price: string;
+  home_price: string;
+  service_type: string;
 }
 
 export interface IAddMasterRecordPayload {
@@ -51,4 +59,24 @@ export interface IAddMasterRecordPayload {
   code?: string;
   display?: string;
   tableName: string;
+}
+
+export interface ILabService {
+  serviceName: string;
+  code: string;
+  centerPricing: string;
+  homePricing: string;
+  currency_symbol: string;
+}
+
+export interface ILabTestService {
+  center_price: string;
+  code: string;
+  display: string;
+  home_price: string;
+  id: string;
+  is_active: boolean;
+  is_telehealth_required: boolean;
+  service_type: string;
+  currency_symbol: string;
 }

@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { isAxiosError } from "axios";
 import { IInsurance, IInsuranceResponse, IUser } from "../../interfaces/User";
 import { ErrorResponse } from "../../interfaces/common";
-import { ImmunizationPagination } from "../../interfaces/immunization";
+import { IPagination } from "../../interfaces/immunization";
 import {
   INewInsurancePayload,
   IUpdateInsurancePayload,
@@ -80,7 +80,7 @@ function transformCoverageData(data: any): IInsurance[] {
 
 function transformVisitHistory(data: any) {
   let visitHistoryData = {} as IVisitHistoryData;
-  const pagination: ImmunizationPagination = {
+  const pagination: IPagination = {
     current_page: data?.current_page,
     page_size: data?.total_items,
     total_items: data?.total_items,

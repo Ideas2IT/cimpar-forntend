@@ -36,9 +36,10 @@ import {
 import { AppDispatch } from "../../store/store";
 import {
   APPOINTMENT,
+  DATE_FORMAT,
   IMMUNIZATION,
   RESPONSE,
-  SERVICE_CATEGORY
+  SERVICE_CATEGORY,
 } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import CustomPaginator from "../customPagenator/CustomPaginator";
@@ -154,7 +155,7 @@ const ServiceHistory = ({
               dateOfTest:
                 dateFormatter(
                   appointment?.appointmentDate,
-                  "dd MMM yyyy, hh:mm a"
+                  DATE_FORMAT.DD_MMMM_YYYY_HH_MMA
                 ) || "",
               testName: appointment?.appointmentFor || "",
               orderId: appointment?.id || "",
@@ -257,7 +258,7 @@ const ServiceHistory = ({
         <TestDetails
           value={
             rowData?.dateOfService
-              ? dateFormatter(rowData?.dateOfService, "dd MMM,yyyy")
+              ? dateFormatter(rowData?.dateOfService, DATE_FORMAT.DD_MMM_YYYY)
               : ""
           }
         />

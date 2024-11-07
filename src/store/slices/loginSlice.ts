@@ -193,6 +193,7 @@ const loggedInUserSlice = createSlice({
   initialState,
   reducers: {
     signOut: (state) => {
+      localStorage.setItem("logout", Date.now().toString());
       state.loggedInUserData.emailVerified = false;
       localStorageService.logout();
     },

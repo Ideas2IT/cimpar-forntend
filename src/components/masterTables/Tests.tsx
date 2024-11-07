@@ -1,9 +1,11 @@
 import { Button, Button as PrimeButton } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
+import { Dropdown } from "primereact/dropdown";
 import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+import { RadioButton } from "primereact/radiobutton";
 import { Toast } from "primereact/toast";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -11,11 +13,12 @@ import { useDispatch } from "react-redux";
 import HeaderContext from "../../context/HeaderContext";
 import {
   ErrorResponse,
-  IAddMasterRecordPayload,
   IAllTestspayload,
+  ILabTestService,
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
 } from "../../interfaces/common";
+import { ICreateLabTest } from "../../interfaces/masterTable";
 import { cleanString, getRowClasses } from "../../services/commonFunctions";
 import {
   addMasterRecordThunk,
@@ -24,7 +27,13 @@ import {
   updateMasterRecordThunk,
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import { HEADER_TITLE, RESPONSE, TABLE } from "../../utils/AppConstants";
+import {
+  HEADER_TITLE,
+  PAGE_LIMIT,
+  RESPONSE,
+  SERVICE_CATEGORIES,
+  TABLE,
+} from "../../utils/AppConstants";
 import SearchInput, { SearchInputHandle } from "../SearchInput";
 import BackButton from "../backButton/BackButton";
 import CustomModal from "../customModal/CustomModal";
@@ -33,39 +42,34 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
 import "./Masters.css";
 
-interface ILabTest {
-  serial: string;
-  code: string;
-  display: string;
-  is_active: boolean;
-  id: string;
-}
 interface IPagging {
   current_page: number;
   page_size: number;
   total_items: number;
   total_pages: number;
 }
+
 const TestList = () => {
   const { updateHeaderTitle } = useContext(HeaderContext);
   const [isOpenModal, setIsOpendModal] = useState(false);
-  const [selectedTest, setSelectedTest] = useState({} as ILabTest);
+  const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
   const dispatch = useDispatch<AppDispatch>();
-  const [tests, setTests] = useState<ILabTest[]>([]);
+  const [tests, setTests] = useState<ILabTestService[]>([]);
   const [pagination, setPagination] = useState({
     current_page: 1,
     total_items: 0,
     total_pages: 0,
-    page_size: 20,
+    page_size: PAGE_LIMIT,
   } as IPagging);
   const { toast, errorToast, successToast } = useToast();
   const searchInputRef = useRef<SearchInputHandle>(null);
-  const [fetchPayload, setFetchPayload] = useState({
+  const [fetchPayload, setFetchPayload] = useState<IAllTestspayload>({
     tableName: TABLE.LAB_TEST,
     page: 1,
-    page_size: 20,
+    page_size: PAGE_LIMIT,
     current_page: 1,
     display: "",
+    service_type: "",
   } as IAllTestspayload);
 
   useEffect(() => {
@@ -88,10 +92,10 @@ const TestList = () => {
   const fetchTests = () => {
     dispatch(getLabTestsForAdminThunk(fetchPayload)).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        const payload = response.payload.data as ILabTest[];
+        const payload = response.payload.data as ILabTestService[];
         const pagingDetails = response.payload.pagination as IPagging;
         setPagination(pagingDetails);
-        payload?.length ? addTestSerials(payload) : setTests([]);
+        setTests(payload);
       } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
         const errorResponse = response.payload as ErrorResponse;
         errorToast("Failed to fetch", errorResponse.message);
@@ -100,29 +104,19 @@ const TestList = () => {
     });
   };
 
-  const addTestSerials = (allTests: ILabTest[]) => {
-    if (allTests?.length) {
-      const updatedTests = allTests.map((test, index) => {
-        return {
-          ...test,
-          serial: String(
-            (fetchPayload.page - 1) * fetchPayload.page_size + (index + 1)
-          ),
-        };
-      });
-      setTests(updatedTests);
-    } else {
-      setTests([]);
-    }
-  };
-
-  const handleSubmit = (data: ILabTest) => {
+  const handleSubmit = (data: ILabTestService) => {
     if (data?.id) {
       const payload: IUpdateMasterRecordPayload = {
         tableName: TABLE.LAB_TEST,
         resourceId: data.id,
         display: data.display,
         code: data.code,
+        is_active: data.is_active,
+        is_lab: true,
+        is_telehealth_required: data.is_telehealth_required,
+        center_price: data.center_price,
+        home_price: data.home_price,
+        service_type: data.service_type,
       };
       dispatch(updateMasterRecordThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
@@ -139,11 +133,17 @@ const TestList = () => {
         }
       });
     } else {
-      const payload: IAddMasterRecordPayload = {
+      const payload: ICreateLabTest = {
         tableName: TABLE.LAB_TEST,
         display: data.display,
         code: data.code,
         is_active: true,
+        center_price: Number(data.center_price),
+        home_price: Number(data.home_price),
+        currency_symbol: "$",
+        is_lab: true,
+        is_telehealth_required: data.is_telehealth_required,
+        service_type: data.service_type,
       };
       dispatch(addMasterRecordThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
@@ -188,23 +188,38 @@ const TestList = () => {
   };
 
   const columns = [
-    { field: "serial", header: "ID", headerClassName: "border-b font-primary" },
+    {
+      field: "serial",
+      header: "ID",
+      body: (_: ILabTestService, options: { rowIndex: number }) => (
+        <>
+          {(pagination?.current_page - 1) * PAGE_LIMIT + options.rowIndex + 1}
+        </>
+      ),
+    },
     {
       field: "display",
-      header: "DESCRIPTION",
-      bodyClassName: "max-w-[15rem]",
-      headerClassName: "border-b font-primary",
+      header: "test description",
+      bodyClassName: "max-w-[15rem] break-all",
     },
     {
       field: "code",
       header: "CODE",
-      headerClassName: "border-b font-primary",
+      bodyClassName: "max-w-[10rem] break-all",
+    },
+    {
+      header: "telehealth required",
+      headerClassName: "justify-items-center",
+      body: (row: ILabTestService) => (
+        <div className="font-tertiary text-center">
+          {row.is_telehealth_required ? "Yes" : "No"}
+        </div>
+      ),
     },
     {
       field: "is_active",
       header: "ACTIVE",
-      headerClassName: "border-b font-primary",
-      body: (row: ILabTest) => (
+      body: (row: ILabTestService) => (
         <div className="font-tertiary">
           <label className="block ps-2">{row.is_active ? "Yes" : "No"}</label>
           <InputSwitch
@@ -218,7 +233,7 @@ const TestList = () => {
       field: "",
       headerClassName: "border-b font-primary",
       header: "ACTION",
-      body: (row: ILabTest) => (
+      body: (row: ILabTestService) => (
         <div className="font-primary text-purple-800">
           <span
             className="cursor-pointer pi pi-pen-to-square text-xl"
@@ -234,11 +249,11 @@ const TestList = () => {
 
   const handleCloseModal = () => {
     setIsOpendModal(false);
-    setSelectedTest({} as ILabTest);
+    setSelectedTest({} as ILabTestService);
   };
 
   const handleSearch = (value: string) => {
-    setFetchPayload({ ...fetchPayload, display: value });
+    setFetchPayload({ ...fetchPayload, display: value, page: 1 });
   };
 
   return (
@@ -252,6 +267,7 @@ const TestList = () => {
         <SearchInput
           ref={searchInputRef}
           handleSearch={(value) => handleSearch(value)}
+          placeholder="Search for Test"
         />
       </div>
       <div className="flex w-full py-2 box-content h-[2.5rem] justify-end">
@@ -263,18 +279,20 @@ const TestList = () => {
           className="bg-purple-800 rounded-lg px-2 text-white font-bold"
         />
       </div>
-      <div className="w-full h-[calc(100vh-240px)] bg-white rounded-lg">
+      <div
+        className={`w-full bg-white rounded-lg ${pagination && pagination.total_pages > 1 ? "h-[calc(100vh-240px)]" : "h-[calc(100vh-220px)]"}`}
+      >
         <DataTable
           value={tests}
           tableClassName="border-b"
-          className="mt-2 tests-wrapper font-tertiary mx-2"
+          className="mt-2 tests-wrapper font-tertiary"
           emptyMessage={
             <div className="flex w-full justify-center">
               No lab tests available
             </div>
           }
           selectionMode={undefined}
-          scrollable={true}
+          scrollable
           scrollHeight="flex"
           rowClassName={() => getRowClasses("h-10 border-b")}
         >
@@ -284,26 +302,28 @@ const TestList = () => {
                 key={column.header}
                 field={column.field}
                 header={column.header}
-                headerClassName={column.headerClassName}
                 bodyClassName={column.bodyClassName}
                 body={column.body}
+                headerClassName={`border-b font-tertiary uppercase ${column.headerClassName}`}
               />
             );
           })}
         </DataTable>
-        <CustomPaginator
-          currentPage={Number(pagination?.current_page)}
-          handlePageChange={(value) => {
-            handlePageChange(value);
-          }}
-          totalPages={Number(pagination?.total_pages)}
-        />
+        {pagination != undefined && pagination.total_pages > 1 && (
+          <CustomPaginator
+            currentPage={Number(pagination?.current_page)}
+            handlePageChange={(value) => {
+              handlePageChange(value);
+            }}
+            totalPages={Number(pagination?.total_pages)}
+          />
+        )}
       </div>
       {isOpenModal && (
         <CustomModal
           isDismissable="yes"
           handleClose={handleCloseModal}
-          styleClass="min-w-[35%]"
+          styleClass="min-w-[70%]"
           showCloseButton={true}
         >
           <AddMasterModal
@@ -331,18 +351,19 @@ export const AddMasterModal = ({
 }: {
   heading?: string;
   onCancel: () => void;
-  handleSubmitForm: (updatedItem: ILabTest) => void;
-  selectedItem?: ILabTest;
+  handleSubmitForm: (updatedItem: ILabTestService) => void;
+  selectedItem?: ILabTestService;
 }) => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: selectedItem,
   });
-  const handleUpdate = (data: ILabTest) => {
-    const cleanInput: ILabTest = {
+  const handleUpdate = (data: ILabTestService) => {
+    const cleanInput: ILabTestService = {
       ...data,
       display: cleanString(data.display),
       code: cleanString(data.code),
@@ -351,60 +372,202 @@ export const AddMasterModal = ({
     onCancel();
   };
 
-  const validateField = (value: string) => {
+  const validateField = (value: string, field: string) => {
     if (!value?.trim()) {
-      return "This field is required";
+      return field + " is required";
     }
     return true;
   };
+
+  const validatePrice = (price: number | string, field: string) => {
+    if (isNaN(Number(price))) {
+      return `${field} should be a number`;
+    }
+    if (Number(price) <= 0) {
+      return `${field} should be greater than 0`;
+    }
+    return true;
+  };
+
   return (
     <form onSubmit={handleSubmit((data) => handleUpdate(data))}>
       <div className="flex flex-col gap-5 p-6">
         <div className="w-full font-primary text-xl">
           {heading ? heading : "Add Data"}
         </div>
-        <div className="relative">
-          <label className="input-label font-secondary" htmlFor="code">
-            Code
-          </label>
-          <Controller
-            control={control}
-            name="code"
-            rules={{ validate: (value) => validateField(value) }}
-            render={({ field }) => (
-              <InputText id="code" {...field} className="w-full cimpar-input" />
+        <div className=" grid lg:grid-cols-2 grid-cols-1 gap-4">
+          <div className="relative">
+            <label className="input-label font-secondary" htmlFor="code">
+              Code*
+            </label>
+            <Controller
+              control={control}
+              name="code"
+              rules={{ validate: (value) => validateField(value, "Code") }}
+              render={({ field }) => (
+                <InputText
+                  id="code"
+                  {...field}
+                  placeholder="Code"
+                  className="w-full cimpar-input"
+                />
+              )}
+            />
+            {errors.code && <ErrorMessage message={errors.code.message} />}
+          </div>
+          <div className="relative">
+            <label className="input-label font-secondary" htmlFor="display">
+              Description*
+            </label>
+            <Controller
+              name="display"
+              control={control}
+              rules={{
+                validate: (value) => validateField(value, "Description"),
+              }}
+              render={({ field }) => (
+                <InputTextarea
+                  {...field}
+                  id="display"
+                  placeholder="Description"
+                  className="w-full cimpar-input h-[2.5rem]"
+                />
+              )}
+            />
+            {errors?.display && (
+              <ErrorMessage message={errors.display?.message} />
             )}
-          />
-          {errors.code && <ErrorMessage message={errors.code.message} />}
-        </div>
-        <div className="relative">
-          <label className="input-label font-secondary" htmlFor="display">
-            Description
-          </label>
-          <Controller
-            name="display"
-            control={control}
-            rules={{
-              validate: (value) => validateField(value),
-            }}
-            render={({ field }) => (
-              <InputTextarea
-                {...field}
-                id="display"
-                className="w-full cimpar-input"
-              />
+          </div>
+          <div className="relative">
+            <label
+              className="input-label block font-secondary"
+              htmlFor="serviceType"
+            >
+              Service Category*
+            </label>
+            <Controller
+              name="service_type"
+              control={control}
+              rules={{
+                validate: (value) => validateField(value, "Service Category"),
+              }}
+              render={({ field }) => (
+                <Dropdown
+                  {...field}
+                  options={SERVICE_CATEGORIES}
+                  inputId="serviceType"
+                  placeholder="Service Category"
+                  className="w-full cimpar-input px-0 h-[2.5rem] test-dropdown"
+                />
+              )}
+            />
+            {errors?.service_type && (
+              <ErrorMessage message={errors.service_type?.message} />
             )}
-          />
-          {errors?.display && (
-            <ErrorMessage message={errors.display?.message} />
-          )}
+          </div>
+          <div
+            className={`relative ${selectedItem && "opacity-60 cursor-not-allowed"}`}
+          >
+            <label className="capitalize block input-label" htmlFor="athome">
+              at home price*($)
+            </label>
+            <Controller
+              name="home_price"
+              rules={{
+                validate: (value) => validatePrice(value, "At Home Price"),
+                required: "Home Price is required",
+              }}
+              control={control}
+              defaultValue={selectedItem?.home_price}
+              render={({ field }) => (
+                <InputText
+                  {...field}
+                  placeholder="Home Price"
+                  disabled={selectedItem && !!Object.keys(selectedItem)?.length}
+                  onChange={(e) =>
+                    setValue("home_price", String(e?.target?.value))
+                  }
+                  id="athome"
+                  className="cimpar-input"
+                />
+              )}
+            />
+            {errors.home_price && (
+              <ErrorMessage message={errors?.home_price?.message} />
+            )}
+          </div>
+          <div
+            className={`realtive ${selectedItem && "cursor-not-allowed opacity-60"}`}
+          >
+            <label className="capitalize block input-label" htmlFor="atCenter">
+              at center price*($)
+            </label>
+            <Controller
+              name="center_price"
+              control={control}
+              rules={{
+                validate: (value) => validatePrice(value, "At Center Price"),
+                required: "Center Price  is required",
+              }}
+              defaultValue={selectedItem?.center_price}
+              render={({ field }) => (
+                <InputText
+                  {...field}
+                  disabled={selectedItem && !!Object.keys(selectedItem)?.length}
+                  onChange={(e) => {
+                    setValue("center_price", e.target?.value);
+                  }}
+                  id="atCenter"
+                  placeholder="Center Price"
+                  className="cimpar-input"
+                />
+              )}
+            />
+            {errors.center_price && (
+              <ErrorMessage message={errors?.center_price?.message} />
+            )}
+          </div>
+          <div className="relative">
+            <label className="input-label block pb-2">
+              TeleHealth Required
+            </label>
+            <Controller
+              name="is_telehealth_required"
+              control={control}
+              defaultValue={selectedItem?.is_telehealth_required ? true : false}
+              render={({ field }) => (
+                <div className="w-full gap-6 flex font-primary">
+                  <div className="items-center">
+                    <RadioButton
+                      inputId="teleHealthRequired"
+                      checked={field.value}
+                      onChange={() => setValue("is_telehealth_required", true)}
+                    />
+                    <label htmlFor="teleHealthRequired" className="px-2">
+                      Yes
+                    </label>
+                  </div>
+                  <div className="items-center flex">
+                    <RadioButton
+                      inputId="teleHealthNotRequired"
+                      checked={!field.value}
+                      onChange={() => setValue("is_telehealth_required", false)}
+                    />
+                    <label htmlFor="teleHealthNotRequired" className="px-2">
+                      No
+                    </label>
+                  </div>
+                </div>
+              )}
+            />
+          </div>
         </div>
         <div className="w-full text-end">
           <PrimeButton
             onClick={() => {
               onCancel();
             }}
-            className="font-primary px-3 py-2 rounded-full"
+            className="font-primary px-3 py-2 rounded-full text-purple-900"
             size="large"
             type="button"
           >

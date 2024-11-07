@@ -28,9 +28,9 @@ const CustomModal = ({
         header={header && header}
         visible={true}
         modal
-        className={`!rounded-xl ${styleClass}`}
+        className={`!rounded-xl !z-1 ${styleClass}`}
         draggable={false}
-        style={{ borderRadius: "20px" }}
+        style={{ borderRadius: "20px", zIndex: "999" }}
         maskClassName="bg-gray-500 bg-opacity-50"
         contentClassName={`${contentStyle ? contentStyle : "pb-1 bg-white"}`}
         headerClassName={`p-2 ${header ? "border-b" : "border-none"}`}

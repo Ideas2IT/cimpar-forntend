@@ -2,24 +2,43 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { isAxiosError } from "axios";
 import {
   ErrorResponse,
-  IAddMasterRecordPayload,
   IAllTestspayload,
+  ILabTestService,
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
 } from "../../interfaces/common";
 import { IMedicine } from "../../interfaces/medication";
 import {
   addMasterRecord,
+  createLocation,
   getAllergiesByQuery,
   getAllTests,
   getInputData,
+  getLabTestsWithoutPagination,
+  getLocationsWithPagination,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
+  toggleLocaitonStatus,
   toggleRecordStatus,
+  updateLocation,
   updateMasterRecord,
+  updatePricing,
 } from "../../services/masterTable.service";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
+import {
+  ICreateLocationPayload,
+  IGetLocationPayload,
+  ILocation,
+  ILocationResponse,
+  IToggleLocationStatusPayload,
+} from "../../interfaces/location";
+import { IPagination } from "../../interfaces/immunization";
+import {
+  ICreateLabTest,
+  IUpdatePricingPayload,
+} from "../../interfaces/masterTable";
+import { ERROR_CODES } from "../../utils/AppConstants";
 
 interface IMasterTableData {
   medications: IMedicine[];
@@ -45,6 +64,42 @@ const transformMedicalCondition = (data: any) => {
     };
   });
   return medicalConditions;
+};
+
+const transformLocations = (data: any) => {
+  let locationData: ILocationResponse = {} as ILocationResponse;
+  if (data?.data?.length) {
+    const pageData: IPagination = {
+      page_size: data?.pagination?.page_size || 0,
+      total_items: data?.pagination?.total_items || 0,
+      total_pages: data?.pagination?.total_pages || 0,
+      current_page: data?.pagination?.current_page || 0,
+    };
+    locationData.pagination = pageData;
+    const locations = data?.data?.map((location: any) => {
+      const resource = location?.resource;
+      return {
+        id: resource?.id,
+        center_name: resource?.name || "",
+        address_line1: resource?.address?.line?.[0] ?? "",
+        address_line2: resource?.address?.line?.[1] ?? "",
+        city: resource?.address?.city || "",
+        state: resource?.address?.state || "",
+        zip_code: resource?.address?.postalCode || "",
+        country: resource?.address?.country || "",
+        contact_person: resource?.alias?.[0] ?? "",
+        contact_email: resource?.telecom?.[1]?.value || "",
+        contact_phone: resource?.telecom?.[0]?.value || "",
+        status: resource?.status || "",
+        opening_time: resource?.hoursOfOperation?.[0]?.openingTime || "",
+        closing_time: resource?.hoursOfOperation?.[0]?.closingTime || "",
+        working_days: resource?.hoursOfOperation?.[0]?.daysOfWeek || [],
+        holiday: resource?.description || "",
+      };
+    });
+    locationData.data = locations;
+  }
+  return locationData;
 };
 
 const transformOptionData = (data: any) => {
@@ -202,6 +257,25 @@ export const getLabTestsForAdminThunk = createAsyncThunk(
   }
 );
 
+export const getLabtestsWithoutPaginationThunk = createAsyncThunk(
+  "tests/get_all",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getLabTestsWithoutPagination();
+      return response.data as ILabTestService;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to load Lab Tests";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
 export const toggleRecordStatusThunk = createAsyncThunk(
   "master/delete",
   async (payload: IToggleRecordStatusPayload, { rejectWithValue }) => {
@@ -260,8 +334,8 @@ export const updateMasterRecordThunk = createAsyncThunk(
 );
 
 export const addMasterRecordThunk = createAsyncThunk(
-  "master/update",
-  async (payload: IAddMasterRecordPayload, { rejectWithValue }) => {
+  "labtest/add",
+  async (payload: ICreateLabTest, { rejectWithValue }) => {
     try {
       const response = await addMasterRecord(payload);
       return response.data;
@@ -278,6 +352,129 @@ export const addMasterRecordThunk = createAsyncThunk(
     }
   }
 );
+
+export const createLocationThunk = createAsyncThunk(
+  "location/create",
+  async (payload: ICreateLocationPayload, { rejectWithValue }) => {
+    try {
+      const response = await createLocation(payload);
+      return response;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        let errorMessage = "";
+        if (
+          error?.response?.data?.error.toLowerCase() ===
+          ERROR_CODES.VALIDATION_ERROR
+        ) {
+          errorMessage =
+            error?.response?.data?.details?.[0]?.field +
+              ":" +
+              error?.response?.data?.details?.[0]?.message ||
+            "Failed to Create Location";
+        } else {
+          errorMessage =
+            error?.response?.data?.error || "Failed to Create Location";
+        }
+
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getLocationsThunk = createAsyncThunk(
+  "location/get-all",
+  async (payload: IGetLocationPayload, { rejectWithValue }) => {
+    try {
+      const response = await getLocationsWithPagination(payload);
+      const locations = transformLocations(response?.data);
+      return locations;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to create location";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const toggleLocationStatusThunk = createAsyncThunk(
+  "location/delete",
+  async (payload: IToggleLocationStatusPayload, { rejectWithValue }) => {
+    try {
+      const response = await toggleLocaitonStatus(payload);
+      const locations = transformLocations(response?.data);
+      return locations;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to update location status";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const updateLocationThunk = createAsyncThunk(
+  "location/put",
+  async (payload: ILocation, { rejectWithValue }) => {
+    try {
+      const response = await updateLocation(payload);
+      return response;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        let errorMessage = "";
+        if (
+          error?.response?.data?.error.toLowerCase() ===
+          ERROR_CODES.VALIDATION_ERROR
+        ) {
+          errorMessage =
+            error?.response?.data?.details?.[0]?.field +
+              ":" +
+              error?.response?.data?.details?.[0]?.message ||
+            "Failed to Update Location";
+        } else {
+          errorMessage =
+            error?.response?.data?.error || "Failed to update Location";
+        }
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const updatePricingThunk = createAsyncThunk(
+  "pricing/update",
+  async (payload: IUpdatePricingPayload, { rejectWithValue }) => {
+    try {
+      const response = await updatePricing(payload);
+      return response;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to update service pricing";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: SLICE_NAME.userSlice,
   initialState,

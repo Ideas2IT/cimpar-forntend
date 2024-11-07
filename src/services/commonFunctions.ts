@@ -7,6 +7,7 @@ import { parseISO, isBefore } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import {
   CODE,
+  DATE_FORMAT,
   INSURANCE_TYPE,
   RESULT_STATUS,
   SYSTEM,
@@ -153,7 +154,7 @@ export const getDecimalPartPart = (inches: number | null | undefined) => {
 
 export const getDobAndAge = (dob: string) => {
   if (!isNaN(new Date(dob).getTime())) {
-    const dateOfBirth = dateFormatter(dob, "dd MMMM, yyyy");
+    const dateOfBirth = dateFormatter(dob, DATE_FORMAT.DD_MMMM_YYYY);
     const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
     return dateOfBirth + " (" + age + ")";
   } else return;
@@ -281,10 +282,10 @@ export const appointmentStatus = (appointmentDateStr: string | Date) => {
     return RESULT_STATUS.UPCOMING_APPOINTMENT;
   }
   const appointmentDateUTC = new Date(
-    formatInTimeZone(appointmentDate, "UTC", "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    formatInTimeZone(appointmentDate, "UTC", DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
   );
   const currentDateUTC = new Date(
-    formatInTimeZone(new Date(), "UTC", "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    formatInTimeZone(new Date(), "UTC", DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
   );
   if (isBefore(currentDateUTC, appointmentDateUTC)) {
     return RESULT_STATUS.UPCOMING_APPOINTMENT;

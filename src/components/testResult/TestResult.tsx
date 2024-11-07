@@ -24,7 +24,12 @@ import {
   selectLabTests,
 } from "../../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../../store/store";
-import { NORMAL, RESPONSE, RESULT_STATUS } from "../../utils/AppConstants";
+import {
+  DATE_FORMAT,
+  NORMAL,
+  RESPONSE,
+  RESULT_STATUS,
+} from "../../utils/AppConstants";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { AppointentView } from "../serviceHistory/ServiceHistory";
 import { dateFormatter } from "../../utils/Date";
@@ -76,7 +81,7 @@ const TestResult = ({
             dateOfTest:
               dateFormatter(
                 appointment?.appointmentDate,
-                "dd MMM yyyy, hh:mm a"
+                DATE_FORMAT.DD_MMMM_YYYY_HH_MMA
               ) || "N/A",
             testName: appointment?.appointmentFor || "",
             orderId: appointment?.id || "",

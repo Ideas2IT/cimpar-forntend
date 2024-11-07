@@ -30,7 +30,7 @@ const UserDetails = () => {
         value:
           selectedPatient?.basicDetails?.race?.toLowerCase() === "white"
             ? "white or caucasian"
-            : selectedPatient?.basicDetails?.race,
+            : selectedPatient?.basicDetails?.race || "-",
       },
       {
         label: "HEIGHT",

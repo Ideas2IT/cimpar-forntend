@@ -12,6 +12,7 @@ import FilterIcon from "../../assets/icons/filter.svg?react";
 import { getRowClasses } from "../../services/commonFunctions";
 import { selectIsAdmin } from "../../store/slices/loginSlice";
 import {
+  DATE_FORMAT,
   PAGE_LIMIT,
   PATH_NAME,
   RESPONSE,
@@ -218,14 +219,14 @@ const Appointments = () => {
   function convertStartToUTC(date: Date): string {
     const timezoneOffset = date.getTimezoneOffset() * 60000;
     const utcDate = new Date(date.getTime() + timezoneOffset);
-    return dateFormatter(utcDate, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
   }
 
   function convertEndToUTC(date: Date): string {
     date && date.setHours(23, 59, 59, 999);
     const timezoneOffset = date.getTimezoneOffset() * 60000;
     const utcDate = new Date(date.getTime() + timezoneOffset);
-    return dateFormatter(utcDate, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
   }
 
   useEffect(() => {
@@ -273,6 +274,7 @@ const Appointments = () => {
       </div>
     );
   };
+
   const columns = [
     {
       field: "patientName",

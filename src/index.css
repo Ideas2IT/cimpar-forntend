@@ -70,13 +70,17 @@ body {
   width: 5px;
 }
 
+input {
+  @apply bg-white;
+}
+
 ::-webkit-scrollbar-thumb {
   background-color: #888;
   border-radius: 16px;
 }
 
 .input-label {
-  @apply text-[#545F71] !font-normal !text-sm;
+  @apply text-[#545F71] !font-normal !text-sm capitalize;
   font-family: FuturaBkBt;
 }
 
@@ -119,6 +123,7 @@ div {
 }
 
 .p-radiobutton .p-radiobutton-box .p-radiobutton-icon {
+  aspect-ratio: 1 / 1;
   @apply bg-[#2d6d80];
 }
 
@@ -189,4 +194,12 @@ input::placeholder {
 
 .p-chips-token {
   @apply mt-[1px];
+}
+
+.cimpar-border {
+  @apply border border-[#CDCDCD];
+}
+
+.cimpar-background {
+  @apply bg-[#F7E9FF];
 }

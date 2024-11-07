@@ -10,6 +10,7 @@ import { selectImmunizations } from "../../store/slices/serviceHistorySlice";
 import { dateFormatter } from "../../utils/Date";
 import "./Immunization.css";
 import CustomPaginator from "../customPagenator/CustomPaginator";
+import { DATE_FORMAT } from "../../utils/AppConstants";
 
 const Immunization = ({
   handlePageChange,
@@ -90,7 +91,7 @@ const Immunization = ({
                       <ColumnData
                         content={dateFormatter(
                           rowData[column.field],
-                          "dd MMM, yyyy"
+                          DATE_FORMAT.DD_MMM_YYYY
                         )}
                       />
                     ) : (
@@ -175,8 +176,11 @@ export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
     switch (title) {
       case "ADMINISTRATOR":
         return data["administrator"];
-      case "ADMINISTRATION DATE" || "-":
-        return dateFormatter(data["administrationDate"], "dd MMM,yyyy") || "-";
+      case "ADMINISTRATION DATE":
+        return (
+          dateFormatter(data["administrationDate"], DATE_FORMAT.DD_MMM_YYYY) ||
+          "-"
+        );
       case "DOSE NUMBER":
         return data["doseNumber"] || "-";
       case "DOSAGE FORM":

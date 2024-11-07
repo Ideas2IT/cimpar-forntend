@@ -58,6 +58,12 @@ const Sidebar = () => {
         icon: <i className="pi pi-wallet text-2xl" />,
         routerLink: PATH_NAME.MASTER_TABLES,
       },
+      {
+        header: HEADER_TITLE.TRANSACTION,
+        key: "transaction",
+        icon: <i className="pi pi-clock text-2xl" />,
+        routerLink: PATH_NAME.TRANSACTIONS,
+      },
     ],
     other: [],
   };
@@ -90,6 +96,7 @@ const Sidebar = () => {
 
   const changeMenuOption = () => {
     const pathname = location.pathname.split(SYMBOL.SLASH)[1];
+
     let tabIndex;
     switch (pathname) {
       case ABSOLUTE_PATH.PROFILE:
@@ -98,6 +105,7 @@ const Sidebar = () => {
       case ABSOLUTE_PATH.EDIT_MEDICAL_CONDITION:
       case ABSOLUTE_PATH.EDIT_INSURANCE:
       case ABSOLUTE_PATH.EDIT_VISIT_HISTORY:
+      case ABSOLUTE_PATH.TRANSACTIONS:
         tabIndex = 2;
         break;
       case ABSOLUTE_PATH.TEST_RESULT:

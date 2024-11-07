@@ -28,6 +28,7 @@ import {
 import { getUserProfileThunk } from "../../store/slices/UserSlice";
 import { AppDispatch } from "../../store/store";
 import {
+  DATE_FORMAT,
   ERROR,
   GENDER,
   PATH_NAME,
@@ -412,7 +413,7 @@ const EditUserDetails = () => {
                     options={genders}
                     optionLabel="name"
                     placeholder="Select Gender"
-                    className="dropdown w-full md:w-[14rem] gender"
+                    className="dropdown w-full gender"
                   />
                 )}
               />
@@ -443,7 +444,7 @@ const EditUserDetails = () => {
                       showIcon
                       icon="pi pi-calendar-minus"
                       value={new Date(field.value)}
-                      dateFormat="dd MM, yy"
+                      dateFormat={DATE_FORMAT.DD_MM_YY}
                       className="calander border rounded-lg h-[2.5rem]"
                       maxDate={new Date()}
                     />

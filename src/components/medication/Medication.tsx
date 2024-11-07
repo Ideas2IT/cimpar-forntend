@@ -41,7 +41,10 @@ const Medication = () => {
   }, [selectedPatinet?.basicDetails?.id]);
 
   return (
-    <div className="p-6">
+    <div
+      className="p-6 overflow-auto"
+      style={{ maxHeight: "calc(100vh - 180px)" }}
+    >
       <LargeDataField
         label="CURRENT MEDICATION"
         value={getMedicationNames(

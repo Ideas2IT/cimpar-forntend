@@ -1,4 +1,4 @@
-import { ImmunizationPagination } from "./immunization";
+import { IPagination } from "./immunization";
 
 export interface IVisitHistory {
   id: string;
@@ -16,7 +16,7 @@ export interface IVisitHistory {
 }
 
 export interface IVisitHistoryData {
-  pagination: ImmunizationPagination;
+  pagination: IPagination;
   data: IVisitHistory[];
 }
 

@@ -18,7 +18,7 @@ import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
 import { dateFormatter } from "../../utils/Date";
 import { getAgeFromDob } from "../../services/commonFunctions";
-import { INSURANCE_TYPE } from "../../utils/AppConstants";
+import { DATE_FORMAT, INSURANCE_TYPE } from "../../utils/AppConstants";
 
 type appointmentInitialState = {
   apointments: IAppointmentList[];
@@ -38,7 +38,7 @@ const transformAppointments = (data: any) => {
     const result: IAppointmentList = {
       id: appointment?.appointmentId || "",
       dateAndTime:
-        dateFormatter(appointment?.end, "dd MMM, yyyy - hh:mm a") ||
+        dateFormatter(appointment?.end, DATE_FORMAT.DD_MMM_YYYY_HH_MM_A) ||
         "Invalid Date",
       insurance:
         appointment?.insurance?.toLowerCase() === "no"
@@ -96,12 +96,12 @@ const transformSingleAppointment = (data: any) => {
       id: appointmentCopy?.appointmentId,
       patientName: appointmentCopy?.name,
       age: getAgeFromDob(appointmentCopy?.dob),
-      dob: dateFormatter(appointmentCopy?.dob, "dd MMM, yyyy"),
+      dob: dateFormatter(appointmentCopy?.dob, DATE_FORMAT.DD_MMM_YYYY),
       contactNumber: appointmentCopy?.phoneNo ?? "",
       gender: appointmentCopy?.gender,
       insurance: appointmentCopy?.insurance,
       appointmentDate: appointmentCopy?.end || "",
-      appointmentTime: dateFormatter(appointmentCopy?.end, "hh:mm a"),
+      appointmentTime: dateFormatter(appointmentCopy?.end, DATE_FORMAT.HH_MM_A),
       appointmentFor: appointmentCopy?.appointmentFor,
       reasonForTest: appointmentCopy?.reason_for_test ?? "-",
       currentConditions: appointmentCopy?.condition?.conditions.length

@@ -30,7 +30,12 @@ import {
   updateVisitHistoryByIdThunk,
 } from "../../store/slices/PatientSlice";
 import { AppDispatch } from "../../store/store";
-import { MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
+import {
+  DATE_FORMAT,
+  MESSAGE,
+  PATH_NAME,
+  RESPONSE,
+} from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
@@ -435,7 +440,7 @@ const EditVisitHistory = () => {
                     }}
                     value={field.value ? new Date(field?.value) : new Date()}
                     inputId="admissionDate"
-                    dateFormat="dd MM, yy"
+                    dateFormat={DATE_FORMAT.DD_MM_YY}
                     className="calander border rounded-lg h-[2.5rem]"
                     showIcon={true}
                     icon="pi pi-calendar-minus"
@@ -472,7 +477,7 @@ const EditVisitHistory = () => {
                     }}
                     inputId="dischargeDate"
                     value={field.value ? new Date(field?.value) : new Date()}
-                    dateFormat="dd MM, yy"
+                    dateFormat={DATE_FORMAT.DD_MM_YY}
                     className="calander input-field"
                     showIcon={true}
                     icon="pi pi-calendar-minus"

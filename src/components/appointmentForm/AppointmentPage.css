@@ -54,7 +54,7 @@
 }
 
 .p-multiselect-item {
-  @apply border-b border-gray-300 mx-3 flex justify-between items-center;
+  @apply border-b border-gray-300 flex justify-between items-center;
 }
 
 .custom-autocomplete {
@@ -73,9 +73,17 @@
 }
 
 .test-list span {
-  max-width: 90%;
+  width: 100%;
   display: block;
   white-space: pre-wrap;
+}
+
+.test-list {
+  @apply !top-10;
+}
+
+.p-multiselect-items-wrapper {
+  max-height: calc(100vh - 375px) !important;
 }
 
 .test-dropdown .p-dropdown-label.p-placeholder {
@@ -84,4 +92,12 @@
 
 .test-multiselect .p-multiselect-label.p-placeholder {
   @apply text-gray-400 font-medium;
+}
+
+.p-tabview-nav li.p-highlight {
+  @apply text-purple-900 border-b-2 border-purple-900 font-primary p-[2px];
+}
+
+.p-tabview-nav-link {
+  @apply justify-center;
 }

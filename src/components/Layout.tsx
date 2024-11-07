@@ -59,6 +59,12 @@ const Layout = () => {
         return HEADER_TITLE.APPOINTMENT;
       case path === PATH_NAME.ALL_TESTS:
         return HEADER_TITLE.LAB_TESTS;
+      case path === PATH_NAME.TRANSACTIONS:
+        return HEADER_TITLE.TRANSACTION;
+      case path === PATH_NAME.PRICING:
+        return HEADER_TITLE.PRICING;
+      case path === PATH_NAME.LOCATION:
+        return HEADER_TITLE.CENTER_LOCATION;
       default:
         return "Home";
     }

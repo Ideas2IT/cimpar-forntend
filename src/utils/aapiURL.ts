@@ -21,4 +21,5 @@ export const API_URL = {
   labTests: "observation",
   customMessage: "custom_message",
   masterTable: "master",
+  location: "location",
 };
