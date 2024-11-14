@@ -22,6 +22,7 @@ import {
   createLocationThunk,
   getLocationsThunk,
   getOptionValuesThunk,
+  getServiceRegionsThunk,
   toggleLocationStatusThunk,
   updateLocationThunk,
 } from "../../store/slices/masterTableSlice";
@@ -40,19 +41,27 @@ import { dateFormatter } from "../../utils/Date";
 import CustomServiceDropDown from "../serviceFilter/CustomServiceDropdown";
 import HeaderContext from "../../context/HeaderContext";
 
+interface IRegion {
+  state: string[];
+  city: string[];
+}
 const LocationList = () => {
-  const handleSearch = (value: string) => {};
   const searchInputRef = useRef<SearchInputHandle>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
   const [locations, setLocations] = useState<ILocationResponse>(
     {} as ILocationResponse
   );
+  const [initLoad, setInitLoad] = useState(true);
+  const [regions, setReagons] = useState<IRegion>({} as IRegion);
 
   const [locationPayload, setLocationPayload] = useState<IGetLocationPayload>({
     page: 1,
     page_size: PAGE_LIMIT,
     active: false,
+    cities: [],
+    states: [],
+    searchValue: "",
   } as IGetLocationPayload);
   const [states, setStates] = useState<IOptionValue[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<ILocation>(
@@ -81,19 +90,34 @@ const LocationList = () => {
     );
   };
 
+  const handleSearch = (value: string) => {
+    setLocationPayload({ ...locationPayload, searchValue: value, page: 1 });
+  };
+
   useEffect(() => {
     fetchStates();
+    getCitiesAndStatesForDropdown();
     updateHeaderTitle(HEADER_TITLE.CENTER_LOCATION);
   }, []);
 
   useEffect(() => {
-    fetchAllLocations();
+    if (!initLoad) {
+      fetchAllLocations();
+    }
+    setInitLoad(false);
   }, [locationPayload]);
 
   const fetchAllLocations = () => {
     dispatch(getLocationsThunk(locationPayload)).then((response) => {
       const locations = response.payload as ILocationResponse;
       setLocations(locations);
+    });
+  };
+
+  const getCitiesAndStatesForDropdown = () => {
+    dispatch(getServiceRegionsThunk()).then((response) => {
+      const regions = response.payload.data as any;
+      setReagons(regions[0]);
     });
   };
 
@@ -206,7 +230,7 @@ const LocationList = () => {
       working_days: data.working_days,
       holiday: "",
     };
-    if (!Object.keys(selectedLocation).length) {
+    if (!Object.keys(selectedLocation)?.length) {
       dispatch(createLocationThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           successToast("Location Created", "New Location added successfully");
@@ -269,15 +293,27 @@ const LocationList = () => {
         <div className="h-[2.5rem] flex min-w-[50%] gap-3">
           <CustomServiceDropDown
             key="cities"
-            onApplyFilter={() => {}}
+            onApplyFilter={(newCities) =>
+              setLocationPayload({
+                ...locationPayload,
+                cities: newCities,
+                page: 1,
+              })
+            }
             label="All Cities"
-            options={[]}
+            options={regions?.city}
           />
           <CustomServiceDropDown
             key="states"
-            onApplyFilter={() => {}}
+            onApplyFilter={(newStates) => {
+              setLocationPayload({
+                ...locationPayload,
+                states: newStates,
+                page: 1,
+              });
+            }}
             label="All States"
-            options={[]}
+            options={regions?.state}
           />
         </div>
         <SearchInput
@@ -321,7 +357,7 @@ const LocationList = () => {
             />
           ))}
         </DataTable>
-        {!!Object.keys(selectedLocation).length && isOpenSidebar && (
+        {!!Object.keys(selectedLocation)?.length && isOpenSidebar && (
           <Sidebar
             className="detailed-view w-[30rem]"
             header={<SidebarHeader />}

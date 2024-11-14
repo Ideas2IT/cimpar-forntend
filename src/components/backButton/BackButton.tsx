@@ -9,7 +9,7 @@ const BackButton = ({
   showConfirmDialog,
   popupText,
 }: {
-  previousPage: string;
+  previousPage: string | undefined;
   currentPage: string;
   backLink: string;
   showConfirmDialog?: boolean;
@@ -56,12 +56,12 @@ const BackButton = ({
         >
           <i className="pi pi-arrow-left color-primary" />
         </PrimeButton>
-        <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer px-1">
-          {previousPage}
+        <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer capitalize px-1">
+          {previousPage || "back"}
         </label>
       </div>
-      <label className="color-primary font-primary md:block px-1 lg:text-xl md:text-md sm:text-sm">
-        /{currentPage}
+      <label className="color-primary font-primary md:block px-1 lg:text-xl md:text-md sm:text-sm capitalize">
+        /{currentPage || ""}
       </label>
     </div>
   );

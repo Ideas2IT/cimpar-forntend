@@ -194,7 +194,7 @@ const EditUserDetails = () => {
     const payload: IUpdatePatientPayload = {
       city: cleanString(data.city),
       country: data.country || "USA",
-      dob: dateFormatter(data?.dob, "MM/dd/yyyy"),
+      dob: dateFormatter(data?.dob, DATE_FORMAT.MM_DD_YYYY),
       email: data?.email?.trim(),
       firstName: cleanString(data?.firstName),
       middleName: cleanString(data?.middleName),
@@ -220,10 +220,13 @@ const EditUserDetails = () => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
         dispatch(getPatientDetailsThunk(payload.patient_id));
         dispatch(getUserProfileThunk());
-        successToast("Updated Successfully", "Profile updated successfully");
+        successToast(
+          "Updated Successfully",
+          "Profile details updated successfully"
+        );
         setTimeout(() => {
-          if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
-            navigate(PATH_NAME.HEALTH_RECORDS);
+          if (location?.state?.from?.includes(PATH_NAME.HEALTH_RECORDS)) {
+            navigate(location?.state?.from);
           } else {
             navigate(PATH_NAME.PROFILE);
           }
@@ -252,8 +255,8 @@ const EditUserDetails = () => {
   };
 
   const handleCancel = () => {
-    if (location?.state?.from === PATH_NAME.HEALTH_RECORDS) {
-      navigate(PATH_NAME.HEALTH_RECORDS);
+    if (location?.state?.from.includes(PATH_NAME.HEALTH_RECORDS)) {
+      navigate(location?.state?.from);
     } else {
       navigate(PATH_NAME.PROFILE);
     }
@@ -283,14 +286,14 @@ const EditUserDetails = () => {
         <div className="flex flex-row justify-between pb-6">
           <BackButton
             previousPage={
-              location?.state?.from === PATH_NAME.HEALTH_RECORDS
+              location?.state?.from.includes(PATH_NAME.HEALTH_RECORDS)
                 ? "Make Appointment"
                 : "Personal"
             }
             currentPage="Edit Profile"
             backLink={
-              location?.state?.from === PATH_NAME.HEALTH_RECORDS
-                ? PATH_NAME.HEALTH_RECORDS
+              location?.state?.from.includes(PATH_NAME.HEALTH_RECORDS)
+                ? location?.state?.from
                 : PATH_NAME.PROFILE
             }
           />

@@ -229,7 +229,7 @@ const EditMedicalConditions = () => {
             </PrimeButton>
           </div>
         </div>
-        <div className="p-6 bg-white overflow-auto rounded-lg">
+        <div className="p-6 bg-white overflow-auto rounded-lg h-[calc(100vh-200px)]">
           <label className="font-primary text-xl pb-6">
             Medical Conditions
           </label>
@@ -244,6 +244,7 @@ const EditMedicalConditions = () => {
                 control={control}
                 render={({ field }) => (
                   <CustomAutoComplete
+                    key="medicalConditions"
                     handleSearch={searchMedicalConditions}
                     inputId="medicalConditions"
                     handleSelection={(data) =>
@@ -339,6 +340,7 @@ const EditMedicalConditions = () => {
                 control={control}
                 render={({ field }) => (
                   <CustomAutoComplete
+                    key="allergies"
                     handleSearch={searchAllergies}
                     inputId="allergies"
                     handleSelection={(data) => setValue("allergies", data)}
@@ -458,6 +460,7 @@ const EditMedicalConditions = () => {
                   control={control}
                   render={({ field }) => (
                     <CustomAutoComplete
+                      key="familyMedicalConditions"
                       selectedItems={field.value}
                       handleSearch={searchMedicalConditions}
                       inputId="familyMedicalConditions"

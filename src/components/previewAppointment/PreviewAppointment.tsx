@@ -168,7 +168,6 @@ const PreviewAppointment = ({
     </div>
   );
 };
-export default PreviewAppointment;
 
 const TestDetailsTable = ({
   totalCost,
@@ -240,3 +239,5 @@ const TestDetailsTable = ({
     </div>
   );
 };
+
+export default PreviewAppointment;

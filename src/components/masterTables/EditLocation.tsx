@@ -120,14 +120,11 @@ const EditLocation = ({
         </span>
         <span className="relative">
           <label className="input-label block" htmlFor="addressII">
-            Address line II*
+            Address line II
           </label>
           <Controller
             control={control}
             name="address_line2"
-            rules={{
-              required: "Address Line II is required",
-            }}
             render={({ field }) => (
               <InputText
                 {...field}

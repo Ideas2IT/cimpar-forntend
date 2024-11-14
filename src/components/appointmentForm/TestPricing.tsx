@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CustomModal from "../customModal/CustomModal";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -110,7 +110,10 @@ const PricingModal = (props: IPricingTableProps) => {
     <>
       <span
         className="text-[16px] flex items-center font-primary text-purple-900 ms-3 cursor-pointer hover:border-b hover:border-purple-900"
-        onClick={() => setIsOpenPricingModal(true)}
+        onClick={() => {
+          setIsOpenPricingModal(true);
+          setActiveIndex(selectedIndex || 0);
+        }}
       >
         <DollarSign className="inline h-[16px] me-2 underline" />
 

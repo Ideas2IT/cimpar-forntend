@@ -130,6 +130,9 @@ const TestList = () => {
               item.id === data.id ? { ...item, ...data } : item
             )
           );
+        } else {
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Failed to update", errorResponse.message);
         }
       });
     } else {
@@ -466,10 +469,10 @@ export const AddMasterModal = ({
             )}
           </div>
           <div
-            className={`relative ${selectedItem && "opacity-60 cursor-not-allowed"}`}
+            className={`relative ${selectedItem && !!Object.keys(selectedItem)?.length && "opacity-60 cursor-not-allowed"}`}
           >
             <label className="capitalize block input-label" htmlFor="athome">
-              at home price*($)
+              at home price($)*
             </label>
             <Controller
               name="home_price"
@@ -497,17 +500,17 @@ export const AddMasterModal = ({
             )}
           </div>
           <div
-            className={`realtive ${selectedItem && "cursor-not-allowed opacity-60"}`}
+            className={`realtive ${selectedItem && !!Object.keys(selectedItem)?.length && "cursor-not-allowed opacity-60"}`}
           >
             <label className="capitalize block input-label" htmlFor="atCenter">
-              at center price*($)
+              Service center price($)*
             </label>
             <Controller
               name="center_price"
               control={control}
               rules={{
-                validate: (value) => validatePrice(value, "At Center Price"),
-                required: "Center Price  is required",
+                validate: (value) => validatePrice(value, "Service Center Price"),
+                required: "Service Center Price  is required",
               }}
               defaultValue={selectedItem?.center_price}
               render={({ field }) => (
@@ -537,8 +540,9 @@ export const AddMasterModal = ({
               defaultValue={selectedItem?.is_telehealth_required ? true : false}
               render={({ field }) => (
                 <div className="w-full gap-6 flex font-primary">
-                  <div className="items-center">
+                  <div className="align-center items-center">
                     <RadioButton
+                      className="w-6 h-6"
                       inputId="teleHealthRequired"
                       checked={field.value}
                       onChange={() => setValue("is_telehealth_required", true)}

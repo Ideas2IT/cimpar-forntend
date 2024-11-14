@@ -22,4 +22,5 @@ export const API_URL = {
   customMessage: "custom_message",
   masterTable: "master",
   location: "location",
+  locationDetails: `location/location-details`,
 };

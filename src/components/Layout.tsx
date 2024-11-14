@@ -73,7 +73,7 @@ const Layout = () => {
   useEffect(() => {
     if (
       location.pathname === SYMBOL.SLASH ||
-      location.pathname === PATH_NAME.HEALTH_RECORDS
+      location.pathname.startsWith(PATH_NAME.HEALTH_RECORDS)
     ) {
       setUsername("Hi, " + user);
     } else {

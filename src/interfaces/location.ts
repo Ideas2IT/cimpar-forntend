@@ -23,9 +23,12 @@ export interface ILocation extends ICreateLocationPayload {
 }
 
 export interface IGetLocationPayload {
+  cities?: string[];
+  states?: string[];
   active: boolean;
   page: number;
   page_size: number;
+  searchValue: string;
 }
 
 export interface ILocationResponse {

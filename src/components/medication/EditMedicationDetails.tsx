@@ -193,7 +193,7 @@ const EditMedicationDetails = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white !h-[35rem] p-6 rounded-xl">
+          <div className="bg-white !h-[calc(100vh-200px)] p-6 rounded-xl overflow-auto">
             <div>
               <label className="">
                 Are you currently taking any medication?*

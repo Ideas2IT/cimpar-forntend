@@ -79,7 +79,7 @@ const CustomServiceDropDown = ({
         >
           <div className="h-[20rem] relative">
             <div className="h-[90%] overflow-scroll">
-              {!!options.length &&
+              {!!options?.length &&
                 options.map((option) => (
                   <div
                     key={option}

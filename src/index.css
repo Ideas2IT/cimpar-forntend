@@ -97,6 +97,10 @@ input {
   border-radius: 24px;
 }
 
+.p-autocomplete-multiple-container {
+  @apply w-full;
+}
+
 .p-inputtext {
   box-shadow: none !important;
   color: #000;
@@ -144,7 +148,7 @@ div {
 }
 
 .p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
-  @apply px-2 py-0 mx-0 my-2 !min-w-[40rem] !max-w-[40rem];
+  @apply px-2 py-0 mx-0 my-2;
 }
 
 .input-field {
@@ -186,10 +190,6 @@ div {
 input::placeholder {
   font-family: "futuraMdBt";
   @apply text-[#9BA5B7];
-}
-
-.p-autocomplete .p-autocomplete-pane {
-  @apply !min-w-[40rem];
 }
 
 .p-chips-token {

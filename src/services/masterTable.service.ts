@@ -66,6 +66,10 @@ const toggleRecordStatus = (payload: IToggleRecordStatusPayload) => {
   );
 };
 
+const fetchServiceRegions = () => {
+  return http.get(`${API_URL.locationDetails}`);
+};
+
 const updateMasterRecord = (payload: IUpdateMasterRecordPayload) => {
   return http.put(
     `${API_URL.masterTable}/${payload.tableName}?resource_id=${payload.resourceId}`,
@@ -107,8 +111,18 @@ const getLocationsWithPagination = (payload: IGetLocationPayload) => {
     active: payload.active?.toString(),
     page: payload.page?.toString(),
     page_size: payload.page_size?.toString(),
+    location: payload?.searchValue,
+    city_state: [payload?.cities, payload?.states].filter(Boolean).join(","),
   };
-  const queryString = new URLSearchParams(params).toString();
+
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(
+      ([_, value]) =>
+        value !== undefined && value !== null && value !== "" && value !== ","
+    )
+  );
+
+  const queryString = new URLSearchParams(filteredParams).toString();
   return http.get(`${API_URL.location}?${queryString}`);
 };
 
@@ -148,4 +162,5 @@ export {
   updateMasterRecord,
   updatePricing,
   updateLocation,
+  fetchServiceRegions,
 };

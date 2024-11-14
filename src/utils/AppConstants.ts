@@ -36,6 +36,7 @@ export const PATH_NAME = {
   PRICING: "/master-tabs/pricing",
   LOCATION: "/master-tabs/locations",
   TRANSACTIONS: "/transactions",
+  PAYMENT: "/payment",
 };
 
 export const ABSOLUTE_PATH = {
@@ -183,6 +184,12 @@ export const LAB_SERVICES = {
   EKG_SERVICES: "EKG Services",
 };
 
+export const SERVICE_MENU = {
+  LIBORATORY: "laboratory",
+  IMAGING: "imaging",
+  HOME_CARE: "home-care",
+};
+
 export const SERVICE_LOCATION = {
   HOME: "home",
   CENTER: "service center",
@@ -204,4 +211,5 @@ export const DATE_FORMAT = {
   HH_MM_SS: "HH:mm:ss",
   HH_MM_A: "hh:mm a",
   YYYY_MM_DD_HH_MM_SS_Z: "yyyy-MM-dd'T'HH:mm:ss'Z'",
+  MM_DD_YYYY: "MM/dd/yyyy",
 };

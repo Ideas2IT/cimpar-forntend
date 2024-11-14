@@ -11,6 +11,7 @@ import { IMedicine } from "../../interfaces/medication";
 import {
   addMasterRecord,
   createLocation,
+  fetchServiceRegions,
   getAllergiesByQuery,
   getAllTests,
   getInputData,
@@ -396,6 +397,25 @@ export const getLocationsThunk = createAsyncThunk(
       if (isAxiosError(error)) {
         const errorMessage =
           error?.response?.data?.error || "Failed to create location";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getServiceRegionsThunk = createAsyncThunk(
+  "regions/get",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetchServiceRegions();
+      return response?.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to get Service Regions";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,

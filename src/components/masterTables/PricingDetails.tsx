@@ -309,7 +309,7 @@ const EditPricing = ({
       disabled: false,
       element: <InputText />,
       styleClasses: "",
-      label: "service center",
+      label: "service center($)",
       validationRules: { validate: (value: string) => validatePrice(value) },
     },
     {
@@ -317,7 +317,7 @@ const EditPricing = ({
       disabled: false,
       element: <InputText />,
       styleClasses: "",
-      label: "at homes",
+      label: "at homes($)",
       validationRules: { validate: (value: string) => validatePrice(value) },
     },
   ];
@@ -329,7 +329,7 @@ const EditPricing = ({
   const validatePrice = (value: string) => {
     const price = parseFloat(value);
     if (isNaN(price) || price <= 0) {
-      return "Price should be a positive number";
+      return "Price should be greate than 0.";
     }
     return true;
   };

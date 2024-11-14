@@ -12,7 +12,7 @@ import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "react-time-picker/dist/TimePicker.css";
 import AddRecord from "../../assets/icons/addrecord.svg?react";
 import checkmark from "../../assets/icons/checkmark.svg";
@@ -62,6 +62,7 @@ import {
   PRICING_INDEX,
   RESPONSE,
   SERVICE_LOCATION,
+  SERVICE_MENU,
   SYSTEM,
   TABLE,
 } from "../../utils/AppConstants";
@@ -70,12 +71,13 @@ import BackButton from "../backButton/BackButton";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import CustomModal from "../customModal/CustomModal";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import PreviewAppointment from "../previewAppointment/PreviewAppoinement";
+import PreviewAppointment from "../previewAppointment/PreviewAppointment";
 import useToast from "../useToast/UseToast";
 import "./AppointmentPage.css";
 import LocationDropDown from "./LocationDropDown";
 import ServiceOptions from "./ServiceOptions";
 import TestPricing from "./TestPricing";
+import Payment from "../stripePayment/Payment";
 
 export interface IItem {
   id: number;
@@ -134,6 +136,7 @@ const AppointmentForm = () => {
   const [tests, setTests] = useState<ILabTestService[]>([]);
   const [locations, setLocations] = useState<ILocation[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const { service } = useParams();
 
   const reasonForTest = watch("testReason");
   const appointmentDate = watch("dateOfAppointment");
@@ -151,18 +154,22 @@ const AppointmentForm = () => {
   }, [isDirty]);
 
   useEffect(() => {
+    loadInputData();
+  }, [patient?.basicDetails?.id]);
+
+  const loadInputData = () => {
     dispatch(
       getLabTestsForAdminThunk({
-        service_type: LAB_SERVICES.CLINICAL_LABORATORY,
+        service_type: getServiceCategory(),
         tableName: TABLE.LAB_TEST,
-        all_records: true,
+        all_records: false,
         page: 1,
         page_size: PAGE_LIMIT,
       } as IAllTestspayload)
     ).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         if (response?.payload?.data?.length) {
-          const _response = response.payload.data;
+          const _response = response.payload.data as ILabTestService[];
           setTests(_response);
         } else {
           setTests([]);
@@ -201,7 +208,7 @@ const AppointmentForm = () => {
         }
       });
     }
-  }, [patient?.basicDetails?.id]);
+  };
 
   useEffect(() => {
     reset({
@@ -247,6 +254,19 @@ const AppointmentForm = () => {
     setFormData(data);
   };
 
+  const getServiceCategory = () => {
+    switch (service) {
+      case SERVICE_MENU.LIBORATORY:
+        return LAB_SERVICES.CLINICAL_LABORATORY;
+      case SERVICE_MENU.IMAGING:
+        return LAB_SERVICES.XRAY_STUDIES;
+      case SERVICE_MENU.HOME_CARE:
+        return LAB_SERVICES.EKG_SERVICES;
+      default:
+        return LAB_SERVICES.CLINICAL_LABORATORY;
+    }
+  };
+
   const searchAllergies = (event: AutoCompleteCompleteEvent) => {
     if (event.query.trim().length > 2) {
       dispatch(getAllergiesByQueryThunk(event.query));
@@ -282,7 +302,6 @@ const AppointmentForm = () => {
       </div>
     );
   };
-
   const confirmEdit = () => {
     confirmDialog({
       header: "Confirmation",
@@ -315,7 +334,7 @@ const AppointmentForm = () => {
 
   const accept = () => {
     navigate(PATH_NAME.EDIT_PROFILE, {
-      state: { from: PATH_NAME.HEALTH_RECORDS },
+      state: { from: `${PATH_NAME.HEALTH_RECORDS}/${service}` },
     });
   };
 
@@ -400,6 +419,19 @@ const AppointmentForm = () => {
     }
   };
 
+  const setTabIndex = () => {
+    switch (service) {
+      case SERVICE_MENU.LIBORATORY:
+        return PRICING_INDEX.CLINICAL_LABORATORY;
+      case SERVICE_MENU.IMAGING:
+        return PRICING_INDEX.XRAY_STUDIES;
+      case SERVICE_MENU.HOME_CARE:
+        return PRICING_INDEX.ULTRASOUND_STUDIES;
+      default:
+        return PRICING_INDEX.EKG_SERVICES;
+    }
+  };
+
   const panelHeaderTemplate = () => {
     const columnHeaders = [
       { lable: "Test Name", classNames: "w-[50%]" },
@@ -455,7 +487,7 @@ const AppointmentForm = () => {
         <div className="flex mx-4 justify-between items-center bg-gray-100">
           <BackButton
             showConfirmDialog={true}
-            previousPage="Home"
+            previousPage={service}
             currentPage="Make Appointment"
             backLink={PATH_NAME.HOME}
           />
@@ -489,7 +521,7 @@ const AppointmentForm = () => {
             Appointment Details
             <TestPricing
               tableHeader="View Test Pricing"
-              selectedIndex={PRICING_INDEX.CLINICAL_LABORATORY}
+              selectedIndex={setTabIndex()}
             />
           </div>
           <div className="grid grid-cols-4 mt-1 gap-4">
@@ -743,6 +775,7 @@ const AppointmentForm = () => {
                 control={control}
                 render={({ field }) => (
                   <CustomAutoComplete
+                    key="medicalConditons"
                     handleSearch={searchMedicalConditions}
                     inputId="medicalConditions"
                     handleSelection={handleSelectMedicalConditons}
@@ -803,6 +836,7 @@ const AppointmentForm = () => {
                 control={control}
                 render={({ field }) => (
                   <CustomAutoComplete
+                    key="allergies"
                     handleSearch={searchAllergies}
                     inputId="allergies"
                     items={

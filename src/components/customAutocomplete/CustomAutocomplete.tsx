@@ -44,7 +44,7 @@ export const CustomAutoComplete = ({
         delay={750}
         ref={autoRef}
         inputRef={inputReferences}
-        className="w-[90%] min-h-[2.3rem]"
+        className="!w-[90%] min-h-[2.3rem]"
         multiple
         value={selectedItems}
         field="display"
@@ -59,13 +59,11 @@ export const CustomAutoComplete = ({
         showEmptyMessage={true}
         itemProp="py-0"
         removeTokenIcon={"pi pi-times"}
-        panelClassName={`custom-autocomplete-panel ${items?.length && "panel-header"}`}
+        panelClassName={`${items?.length && "panel-header"}`}
         panelStyle={{
           paddingTop: "40px",
-          minWidth: "40rem",
         }}
         inputClassName="w-auto"
-        appendTo="self"
         loadingIcon={<></>}
       />
       {Boolean(selectedItems?.length) && (

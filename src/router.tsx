@@ -23,6 +23,7 @@ import { PATH_NAME, ROLE } from "./utils/AppConstants";
 import PricingDetails from "./components/masterTables/PricingDetails";
 import Transactions from "./Pages/Transactions";
 import LocationList from "./components/masterTables/LocationList";
+import Payment from "./components/stripePayment/Payment";
 const router = createBrowserRouter([
   {
     path: PATH_NAME.HOME,
@@ -78,7 +79,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: `${PATH_NAME.HEALTH_RECORDS}/:id`,
+        path: `${PATH_NAME.HEALTH_RECORDS}/:service`,
         element: (
           <RoleBasedRoute
             requiredRole={ROLE.PATIENT}
@@ -194,6 +195,10 @@ const router = createBrowserRouter([
   {
     path: PATH_NAME.FORGOT_PASSWORD,
     element: <ForgotPassword />,
+  },
+  {
+    path: "/payment",
+    element: <Payment />,
   },
   {
     path: "*",
