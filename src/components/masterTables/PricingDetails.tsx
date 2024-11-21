@@ -5,7 +5,7 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ErrorResponse,
   IAllTestspayload,
@@ -16,6 +16,7 @@ import { IUpdatePricingPayload } from "../../interfaces/masterTable";
 import { getRowClasses, handleKeyPress } from "../../services/commonFunctions";
 import {
   getLabTestsForAdminThunk,
+  selectServiceCategories,
   updatePricingThunk,
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
@@ -24,7 +25,6 @@ import {
   PAGE_LIMIT,
   PATH_NAME,
   RESPONSE,
-  SERVICE_CATEGORIES,
   TABLE,
 } from "../../utils/AppConstants";
 import BackButton from "../backButton/BackButton";
@@ -36,6 +36,7 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import HeaderContext from "../../context/HeaderContext";
 
 export default function PricingDetails() {
+  const serviceCategories = useSelector(selectServiceCategories);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
   const editService = (value: boolean, service = {} as ILabTestService) => {
@@ -113,6 +114,15 @@ export default function PricingDetails() {
     });
   };
 
+  const handleSearch = (value: string) => {
+    fetchPayload.display !== value &&
+      setFetchPayload({
+        ...fetchPayload,
+        display: value,
+        page: 1,
+      });
+  };
+
   return (
     <>
       {!isEditing ? (
@@ -132,18 +142,10 @@ export default function PricingDetails() {
                     service_type: value.join(","),
                   });
                 }}
-                options={SERVICE_CATEGORIES}
+                options={serviceCategories}
                 label="Service Types"
               />
-              <SearchInput
-                handleSearch={(value) => {
-                  setFetchPayload({
-                    ...fetchPayload,
-                    display: value,
-                    page: 1,
-                  });
-                }}
-              />
+              <SearchInput handleSearch={handleSearch} />
             </div>
           </div>
           <PricingData
@@ -233,7 +235,7 @@ const PricingData = ({
           className="rounded-lg min-w-[50rem]"
           value={tests}
           scrollable
-          scrollHeight="calc(100vh - 220px)"
+          scrollHeight="calc(100vh - 210px)"
           rowClassName={() => getRowClasses("h-[3.5rem]")}
           emptyMessage={
             <div className="w-full text-center">No Data Available</div>
@@ -245,7 +247,7 @@ const PricingData = ({
                 key={"key" + column.header}
                 header={column.header}
                 field={column.field}
-                headerClassName="uppercase border-b font-secondary"
+                headerClassName="uppercase border-b font-secondary px-2"
                 bodyClassName="font-tertiary border-b px-2 test-wrap max-w-[10rem]"
                 body={column.body}
               />

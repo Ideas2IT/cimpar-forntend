@@ -21,11 +21,10 @@ import HeaderContext from "../../context/HeaderContext";
 import { ICreateAppointmentPayload } from "../../interfaces/appointment";
 import {
   ErrorResponse,
-  IAllTestspayload,
+  IGetPatientServicesPayload,
   ILabTestService,
 } from "../../interfaces/common";
 import {
-  IGetLocationPayload,
   ILocation,
   ILocationResponse,
   TServiceLocationType,
@@ -45,8 +44,8 @@ import {
 import { createAppointmentThunk } from "../../store/slices/appointmentSlice";
 import {
   getAllergiesByQueryThunk,
-  getLabTestsForAdminThunk,
-  getLocationsThunk,
+  getLabTestsForPatientThunk,
+  getLocationsWithoutPaginationThunk,
   getMedicalConditionsByQueryThunk,
   selectAllergies,
   selectConditions,
@@ -57,9 +56,7 @@ import {
   DATE_FORMAT,
   DIALOG_WARNING,
   LAB_SERVICES,
-  PAGE_LIMIT,
   PATH_NAME,
-  PRICING_INDEX,
   RESPONSE,
   SERVICE_LOCATION,
   SERVICE_MENU,
@@ -77,7 +74,6 @@ import "./AppointmentPage.css";
 import LocationDropDown from "./LocationDropDown";
 import ServiceOptions from "./ServiceOptions";
 import TestPricing from "./TestPricing";
-import Payment from "../stripePayment/Payment";
 
 export interface IItem {
   id: number;
@@ -159,13 +155,11 @@ const AppointmentForm = () => {
 
   const loadInputData = () => {
     dispatch(
-      getLabTestsForAdminThunk({
+      getLabTestsForPatientThunk({
         service_type: getServiceCategory(),
         tableName: TABLE.LAB_TEST,
-        all_records: false,
-        page: 1,
-        page_size: PAGE_LIMIT,
-      } as IAllTestspayload)
+        is_active: true,
+      } as IGetPatientServicesPayload)
     ).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         if (response?.payload?.data?.length) {
@@ -176,13 +170,7 @@ const AppointmentForm = () => {
         }
       }
     });
-    dispatch(
-      getLocationsThunk({
-        active: true,
-        page: 1,
-        page_size: PAGE_LIMIT,
-      } as IGetLocationPayload)
-    ).then((response) => {
+    dispatch(getLocationsWithoutPaginationThunk()).then((response) => {
       const locations = response.payload as ILocationResponse;
       setLocations(locations.data);
     });
@@ -255,16 +243,12 @@ const AppointmentForm = () => {
   };
 
   const getServiceCategory = () => {
-    switch (service) {
-      case SERVICE_MENU.LIBORATORY:
-        return LAB_SERVICES.CLINICAL_LABORATORY;
-      case SERVICE_MENU.IMAGING:
-        return LAB_SERVICES.XRAY_STUDIES;
-      case SERVICE_MENU.HOME_CARE:
-        return LAB_SERVICES.EKG_SERVICES;
-      default:
-        return LAB_SERVICES.CLINICAL_LABORATORY;
+    if (service && service === SERVICE_MENU.LABORATORY) {
+      return LAB_SERVICES.CLINICAL_LABORATORY;
     }
+    return service
+      ? service?.charAt(0)?.toUpperCase() + service?.slice(1)
+      : LAB_SERVICES.CLINICAL_LABORATORY;
   };
 
   const searchAllergies = (event: AutoCompleteCompleteEvent) => {
@@ -419,18 +403,18 @@ const AppointmentForm = () => {
     }
   };
 
-  const setTabIndex = () => {
-    switch (service) {
-      case SERVICE_MENU.LIBORATORY:
-        return PRICING_INDEX.CLINICAL_LABORATORY;
-      case SERVICE_MENU.IMAGING:
-        return PRICING_INDEX.XRAY_STUDIES;
-      case SERVICE_MENU.HOME_CARE:
-        return PRICING_INDEX.ULTRASOUND_STUDIES;
-      default:
-        return PRICING_INDEX.EKG_SERVICES;
-    }
-  };
+  // const setTabIndex = () => {
+  //   switch (service) {
+  //     case SERVICE_MENU.LIBORATORY:
+  //       return PRICING_INDEX.CLINICAL_LABORATORY;
+  //     case SERVICE_MENU.IMAGING:
+  //       return PRICING_INDEX.XRAY_STUDIES;
+  //     case SERVICE_MENU.HOME_CARE:
+  //       return PRICING_INDEX.ULTRASOUND_STUDIES;
+  //     default:
+  //       return PRICING_INDEX.EKG_SERVICES;
+  //   }
+  // };
 
   const panelHeaderTemplate = () => {
     const columnHeaders = [
@@ -521,7 +505,7 @@ const AppointmentForm = () => {
             Appointment Details
             <TestPricing
               tableHeader="View Test Pricing"
-              selectedIndex={setTabIndex()}
+              selectedTab={service || ""}
             />
           </div>
           <div className="grid grid-cols-4 mt-1 gap-4">

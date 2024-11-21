@@ -4,7 +4,7 @@ import SearchInput, { SearchInputHandle } from "../SearchInput";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { getRowClasses } from "../../services/commonFunctions";
+import { cleanString, getRowClasses } from "../../services/commonFunctions";
 import { Sidebar } from "primereact/sidebar";
 import CustomModal from "../customModal/CustomModal";
 import EditLocation from "./EditLocation";
@@ -173,7 +173,6 @@ const LocationList = () => {
     {
       field: "center_name",
       header: "Center Name",
-      className: "w",
     },
     {
       header: "Address",
@@ -214,11 +213,11 @@ const LocationList = () => {
 
   const handleSubmitForm = (data: ILocation) => {
     const payload: ICreateLocationPayload = {
-      address_line1: data.address_line1,
-      address_line2: data.address_line2,
-      city: data.city,
-      zip_code: data.zip_code,
-      center_name: data.center_name,
+      address_line1: cleanString(data.address_line1) || "",
+      address_line2: cleanString(data.address_line2),
+      city: cleanString(data.city),
+      zip_code: cleanString(data.zip_code),
+      center_name: cleanString(data.center_name),
       state: data.state,
       closing_time: dateFormatter(data.closing_time, DATE_FORMAT.HH_MM_SS),
       contact_email: data.contact_email,
@@ -351,7 +350,6 @@ const LocationList = () => {
               header={column?.header}
               field={column?.field}
               body={column?.body}
-              className={column?.className}
               bodyClassName="font-tertiary"
               headerClassName="border-b font-secondary uppercase text-sm"
             />

@@ -24,7 +24,7 @@ const Header = () => {
   };
   return (
     <div className="flex text-black justify-between items-center mb-6 mx-6">
-      <p className="font-bold text-2xl font-primary truncate max-w-[20rem] text-gray-700">
+      <p className="font-bold text-2xl font-primary truncate max-w-[20rem] text-gray-700 capitalize">
         {username}
       </p>
       <div

@@ -23,4 +23,5 @@ export const API_URL = {
   masterTable: "master",
   location: "location",
   locationDetails: `location/location-details`,
+  activeLocation: "active_location",
 };

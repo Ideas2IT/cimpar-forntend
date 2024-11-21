@@ -1,7 +1,7 @@
+import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { useEffect, useState } from "react";
 import CheckoutForm from "./CheckoutForm";
-import { Elements } from "@stripe/react-stripe-js";
 import "./payment.css";
 const stripePromise = loadStripe(
   import.meta.env.VITE_APP_STRIPE_PUBLISHABLE_KEY
@@ -12,10 +12,12 @@ const Payment = () => {
 
   useEffect(() => {
     // Create PaymentIntent as soon as the page loads
-    fetch("http://192.168.21.142:3001/create-payment-intent", {
+    fetch("http://192.168.21.142:3000/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: [{ id: "xl-tshirt", amount: 100 }] }),
+      body: JSON.stringify({
+        items: [{ id: "xl-tshirt", amount: 100 }],
+      }),
     })
       .then((res) => res.json())
       .then((data) => {

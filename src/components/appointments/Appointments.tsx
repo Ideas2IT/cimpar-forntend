@@ -539,25 +539,26 @@ const Appointments = () => {
                     ref={opService}
                   >
                     <div className="w-[20rem] min-h-[12rem] p-4 pb-1">
-                      {services.map((option, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className="border-b py-1 cursor-pointer"
-                            onClick={() => handleServiceFilter(option)}
-                          >
-                            <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
-                              <label className="font-tertiary text-lg">
-                                {option.name}
-                              </label>
-                              <Checkbox
-                                className="service-box"
-                                checked={selectedServices.includes(option.id)}
-                              />
+                      {!!services?.length &&
+                        services.map((option, index) => {
+                          return (
+                            <div
+                              key={index}
+                              className="border-b py-1 cursor-pointer"
+                              onClick={() => handleServiceFilter(option)}
+                            >
+                              <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
+                                <label className="font-tertiary text-lg">
+                                  {option.name}
+                                </label>
+                                <Checkbox
+                                  className="service-box"
+                                  checked={selectedServices.includes(option.id)}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                       <div className="flex justify-end mt-3">
                         <Button
                           className="color-primary bg-white border-2 border-[#2d6d80] py-2 px-6 rounded-lg me-2 shadow-none"

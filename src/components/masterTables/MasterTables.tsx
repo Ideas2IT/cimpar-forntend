@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import tests from "../../assets/icons/microscope-icon.svg";
+import serviceIcon from "../../assets/icons/serviceMaster.svg";
 import HeaderContext from "../../context/HeaderContext";
 import { HEADER_TITLE, PATH_NAME } from "../../utils/AppConstants";
 import dollarIcon from "../../assets/icons/currency-icon.svg";
@@ -12,9 +12,9 @@ const MasterTables = () => {
 
   const tables = [
     {
-      title: "Lab Tests",
-      icon: tests,
-      routeLink: "tests",
+      title: "Service Master",
+      icon: serviceIcon,
+      routeLink: PATH_NAME.SERVICE_MASTER,
     },
     {
       title: "Pricing",

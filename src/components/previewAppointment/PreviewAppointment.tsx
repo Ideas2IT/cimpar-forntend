@@ -15,6 +15,8 @@ import { DATE_FORMAT, SERVICE_LOCATION } from "../../utils/AppConstants";
 import { IFormData } from "../appointmentForm/AppointmentForm";
 import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
+import Payment from "../stripePayment/Payment";
+import { useState } from "react";
 
 const PreviewAppointment = ({
   totalCost,
@@ -26,6 +28,7 @@ const PreviewAppointment = ({
   handleResponse: (response: boolean) => void;
 }) => {
   const profileDetails = useSelector(selectSelectedPatient);
+  const [payBill, setPayBill] = useState(false);
   const getNameAndGender = () => {
     const firstName = profileDetails?.basicDetails?.firstName ?? "";
     const middleName = profileDetails?.basicDetails?.middleName ?? "";
@@ -113,59 +116,68 @@ const PreviewAppointment = ({
     },
   ];
   return (
-    <div className="h-full relative flex flex-col">
-      <div className="grid md:grid-cols-2 grid-cols-1 gap-x-4 max-h-[90%] overflow-scroll">
-        <label className="font-primary text-xl py-5 block h-[10%]">
-          Test Details
-        </label>
-        <div className="col-span-2 rounded-lg mx-1 mb-2">
-          <TestDetailsTable
-            totalCost={totalCost}
-            tests={details.testToTake}
-            serviceType={details.serviceType}
-          />
+    <>
+      {!payBill ? (
+        <div className="h-full relative flex flex-col">
+          <div className="grid md:grid-cols-2 grid-cols-1 gap-x-4 max-h-[90%] overflow-scroll">
+            <label className="font-primary text-xl py-5 block h-[10%]">
+              Test Details
+            </label>
+            <div className="col-span-2 rounded-lg mx-1 mb-2">
+              <TestDetailsTable
+                totalCost={totalCost}
+                tests={details.testToTake}
+                serviceType={details.serviceType}
+              />
+            </div>
+            {fields.slice(0, 10).map((field) => {
+              return (
+                <div
+                  key={field.header}
+                  className={`${field?.full && "col-span-2"}`}
+                >
+                  <LargeDataField label={field.header} value={field.value} />
+                </div>
+              );
+            })}
+            <label className="font-primary text-xl py-5 col-span-2 h-[10%]">
+              Basic Details
+            </label>
+            {fields.slice(10, 13).map((field) => {
+              return (
+                <div
+                  key={field.header}
+                  className={`${field?.full && "col-span-2"}`}
+                >
+                  <PatientDetails label={field.header} value={field.value} />
+                </div>
+              );
+            })}
+          </div>
+          <div className="h-[10%] pt-2 text-purple-800 flex justify-between font-primary border-t absolute bottom-0 right-0 left-0">
+            <Button
+              onClick={() => handleResponse(false)}
+              icon="pi pi-times px-2"
+              className="py-1 rounded-full max-h-[2.5rem] border border-purple-800 h-full w-[48%] justify-center"
+            >
+              No, I want to edit
+            </Button>
+            <Button
+              // onClick={() => {handleResponse(true)}}
+              onClick={() => {
+                setPayBill(true);
+              }}
+              icon="pi pi-check px-2"
+              className="py-1 rounded-full max-h-[2.5rem] border border-purple-800 bg-purple-100 w-[48%] justify-center"
+            >
+              Yes, Confirm & Pay ${totalCost || 0}
+            </Button>
+          </div>
         </div>
-        {fields.slice(0, 10).map((field) => {
-          return (
-            <div
-              key={field.header}
-              className={`${field?.full && "col-span-2"}`}
-            >
-              <LargeDataField label={field.header} value={field.value} />
-            </div>
-          );
-        })}
-        <label className="font-primary text-xl py-5 col-span-2 h-[10%]">
-          Basic Details
-        </label>
-        {fields.slice(10, 13).map((field) => {
-          return (
-            <div
-              key={field.header}
-              className={`${field?.full && "col-span-2"}`}
-            >
-              <PatientDetails label={field.header} value={field.value} />
-            </div>
-          );
-        })}
-      </div>
-      <div className="h-[10%] pt-2 text-purple-800 flex justify-between font-primary border-t absolute bottom-0 right-0 left-0">
-        <Button
-          onClick={() => handleResponse(false)}
-          icon="pi pi-times px-2"
-          className="py-1 rounded-full max-h-[2.5rem] border border-purple-800 h-full w-[48%] justify-center"
-        >
-          No, I want to edit
-        </Button>
-        <Button
-          onClick={() => handleResponse(true)}
-          icon="pi pi-check px-2"
-          className="py-1 rounded-full max-h-[2.5rem] border border-purple-800 bg-purple-100 w-[48%] justify-center"
-        >
-          Yes, Confirm & Pay ${totalCost || 0}
-        </Button>
-      </div>
-    </div>
+      ) : (
+        <Payment />
+      )}
+    </>
   );
 };
 

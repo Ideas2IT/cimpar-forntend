@@ -209,7 +209,7 @@ const VisitHistory = () => {
             </div>
           );
         })}
-        {selectedHistory?.files?.length && (
+        {!!selectedHistory?.files?.length && (
           <div className="col-span-2">
             <label className="text-lg pb-4 font-primary block">
               Related Documents

@@ -1,5 +1,3 @@
-import { IOptionValue } from "../interfaces/common";
-
 export const ERROR = {
   NAME_ERROR: "Numbers are not allowed in the name field.",
 };
@@ -32,11 +30,11 @@ export const PATH_NAME = {
   APPOINTMENTS: "/appointments",
   RESET_PASSWORD: "/reset-password",
   MASTER_TABLES: "/master-tabs",
-  ALL_TESTS: "/master-tabs/tests",
   PRICING: "/master-tabs/pricing",
   LOCATION: "/master-tabs/locations",
   TRANSACTIONS: "/transactions",
   PAYMENT: "/payment",
+  SERVICE_MASTER: "/service-master",
 };
 
 export const ABSOLUTE_PATH = {
@@ -50,6 +48,7 @@ export const ABSOLUTE_PATH = {
   APPOINTMENT: "appointment",
   MASTER_TABS: "master-tabs",
   TRANSACTIONS: "transactions",
+  SERVICE_MASTER: "service-master",
 };
 
 export const RESPONSE = {
@@ -156,6 +155,7 @@ export const HEADER_TITLE = {
   TRANSACTION: "Transaction History",
   PRICING: "Pricing",
   CENTER_LOCATION: "Center Locations",
+  SERVICE_MASTER: "Service Master",
 };
 
 export const SYMBOL = {
@@ -185,22 +185,16 @@ export const LAB_SERVICES = {
 };
 
 export const SERVICE_MENU = {
-  LIBORATORY: "laboratory",
+  LABORATORY: "laboratory",
   IMAGING: "imaging",
   HOME_CARE: "home-care",
+  ULTRASOUND: "ultrasound",
 };
 
 export const SERVICE_LOCATION = {
   HOME: "home",
   CENTER: "service center",
 } as const;
-
-export const SERVICE_CATEGORIES = [
-  LAB_SERVICES.CLINICAL_LABORATORY,
-  LAB_SERVICES.EKG_SERVICES,
-  LAB_SERVICES.XRAY_STUDIES,
-  LAB_SERVICES.ULTRASOUND_STUDIES,
-];
 
 export const DATE_FORMAT = {
   DD_MMM_YYYY: "dd MMM, yyyy",

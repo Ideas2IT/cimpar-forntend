@@ -11,19 +11,19 @@
 }
 
 .tile-wrapper {
-  @apply grid lg:grid-cols-3 xl:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-3;
+  @apply grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 sm:grid-cols-1 gap-3;
 }
 
 .tile-icon-container {
-  @apply flex bg-white cursor-pointer flex-col justify-start items-center w-full h-[12rem] p-4 border-2 rounded-2xl text-white font-medium hover:bg-purple-800;
+  @apply flex bg-white cursor-pointer flex-col justify-start items-center w-full h-[10rem] p-4 border-2 rounded-2xl text-white font-medium hover:bg-purple-900;
 }
 
 .tile-img {
-  @apply h-[2rem] w-[2rem] bg-purple-100 p-4 box-content rounded-lg;
+  @apply h-[1rem] w-[1rem] bg-purple-100 p-4 box-content rounded-lg;
 }
 
 .tile-title {
-  @apply ml-2 h-[50%] font-primary text-2xl w-full text-start flex items-end;
+  @apply ml-2 h-[50%] font-primary text-xl w-full text-start flex items-end;
 }
 .tile-icon-container:hover .tile-title {
   @apply text-white;

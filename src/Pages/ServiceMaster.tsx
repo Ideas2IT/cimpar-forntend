@@ -1,14 +1,15 @@
-import { useSelector } from "react-redux";
+import { useContext, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import telehealth from "../../assets/icons/Telehealth.svg";
-import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
-import imagingIcon from "../../assets/icons/imagingicon.svg";
-import laboratoryIcon from "../../assets/icons/laboratoryIcon.svg";
-import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
-import vaccinationIcon from "../../assets/icons/vaccination.svg";
-import car from "../../assets/icons/car.svg";
-import { selectServiceTitle } from "../../store/slices/loginSlice";
-import { PATH_NAME } from "../../utils/AppConstants";
+import telehealth from "../assets/icons/Telehealth.svg";
+import car from "../assets/icons/car.svg";
+import healthRecordIcon from "../assets/icons/healthRecordIcon.svg";
+import imagingIcon from "../assets/icons/imagingicon.svg";
+import laboratoryIcon from "../assets/icons/laboratoryIcon.svg";
+import pharmacyIcon from "../assets/icons/pharmacyIcon.svg";
+import vaccinationIcon from "../assets/icons/vaccination.svg";
+import BackButton from "../components/backButton/BackButton";
+import HeaderContext from "../context/HeaderContext";
+import { HEADER_TITLE, PATH_NAME, SERVICE_MENU } from "../utils/AppConstants";
 
 interface ICard {
   id: number;
@@ -18,7 +19,13 @@ interface ICard {
   disabled: boolean;
   link: string;
 }
-const HomePage = () => {
+const ServiceMaster = () => {
+  const { updateHeaderTitle } = useContext(HeaderContext);
+
+  useEffect(() => {
+    updateHeaderTitle(HEADER_TITLE.SERVICE_MASTER);
+  }, []);
+
   const cards: ICard[] = [
     {
       id: 1,
@@ -26,26 +33,26 @@ const HomePage = () => {
       icon: laboratoryIcon,
       color: "bg-[#FDEFE5] text-[#545F71]",
       disabled: false,
-      link: `${PATH_NAME.HEALTH_RECORDS}/laboratory`,
+      link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.LABORATORY}`,
     },
     {
-      id: 3,
+      id: 2,
       title: "Imaging",
       icon: imagingIcon,
       color: "bg-[#F1FCF0]",
       disabled: false,
-      link: `${PATH_NAME.HEALTH_RECORDS}/imaging`,
+      link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.IMAGING}`,
     },
     {
-      id: 4,
+      id: 3,
       title: "Home Care",
       icon: healthRecordIcon,
       color: "bg-[#D3E4ff]",
       disabled: false,
-      link: `${PATH_NAME.HEALTH_RECORDS}/home-care`,
+      link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.HOME_CARE}`,
     },
     {
-      id: 2,
+      id: 4,
       title: "Vaccination",
       icon: vaccinationIcon,
       color: "bg-[#E7F5F9]",
@@ -77,15 +84,22 @@ const HomePage = () => {
       link: "",
     },
   ];
-  const title = useSelector(selectServiceTitle);
   return (
     <>
       <div className="px-6 color-primary font-primary text-xl">
-        {title}
-        <div className="mt-4 flex grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
-          {cards.map((card: ICard) => {
-            return <Card card={card} key={card.id} />;
-          })}
+        <div className="flex">
+          <BackButton
+            backLink={PATH_NAME.MASTER_TABLES}
+            currentPage="Servie Master"
+            previousPage="Masters"
+          />
+        </div>
+        <div className="">
+          <div className="w-full grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 mt-4 flex w-full bg-white p-6 rounded-xl">
+            {cards.map((card: ICard) => {
+              return <Card card={card} key={card.id} />;
+            })}
+          </div>
         </div>
       </div>
       <div className="flex flex-row bg-white"></div>
@@ -109,4 +123,4 @@ const Card = ({ card }: { card: ICard }) => {
     </NavLink>
   );
 };
-export default HomePage;
+export default ServiceMaster;

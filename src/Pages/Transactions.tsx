@@ -1,24 +1,22 @@
-import { OverlayPanel } from "primereact/overlaypanel";
-import { IDualCalendarReponse } from "../components/appointments/Appointments";
-import DualCalendar from "../components/dualCalendar/DualCalendar";
-import { useRef, useState } from "react";
-import SearchInput from "../components/SearchInput";
-import ServiceFilterPanel from "../components/appointments/ServiceFilterPanel";
 import { Button } from "primereact/button";
-import CustomModal from "../components/customModal/CustomModal";
 import { Calendar } from "primereact/calendar";
-import { classNames } from "primereact/utils";
-import { Divider } from "primereact/divider";
-import { DataTable } from "primereact/datatable";
-import { transactions } from "../assets/MockData";
 import { Column } from "primereact/column";
-import { PAYMENT_STATUS } from "../utils/AppConstants";
+import { DataTable } from "primereact/datatable";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { useRef, useState } from "react";
+import { transactions } from "../assets/MockData";
+import SearchInput from "../components/SearchInput";
+import { IDualCalendarReponse } from "../components/appointments/Appointments";
+import CustomModal from "../components/customModal/CustomModal";
+import DualCalendar from "../components/dualCalendar/DualCalendar";
 import CustomServiceDropDown from "../components/serviceFilter/CustomServiceDropdown";
+import { PAYMENT_STATUS } from "../utils/AppConstants";
 
 const transaction = () => {
   const [isOpenCalendar, setIsOpenCalendar] = useState<boolean>(false);
   const [showDownloadModal, setShowDownloadModal] = useState<boolean>(false);
   const op = useRef<OverlayPanel>(null);
+  const dataTableRef = useRef<DataTable<any>>(null);
 
   const getColumnValue = (value: string) => {
     let bgColor = "bg-white";
@@ -60,6 +58,12 @@ const transaction = () => {
     { header: "Transaction Id", field: "transactionID" },
     { header: "status", body: (row: any) => getColumnValue(row.status) },
   ];
+
+  const exportCsv = (startDate: Date, endDate: Date) => {
+    console.log(startDate, endDate);
+    dataTableRef.current?.exportCSV();
+    setShowDownloadModal(false);
+  };
 
   return (
     <div>
@@ -109,12 +113,15 @@ const transaction = () => {
             styleClass="h-[20rem] w-[40rem]"
             header={<div className="px-3">Download Transactions</div>}
           >
-            <DownloadTransactions />
+            <DownloadTransactions
+              exportCsv={exportCsv}
+              onCancel={() => setShowDownloadModal(false)}
+            />
           </CustomModal>
         )}
       </div>
       <div className="rounded-lg bg-white p-2 h-[calc(100vh-175px)] flex-grow">
-        <DataTable value={transactions}>
+        <DataTable value={transactions} ref={dataTableRef}>
           {columns.map((column, index) => (
             <Column
               key={index}
@@ -131,7 +138,15 @@ const transaction = () => {
   );
 };
 
-const DownloadTransactions = () => {
+const DownloadTransactions = ({
+  exportCsv,
+  onCancel,
+}: {
+  exportCsv: (startDate: Date, endDate: Date) => void;
+  onCancel: () => void;
+}) => {
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const calendarProps = {
     classNames: "h-[2.5rem] rounded-lg border border-gray-300 p-2",
     showIcon: true,
@@ -146,7 +161,8 @@ const DownloadTransactions = () => {
         <span>
           <label>From*</label>
           <Calendar
-            value={new Date()}
+            value={startDate}
+            onChange={(e) => e.target.value && setStartDate(e?.target?.value)}
             className={calendarProps.classNames}
             showIcon
             icon={calendarProps.icon}
@@ -155,19 +171,25 @@ const DownloadTransactions = () => {
         <span>
           <label>To*</label>
           <Calendar
-            value={new Date()}
+            value={endDate}
+            onChange={(e) => e.target.value && setEndDate(e?.target?.value)}
             className={calendarProps.classNames}
             showIcon
             icon={calendarProps.icon}
           />
         </span>
         <div className="border-b w-full py-2 col-span-2" />
-        <Button className={buttonStyle} icon="pi pi-times px-3">
+        <Button
+          className={buttonStyle}
+          onClick={onCancel}
+          icon="pi pi-times px-3"
+        >
           Cancel
         </Button>
         <Button
           className={`${buttonStyle} bg-purple-100`}
           icon="pi pi-download px-3 py-2"
+          onClick={() => exportCsv(startDate, endDate)}
         >
           Download CSV
         </Button>

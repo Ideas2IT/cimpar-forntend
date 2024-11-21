@@ -199,7 +199,17 @@ const EditLocation = ({
           <Controller
             control={control}
             name="zip_code"
-            rules={{ required: "Zip Code is required" }}
+            rules={{
+              required: "Zip Code is required",
+              minLength: {
+                value: 5,
+                message: "Zip Code must be 5 digits",
+              },
+              maxLength: {
+                value: 5,
+                message: "Zip Code must be 5 digits",
+              },
+            }}
             render={({ field }) => (
               <InputText
                 {...field}
@@ -299,6 +309,10 @@ const EditLocation = ({
             control={control}
             rules={{
               required: "Phone Number is required",
+              pattern: {
+                value: PATTERN.PHONE,
+                message: "Invalid Phone Number",
+              },
             }}
             name="contact_phone"
             render={({ field }) => (

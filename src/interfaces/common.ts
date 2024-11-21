@@ -35,6 +35,12 @@ export interface IAllTestspayload {
   all_records?: boolean;
 }
 
+export interface IGetPatientServicesPayload {
+  is_active?: boolean;
+  service_type?: string;
+  tableName: string;
+}
+
 export interface IToggleRecordStatusPayload {
   tableName: string;
   resourceId: string;

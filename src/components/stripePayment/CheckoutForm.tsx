@@ -3,10 +3,8 @@ import {
   PaymentElement,
   useStripe,
   useElements,
-  CardElement,
 } from "@stripe/react-stripe-js";
 import { Layout } from "@stripe/stripe-js";
-import { InputText } from "primereact/inputtext";
 
 export default function CheckoutForm() {
   const dpmCheckerLink = "/home";
@@ -28,7 +26,7 @@ export default function CheckoutForm() {
 
     setIsLoading(true);
 
-    const paymentResponse = await stripe.confirmPayment({
+    const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         // Make sure to change this to your payment completion page
@@ -36,17 +34,14 @@ export default function CheckoutForm() {
       },
     });
 
-    console.log({ paymentResponse });
+    console.log(error);
     // This point will only be reached if there is an immediate error when
     // confirming the payment. Otherwise, your customer will be redirected to
     // your `return_url`. For some payment methods like iDEAL, your customer will
     // be redirected to an intermediate site first to authorize the payment, then
     // redirected to the `return_url`.
-    if (
-      paymentResponse.error.type === "card_error" ||
-      paymentResponse.error.type === "validation_error"
-    ) {
-      setMessage(paymentResponse.error?.message || "");
+    if (error.type === "card_error" || error.type === "validation_error") {
+      setMessage(error?.message || "");
     } else {
       setMessage("An unexpected error occurred.");
     }
@@ -60,7 +55,7 @@ export default function CheckoutForm() {
 
   return (
     <div className="h-full flex items-center justify-center flex-col">
-      <div>Amount:</div>
+      <div>Pay:{0}</div>
       <form id="payment-form" onSubmit={handleSubmit}>
         <PaymentElement id="payment-element" options={paymentElementOptions} />
         <button

@@ -10,7 +10,7 @@ import Layout from "./components/Layout";
 import LoginForm from "./components/loginForm/LoginForm";
 import SignUpForm from "./components/loginForm/SignUpForm";
 import MasterTables from "./components/masterTables/MasterTables";
-import TestList from "./components/masterTables/Tests";
+import ServiceList from "./components/masterTables/ServiceList";
 import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
 import EditMedicationDetails from "./components/medication/EditMedicationDetails";
 import PageNotFound from "./components/PageNotFound";
@@ -24,6 +24,7 @@ import PricingDetails from "./components/masterTables/PricingDetails";
 import Transactions from "./Pages/Transactions";
 import LocationList from "./components/masterTables/LocationList";
 import Payment from "./components/stripePayment/Payment";
+import ServiceMaster from "./Pages/ServiceMaster";
 const router = createBrowserRouter([
   {
     path: PATH_NAME.HOME,
@@ -142,9 +143,9 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: PATH_NAME.ALL_TESTS,
+        path: `${PATH_NAME.SERVICE_MASTER}/:service`,
         element: (
-          <RoleBasedRoute requiredRole={ROLE.ADMIN} element={<TestList />} />
+          <RoleBasedRoute requiredRole={ROLE.ADMIN} element={<ServiceList />} />
         ),
       },
       {
@@ -171,6 +172,15 @@ const router = createBrowserRouter([
           <RoleBasedRoute
             requiredRole={ROLE.ADMIN}
             element={<LocationList />}
+          />
+        ),
+      },
+      {
+        path: PATH_NAME.SERVICE_MASTER,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.ADMIN}
+            element={<ServiceMaster />}
           />
         ),
       },

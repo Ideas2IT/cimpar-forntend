@@ -28,6 +28,7 @@ import Sidebar from "./Sidebar";
 import LoginForm from "./loginForm/LoginForm";
 import SetPassword from "./setPassword/SetPassword";
 import useToast from "./useToast/UseToast";
+import { getServiceCategoriesThunk } from "../store/slices/masterTableSlice";
 
 const Layout = () => {
   const user = useSelector(selectProfileName);
@@ -57,8 +58,8 @@ const Layout = () => {
         return HEADER_TITLE.MASTER;
       case path === PATH_NAME.APPOINTMENTS:
         return HEADER_TITLE.APPOINTMENT;
-      case path === PATH_NAME.ALL_TESTS:
-        return HEADER_TITLE.LAB_TESTS;
+      case path.includes(PATH_NAME.SERVICE_MASTER):
+        return HEADER_TITLE.SERVICE_MASTER;
       case path === PATH_NAME.TRANSACTIONS:
         return HEADER_TITLE.TRANSACTION;
       case path === PATH_NAME.PRICING:
@@ -106,6 +107,7 @@ const Layout = () => {
       const email = localStorage.getItem("email");
       if (email) {
         dispatch(getUserProfileThunk()).then((response) => {
+          dispatch(getServiceCategoriesThunk());
           if (
             localStorage.getItem("role") === ROLE.PATIENT &&
             response?.payload?.id
