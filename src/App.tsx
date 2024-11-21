@@ -1,11 +1,10 @@
 import { RouterProvider } from "react-router-dom";
-import { createPortal } from "react-dom";
 import "./App.scss";
 import router from "./router.tsx";
 import Spinner from "./components/spinner/Spinner.tsx";
 import { useDispatch, useSelector } from "react-redux";
 import { selectLoading } from "./store/slices/spinnerSlice.ts";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppDispatch } from "./store/store.ts";
 import { logoutThunk } from "./store/slices/loginSlice.ts";
 import localStorageService from "./services/localStorageService.ts";

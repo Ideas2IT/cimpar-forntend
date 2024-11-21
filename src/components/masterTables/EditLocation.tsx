@@ -80,7 +80,7 @@ const EditLocation = ({
             control={control}
             name="center_name"
             rules={{
-              required: "Center Name is required",
+              required: "Center is required",
             }}
             render={({ field }) => (
               <InputText
@@ -146,7 +146,7 @@ const EditLocation = ({
             control={control}
             name="city"
             rules={{
-              required: "City Name is required",
+              required: "City is required",
             }}
             render={({ field }) => (
               <InputText
@@ -169,7 +169,7 @@ const EditLocation = ({
             control={control}
             name="state"
             rules={{
-              required: "State Name is required",
+              required: "State is required",
             }}
             render={({ field }) => (
               <Dropdown
@@ -194,12 +194,22 @@ const EditLocation = ({
         </span>
         <span className="relative">
           <label className="input-label block" htmlFor="zipCode">
-            Zip_Code
+            Zip_Code*
           </label>
           <Controller
             control={control}
             name="zip_code"
-            rules={{ required: "Zip Code is required" }}
+            rules={{
+              required: "Zip Code is required",
+              minLength: {
+                value: 5,
+                message: "Zip Code must be 5 digits",
+              },
+              maxLength: {
+                value: 5,
+                message: "Zip Code must be 5 digits",
+              },
+            }}
             render={({ field }) => (
               <InputText
                 {...field}
@@ -222,7 +232,7 @@ const EditLocation = ({
             control={control}
             name="country"
             rules={{
-              required: "Country Name is required",
+              required: "Country is required",
             }}
             render={({ field }) => (
               <Dropdown
@@ -299,6 +309,10 @@ const EditLocation = ({
             control={control}
             rules={{
               required: "Phone Number is required",
+              pattern: {
+                value: PATTERN.PHONE,
+                message: "Invalid Phone Number",
+              },
             }}
             name="contact_phone"
             render={({ field }) => (
@@ -323,12 +337,13 @@ const EditLocation = ({
             control={control}
             name="status"
             rules={{
-              required: "Status Name is required",
+              required: "Status is required",
             }}
             render={({ field }) => (
               <Dropdown
                 {...field}
                 inputId="status"
+                panelClassName="capitalize"
                 className="input-field w-full test-dropdown"
                 options={["active", "inactive"]}
                 placeholder="Status"

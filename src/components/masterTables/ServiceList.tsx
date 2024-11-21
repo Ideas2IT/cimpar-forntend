@@ -7,10 +7,10 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { RadioButton } from "primereact/radiobutton";
 import { Toast } from "primereact/toast";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import HeaderContext from "../../context/HeaderContext";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import {
   ErrorResponse,
   IAllTestspayload,
@@ -23,15 +23,18 @@ import { cleanString, getRowClasses } from "../../services/commonFunctions";
 import {
   addMasterRecordThunk,
   getLabTestsForAdminThunk,
+  selectServiceCategories,
   toggleRecordStatusThunk,
   updateMasterRecordThunk,
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
 import {
   HEADER_TITLE,
+  LAB_SERVICES,
   PAGE_LIMIT,
+  PATH_NAME,
   RESPONSE,
-  SERVICE_CATEGORIES,
+  SERVICE_MENU,
   TABLE,
 } from "../../utils/AppConstants";
 import SearchInput, { SearchInputHandle } from "../SearchInput";
@@ -49,10 +52,11 @@ interface IPagging {
   total_pages: number;
 }
 
-const TestList = () => {
-  const { updateHeaderTitle } = useContext(HeaderContext);
+const ServiceList = () => {
+  const { service } = useParams();
   const [isOpenModal, setIsOpendModal] = useState(false);
   const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
+  const serviceCategories = useSelector(selectServiceCategories);
   const dispatch = useDispatch<AppDispatch>();
   const [tests, setTests] = useState<ILabTestService[]>([]);
   const [pagination, setPagination] = useState({
@@ -63,18 +67,28 @@ const TestList = () => {
   } as IPagging);
   const { toast, errorToast, successToast } = useToast();
   const searchInputRef = useRef<SearchInputHandle>(null);
+
+  const getServiceType = () => {
+    switch (service) {
+      case SERVICE_MENU.LABORATORY:
+        return LAB_SERVICES.CLINICAL_LABORATORY;
+      case SERVICE_MENU.IMAGING:
+        return LAB_SERVICES.IMAGING;
+      case SERVICE_MENU.HOME_CARE:
+        return LAB_SERVICES.HOME_CARE;
+      default:
+        return LAB_SERVICES.CLINICAL_LABORATORY;
+    }
+  };
+
   const [fetchPayload, setFetchPayload] = useState<IAllTestspayload>({
     tableName: TABLE.LAB_TEST,
     page: 1,
     page_size: PAGE_LIMIT,
     current_page: 1,
     display: "",
-    service_type: "",
+    service_type: getServiceType(),
   } as IAllTestspayload);
-
-  useEffect(() => {
-    updateHeaderTitle(HEADER_TITLE.LAB_TESTS);
-  }, []);
 
   const handlePageChange = useCallback(
     (value: number) => {
@@ -82,9 +96,8 @@ const TestList = () => {
     },
     [fetchPayload]
   );
-
   useEffect(() => {
-    if (Object.keys(fetchPayload).length) {
+    if (Object?.keys(fetchPayload)?.length) {
       fetchTests();
     }
   }, [fetchPayload]);
@@ -125,11 +138,17 @@ const TestList = () => {
             "Test has been updated successfully"
           );
           setIsOpendModal(false);
-          setTests((prevItems) =>
-            prevItems.map((item) =>
-              item.id === data.id ? { ...item, ...data } : item
-            )
-          );
+          if (selectedTest.service_type === data.service_type) {
+            setTests((prevItems) =>
+              prevItems.map((item) =>
+                item.id === data.id ? { ...item, ...data } : item
+              )
+            );
+          } else {
+            setTests((prevItems) =>
+              prevItems.filter((item) => item.id !== data.id)
+            );
+          }
         } else {
           const errorResponse = response.payload as ErrorResponse;
           errorToast("Failed to update", errorResponse.message);
@@ -193,7 +212,7 @@ const TestList = () => {
   const columns = [
     {
       field: "serial",
-      header: "ID",
+      header: "S.No",
       body: (_: ILabTestService, options: { rowIndex: number }) => (
         <>
           {(pagination?.current_page - 1) * PAGE_LIMIT + options.rowIndex + 1}
@@ -202,7 +221,7 @@ const TestList = () => {
     },
     {
       field: "display",
-      header: "test description",
+      header: "test name",
       bodyClassName: "max-w-[15rem] break-all",
     },
     {
@@ -234,10 +253,10 @@ const TestList = () => {
     },
     {
       field: "",
-      headerClassName: "border-b font-primary",
+      headerClassName: "border-b font-primary justify-items-center",
       header: "ACTION",
       body: (row: ILabTestService) => (
-        <div className="font-primary text-purple-800">
+        <div className="font-primary text-purple-800 text-center w-full">
           <span
             className="cursor-pointer pi pi-pen-to-square text-xl"
             onClick={() => {
@@ -255,21 +274,25 @@ const TestList = () => {
     setSelectedTest({} as ILabTestService);
   };
 
-  const handleSearch = (value: string) => {
-    setFetchPayload({ ...fetchPayload, display: value, page: 1 });
-  };
+  const handleSearch = useCallback(
+    (value: string) => {
+      if (fetchPayload?.display !== value)
+        setFetchPayload({ ...fetchPayload, display: value, page: 1 });
+    },
+    [fetchPayload]
+  );
 
   return (
     <div className="px-6">
       <div className="flex w-full justify-between">
         <BackButton
-          backLink="/master-tabs"
-          currentPage="lab Tests"
-          previousPage="Masters"
+          backLink={PATH_NAME.SERVICE_MASTER}
+          currentPage={service || ""}
+          previousPage={HEADER_TITLE.SERVICE_MASTER}
         />
         <SearchInput
           ref={searchInputRef}
-          handleSearch={(value) => handleSearch(value)}
+          handleSearch={handleSearch}
           placeholder="Search for Test"
         />
       </div>
@@ -290,9 +313,7 @@ const TestList = () => {
           tableClassName="border-b"
           className="mt-2 tests-wrapper font-tertiary"
           emptyMessage={
-            <div className="flex w-full justify-center">
-              No lab tests available
-            </div>
+            <div className="flex w-full justify-center">No tests available</div>
           }
           selectionMode={undefined}
           scrollable
@@ -315,9 +336,7 @@ const TestList = () => {
         {pagination != undefined && pagination.total_pages > 1 && (
           <CustomPaginator
             currentPage={Number(pagination?.current_page)}
-            handlePageChange={(value) => {
-              handlePageChange(value);
-            }}
+            handlePageChange={handlePageChange}
             totalPages={Number(pagination?.total_pages)}
           />
         )}
@@ -330,11 +349,12 @@ const TestList = () => {
           showCloseButton={true}
         >
           <AddMasterModal
+            serviceDropdownOptions={serviceCategories}
             onCancel={handleCloseModal}
             heading={
               Object?.keys(selectedTest)?.length > 0
-                ? "Edit Lab Test"
-                : "Add Lab Test"
+                ? "Edit Service"
+                : "Add New Service"
             }
             selectedItem={selectedTest}
             handleSubmitForm={handleSubmit}
@@ -351,11 +371,13 @@ export const AddMasterModal = ({
   onCancel,
   handleSubmitForm,
   selectedItem,
+  serviceDropdownOptions,
 }: {
   heading?: string;
   onCancel: () => void;
   handleSubmitForm: (updatedItem: ILabTestService) => void;
   selectedItem?: ILabTestService;
+  serviceDropdownOptions: string[];
 }) => {
   const {
     control,
@@ -457,10 +479,10 @@ export const AddMasterModal = ({
               render={({ field }) => (
                 <Dropdown
                   {...field}
-                  options={SERVICE_CATEGORIES}
+                  options={serviceDropdownOptions}
                   inputId="serviceType"
                   placeholder="Service Category"
-                  className="w-full cimpar-input px-0 h-[2.5rem] test-dropdown"
+                  className="w-full cimpar-input h-[2.5rem] test-dropdown !ps-0"
                 />
               )}
             />
@@ -509,7 +531,8 @@ export const AddMasterModal = ({
               name="center_price"
               control={control}
               rules={{
-                validate: (value) => validatePrice(value, "Service Center Price"),
+                validate: (value) =>
+                  validatePrice(value, "Service Center Price"),
                 required: "Service Center Price  is required",
               }}
               defaultValue={selectedItem?.center_price}
@@ -591,4 +614,4 @@ export const AddMasterModal = ({
     </form>
   );
 };
-export default TestList;
+export default ServiceList;

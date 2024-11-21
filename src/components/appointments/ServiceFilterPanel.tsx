@@ -2,14 +2,11 @@ import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { Divider } from "primereact/divider";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import ActiveFilterIcon from "../../assets/icons/ServiceFilterIcon.svg?react";
 import InactiveFilterIcon from "../../assets/icons/filter.svg?react";
-import { IMedicine } from "../../interfaces/medication";
-import { getAllTestsThunk } from "../../store/slices/masterTableSlice";
-import { AppDispatch } from "../../store/store";
-import { RESPONSE, TABLE } from "../../utils/AppConstants";
+import { selectServiceCategories } from "../../store/slices/masterTableSlice";
 import "./Appointments.css";
 
 const serviceStyle = {
@@ -22,16 +19,7 @@ const ServiceFilterPanel = ({
 }: {
   onApplyFilter: (values: string[]) => void;
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const [allTests, setAllTests] = useState([] as IMedicine[]);
-
-  useEffect(() => {
-    dispatch(getAllTestsThunk(TABLE.LAB_TEST)).then((response) => {
-      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        setAllTests(response.payload as IMedicine[]);
-      }
-    });
-  }, []);
+  const serviceCategories = useSelector(selectServiceCategories);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const op = useRef<OverlayPanel>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -89,25 +77,26 @@ const ServiceFilterPanel = ({
         className="w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
         onHide={() => setIsOpen(false)}
       >
-        <div className="h-[20rem] relative">
-          <div className="h-[90%] overflow-scroll">
-            {allTests?.map((service) => (
-              <div
-                key={service.display}
-                onClick={() => toggleService(service.display)}
-                className="w-full flex justify-between min-h-[2.5rem] pe-1 border-b items-center cursor-pointer"
-              >
-                <label className="cursor-pointer">{service.display}</label>
-                <Checkbox
-                  inputId={service.display}
-                  value={service}
-                  checked={selectedServices.includes(service.display)}
-                />
-              </div>
-            ))}
+        <div className="flex flex-col max-h-[20rem] relative">
+          <div className="flex-1 overflow-y-scroll">
+            {!!serviceCategories?.length &&
+              serviceCategories.map((service) => (
+                <div
+                  key={service}
+                  onClick={() => toggleService(service)}
+                  className="w-full flex justify-between min-h-[2.5rem] pe-1 border-b items-center cursor-pointer"
+                >
+                  <label className="cursor-pointer">{service}</label>
+                  <Checkbox
+                    inputId={service}
+                    value={service}
+                    checked={selectedServices.includes(service)}
+                  />
+                </div>
+              ))}
             <Divider />
           </div>
-          <div className="flex gap-4 py-1 bg-white justify-end  w-full right-2 absolute bottom-0">
+          <div className="flex gap-4 py-1 bg-white justify-end  w-full right-2 relative bottom-0">
             <Button
               type="button"
               label="Cancel"

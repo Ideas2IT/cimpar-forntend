@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { isAxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
 import {
   IAppointmentList,
   IAppointmentMeta,
@@ -7,12 +7,15 @@ import {
   IDetailedAppointment,
   IGetAppointmentByIdPayload,
   IGetAppointmentPayload,
+  IRetryPaymentPayload,
 } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
 import {
   createAppointment,
+  getAllTransactions,
   getAppointments,
   getApppointmentById,
+  retryPayment,
 } from "../../services/appointment.service";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
@@ -138,6 +141,8 @@ const transformSingleAppointment = (data: any) => {
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
               ?.insuranceNumber
           : "",
+      testDetails: appointmentCopy?.test_details ?? [],
+      totalCost: appointmentCopy?.total_cost,
     };
     return _appointment;
   }
@@ -148,11 +153,30 @@ export const createAppointmentThunk = createAsyncThunk(
   async (payload: ICreateAppointmentPayload, { rejectWithValue }) => {
     try {
       const response = await createAppointment(payload);
-      return response;
+      return response.data;
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =
           error.response?.data?.error || "Failed to create appointment";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const retryPaymentThunk = createAsyncThunk(
+  "repayment/get",
+  async (payload: IRetryPaymentPayload, { rejectWithValue }) => {
+    try {
+      const response = await retryPayment(payload);
+      return response;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error.response?.data?.error || "Failed to make payment";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,
@@ -194,6 +218,50 @@ export const getAppointmentByIdThunk = createAsyncThunk(
       if (isAxiosError(error)) {
         const errorMessage =
           error?.response?.data?.error || "Failed to load appointment";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getAllTransactionsThunk = createAsyncThunk(
+  "transactions/get",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getAllTransactions();
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to load translations";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const downloadtransactionsThunk = createAsyncThunk(
+  "transactions/download",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        "https://raw.githubusercontent.com/uiuc-cse/data-fa14/gh-pages/data/iris.csv",
+        {
+          responseType: "blob",
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error ||
+          "Failed to load translations csv file";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,

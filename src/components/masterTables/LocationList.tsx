@@ -4,7 +4,7 @@ import SearchInput, { SearchInputHandle } from "../SearchInput";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { getRowClasses } from "../../services/commonFunctions";
+import { cleanString, getRowClasses } from "../../services/commonFunctions";
 import { Sidebar } from "primereact/sidebar";
 import CustomModal from "../customModal/CustomModal";
 import EditLocation from "./EditLocation";
@@ -145,8 +145,8 @@ const LocationList = () => {
       resourceId: id,
       status: value ? "active" : "inactive",
     };
-    dispatch(toggleLocationStatusThunk(payload)).then(({ meta }) => {
-      if (meta.requestStatus === RESPONSE.FULFILLED) {
+    dispatch(toggleLocationStatusThunk(payload)).then((response) => {
+      if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
         const _locations: ILocation[] = locations.data.map((loc: ILocation) => {
           if (loc.id === id) {
             return { ...loc, status: value ? "active" : "inactive" };
@@ -155,6 +155,9 @@ const LocationList = () => {
           }
         });
         setLocations({ ...locations, data: _locations });
+      } else {
+        const _response = response.payload as ErrorResponse;
+        errorToast("Failed to change status", _response?.message);
       }
     });
   };
@@ -173,12 +176,11 @@ const LocationList = () => {
     {
       field: "center_name",
       header: "Center Name",
-      className: "w",
     },
     {
       header: "Address",
       body: (rowData: ILocation) => (
-        <div>{`${rowData?.address_line1 || ""}, ${rowData?.address_line2 || ""},${rowData?.city || ""}, ${rowData?.state || ""}, ${rowData?.zip_code || ""}`}</div>
+        <div>{`${rowData?.address_line1 || ""}, ${rowData?.address_line2 && rowData?.address_line2 + "," || ""} ${rowData?.city || ""}, ${rowData?.state || ""}, ${rowData?.zip_code || ""}`}</div>
       ),
     },
     { header: "Contact", field: "contact_phone" },
@@ -187,7 +189,9 @@ const LocationList = () => {
       header: "ACTIVE",
       body: (rowData: ILocation) => (
         <div className="font-tertiary">
-          <label className="block ps-2">Yes</label>
+          <label className="block ps-2">
+            {rowData?.status === "active" ? "Yes" : "No"}
+          </label>
           <InputSwitch
             checked={rowData?.status === "active"}
             onChange={(e) => handleToggleStatus(e.value, rowData.id)}
@@ -214,11 +218,11 @@ const LocationList = () => {
 
   const handleSubmitForm = (data: ILocation) => {
     const payload: ICreateLocationPayload = {
-      address_line1: data.address_line1,
-      address_line2: data.address_line2,
-      city: data.city,
-      zip_code: data.zip_code,
-      center_name: data.center_name,
+      address_line1: cleanString(data.address_line1) || "",
+      address_line2: cleanString(data.address_line2),
+      city: cleanString(data.city),
+      zip_code: cleanString(data.zip_code),
+      center_name: cleanString(data.center_name),
       state: data.state,
       closing_time: dateFormatter(data.closing_time, DATE_FORMAT.HH_MM_SS),
       contact_email: data.contact_email,
@@ -235,6 +239,7 @@ const LocationList = () => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           successToast("Location Created", "New Location added successfully");
           setIsOpenModal(false);
+          getCitiesAndStatesForDropdown();
           setLocationPayload({ ...locationPayload, page: 1 });
         } else {
           const _response = response.payload as ErrorResponse;
@@ -290,7 +295,7 @@ const LocationList = () => {
           currentPage="Locations"
           previousPage="Masters"
         />
-        <div className="h-[2.5rem] flex min-w-[50%] gap-3">
+        <div className="grid grid-cols-3 min-w-[68%] justify-items-end gap-3">
           <CustomServiceDropDown
             key="cities"
             onApplyFilter={(newCities) =>
@@ -315,12 +320,12 @@ const LocationList = () => {
             label="All States"
             options={regions?.state}
           />
+          <SearchInput
+            ref={searchInputRef}
+            handleSearch={(value) => handleSearch(value)}
+            placeholder="Search for Center"
+          />
         </div>
-        <SearchInput
-          ref={searchInputRef}
-          handleSearch={(value) => handleSearch(value)}
-          placeholder="Search for Locations"
-        />
       </div>
       <div className="flex w-full py-2 box-content h-[2.5rem] justify-end">
         <Button
@@ -351,7 +356,6 @@ const LocationList = () => {
               header={column?.header}
               field={column?.field}
               body={column?.body}
-              className={column?.className}
               bodyClassName="font-tertiary"
               headerClassName="border-b font-secondary uppercase text-sm"
             />
@@ -460,7 +464,7 @@ const DetailedLocationView = ({ location }: { location: ILocation }) => {
     },
     {
       header: "Phone Number",
-      value: "+91-" + location?.contact_phone || "-",
+      value: "+1-" + location?.contact_phone || "-",
     },
     {
       header: "Email",
@@ -505,7 +509,7 @@ export const FieldDetails = ({
       </div>
       <div
         title={value}
-        className="font-primary pb-2 text-[#283956] truncate max-w-[90%] capitalize"
+        className="font-primary pb-2 text-[#283956] truncate max-w-[90%]"
       >
         {value ? value : "-"}
       </div>

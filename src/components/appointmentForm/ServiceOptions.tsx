@@ -29,12 +29,14 @@ export default function ({
         <div className="flex gap-1 items-center justifify-center">
           <RadioButton
             className=" aspect-square !w-5 !h-5"
-            checked={value === "service center"}
-            onChange={() => onChange("service center")}
+            checked={value === "service_center"}
+            onChange={() => onChange(SERVICE_LOCATION.CENTER)}
             inputId="serviceCenter"
           />
           <label
-            className={value === "service center" ? "active" : "inactive"}
+            className={
+              value === SERVICE_LOCATION.CENTER ? "active" : "inactive"
+            }
             htmlFor="serviceCenter"
           >
             Service Center

@@ -67,7 +67,7 @@ export interface IDualCalendarReponse {
 const Appointments = () => {
   const [serviceHistoryPayload, setServiceHistoryPayload] =
     useState<IServiceHistoryPayload>({
-      page_size: 10,
+      page_size: PAGE_LIMIT,
       page: 1,
       searchValue: "",
     } as IServiceHistoryPayload);
@@ -77,11 +77,11 @@ const Appointments = () => {
   const isAdmin = useSelector(selectIsAdmin);
 
   const services = [
-    { id: 1, name: "All Services" },
-    { id: 2, name: "Lab Results" },
-    { id: 3, name: "Immunization" },
+    { id: 1, name: "Lab Results", value: "lab_result" },
+    { id: 2, name: "Immunization", value: "Immunization" },
+    { id: 3, name: "Imaging", value: "Imaging" },
+    { id: 4, name: "Home Care", value: "Home_care" },
   ];
-
   const tabs: Tab[] = [
     {
       key: "serviceHistory",
@@ -179,7 +179,7 @@ const Appointments = () => {
       start_date: "",
     });
 
-  const [selectedServices, setSelectedServices] = useState<number[]>([1, 2, 3]);
+  const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -287,7 +287,7 @@ const Appointments = () => {
           }}
         >
           <ColumnDetails
-            styleClass="text-purple-900"
+            styleClass="text-purple-900 hover:underline"
             value={rowData.patientName}
           />
         </div>
@@ -397,36 +397,13 @@ const Appointments = () => {
   };
 
   const handleServiceFilter = (newService: IItem) => {
-    if (
-      newService?.name?.toLowerCase() === "all services" &&
-      !selectedServices.includes(newService.id)
-    ) {
-      setSelectedServices(
-        services.map((ser) => {
-          return ser.id;
-        })
-      );
-      return;
-    } else if (newService?.name?.toLowerCase() === "all services") {
-      setSelectedServices([]);
-      return;
-    }
-
+    setAppointmentPayload({ ...appointmentPayload, page: 1 });
     if (selectedServices.includes(newService.id)) {
-      const servicesCopy = selectedServices.filter((service) => {
-        return service !== newService.id && service !== 1;
-      });
-      setSelectedServices(servicesCopy);
+      setSelectedServices(
+        selectedServices.filter((id) => id !== newService.id)
+      );
     } else {
-      if (selectedServices.length) {
-        setSelectedServices(
-          services.map((serv) => {
-            return serv.id;
-          })
-        );
-      } else {
-        setSelectedServices([...selectedServices, newService.id]);
-      }
+      setSelectedServices([...selectedServices, newService.id]);
     }
   };
 
@@ -539,25 +516,26 @@ const Appointments = () => {
                     ref={opService}
                   >
                     <div className="w-[20rem] min-h-[12rem] p-4 pb-1">
-                      {services.map((option, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className="border-b py-1 cursor-pointer"
-                            onClick={() => handleServiceFilter(option)}
-                          >
-                            <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
-                              <label className="font-tertiary text-lg">
-                                {option.name}
-                              </label>
-                              <Checkbox
-                                className="service-box"
-                                checked={selectedServices.includes(option.id)}
-                              />
+                      {!!services?.length &&
+                        services.map((option, index) => {
+                          return (
+                            <div
+                              key={index}
+                              className="border-b py-1 cursor-pointer"
+                              onClick={() => handleServiceFilter(option)}
+                            >
+                              <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
+                                <label className="font-tertiary text-lg">
+                                  {option.name}
+                                </label>
+                                <Checkbox
+                                  className="service-box"
+                                  checked={selectedServices.includes(option.id)}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                       <div className="flex justify-end mt-3">
                         <Button
                           className="color-primary bg-white border-2 border-[#2d6d80] py-2 px-6 rounded-lg me-2 shadow-none"
@@ -574,7 +552,6 @@ const Appointments = () => {
                           onClick={(event) => {
                             opService.current?.toggle(event);
                             setIsOpen((prev) => !prev);
-                            handleFilter();
                           }}
                         />
                       </div>
@@ -593,7 +570,7 @@ const Appointments = () => {
               </div>
             )}
           </div>
-          <div className="bg-white rounded-xl mt-2 h-[96%]">
+          <div className="bg-white rounded-xl mt-2 h-[90%]">
             {!showPatientDetails ? (
               <div className="h-[calc(100vh-150px)] overflow-auto">
                 <DataTable

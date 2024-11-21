@@ -42,6 +42,7 @@ export interface IServiceHistory {
   status?: string;
   type?: string;
   fileUrl?: string;
+  paymentStatus: string;
 }
 
 export interface IServiceHistoryData {

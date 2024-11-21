@@ -41,4 +41,4 @@ export interface IToggleLocationStatusPayload {
   resourceId: string;
 }
 
-export type TServiceLocationType = "home" | "service center";
+export type TServiceLocationType = "home" | "service_center";

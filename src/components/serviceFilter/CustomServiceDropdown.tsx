@@ -77,8 +77,8 @@ const CustomServiceDropDown = ({
           className="w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
           onHide={() => setIsOpen(false)}
         >
-          <div className="h-[20rem] relative">
-            <div className="h-[90%] overflow-scroll">
+          <div className="flex flex-col max-h-[20rem] relative">
+            <div className="flex-1 overflow-y-scroll">
               {!!options?.length &&
                 options.map((option) => (
                   <div
@@ -96,7 +96,7 @@ const CustomServiceDropDown = ({
                 ))}
               <Divider />
             </div>
-            <div className="flex gap-4 py-1 bg-white justify-end  w-full right-2 absolute bottom-0">
+            <div className="flex h-[50px] gap-4 py-1 bg-white justify-end  w-full right-2 relative bottom-0">
               <Button
                 type="button"
                 label="Cancel"

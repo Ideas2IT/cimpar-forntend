@@ -1,5 +1,6 @@
 import {
   IAllTestspayload,
+  IGetPatientServicesPayload,
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
 } from "../interfaces/common";
@@ -53,9 +54,26 @@ const getAllTests = (payload: IAllTestspayload) => {
       string,
     ][]
   );
-
   return http.get(
-    `${API_URL.masterTable}/${payload.tableName}/filtered?${params}`
+    `admin/${API_URL.masterTable}/${payload.tableName}/filtered?${params}`
+  );
+};
+
+const fetchAllServicesWithoutPagnation = (
+  payload: IGetPatientServicesPayload
+) => {
+  const params = new URLSearchParams(
+    Object.entries({
+      service_type: payload.service_type,
+      is_active: payload.is_active,
+      table_name: payload.tableName,
+    }).filter(([_, value]) => value !== undefined && value !== "") as [
+      string,
+      string,
+    ][]
+  );
+  return http.get(
+    `patient/${API_URL.masterTable}/${payload.tableName}/filtered?${params}`
   );
 };
 
@@ -112,7 +130,8 @@ const getLocationsWithPagination = (payload: IGetLocationPayload) => {
     page: payload.page?.toString(),
     page_size: payload.page_size?.toString(),
     location: payload?.searchValue,
-    city_state: [payload?.cities, payload?.states].filter(Boolean).join(","),
+    city: payload?.cities?.length ? payload?.cities?.join(",") : "",
+    state: payload?.states?.length ? payload?.states?.join(",") : "",
   };
 
   const filteredParams = Object.fromEntries(
@@ -126,14 +145,21 @@ const getLocationsWithPagination = (payload: IGetLocationPayload) => {
   return http.get(`${API_URL.location}?${queryString}`);
 };
 
+const getLocationsWithoutPagination = () => {
+  return http.get(
+    `${API_URL.location}/${API_URL.activeLocation}?is_active=true`
+  );
+};
+
 const updateLocation = (payload: ILocation) => {
   return http.put(`${API_URL.location}?resource_id=${payload.id}`, payload);
 };
 
 const toggleLocaitonStatus = (payload: IToggleLocationStatusPayload) => {
-  return http.delete(`${API_URL.location}?resource_id=${payload.resourceId}`, {
-    data: { status: payload.status },
-  });
+  return http.patch(
+    `${API_URL.location}?resource_id=${payload.resourceId}`,
+    payload
+  );
 };
 
 const updatePricing = (payload: IUpdatePricingPayload) => {
@@ -145,6 +171,10 @@ const updatePricing = (payload: IUpdatePricingPayload) => {
     `${API_URL.masterTable}/${payload.tableName}/pricing?resource_id=${payload.resource_id}`,
     params
   );
+};
+
+const fetchServiceCategories = () => {
+  return http.get(`${API_URL.masterTable}/filtered_service_type`);
 };
 
 export {
@@ -163,4 +193,7 @@ export {
   updatePricing,
   updateLocation,
   fetchServiceRegions,
+  fetchAllServicesWithoutPagnation,
+  fetchServiceCategories,
+  getLocationsWithoutPagination,
 };

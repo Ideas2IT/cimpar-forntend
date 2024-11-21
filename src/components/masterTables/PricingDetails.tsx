@@ -5,7 +5,7 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ErrorResponse,
   IAllTestspayload,
@@ -16,6 +16,7 @@ import { IUpdatePricingPayload } from "../../interfaces/masterTable";
 import { getRowClasses, handleKeyPress } from "../../services/commonFunctions";
 import {
   getLabTestsForAdminThunk,
+  selectServiceCategories,
   updatePricingThunk,
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
@@ -24,7 +25,6 @@ import {
   PAGE_LIMIT,
   PATH_NAME,
   RESPONSE,
-  SERVICE_CATEGORIES,
   TABLE,
 } from "../../utils/AppConstants";
 import BackButton from "../backButton/BackButton";
@@ -36,6 +36,7 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import HeaderContext from "../../context/HeaderContext";
 
 export default function PricingDetails() {
+  const serviceCategories = useSelector(selectServiceCategories);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
   const editService = (value: boolean, service = {} as ILabTestService) => {
@@ -49,7 +50,7 @@ export default function PricingDetails() {
     current_page: 1,
     display: "",
   } as IAllTestspayload);
-  const [tests, setTests] = useState<ILabTestService[]>([]);
+  const [labServices, setLabServices] = useState<ILabTestService[]>([]);
   const [pagination, setPagination] = useState({
     current_page: 1,
     page_size: PAGE_LIMIT,
@@ -82,6 +83,17 @@ export default function PricingDetails() {
           "Updated successfully",
           "Pricing details have been updated successfully"
         );
+        setLabServices((prevTests) =>
+          prevTests?.map((service) =>
+            data.id === service.id
+              ? {
+                  ...service,
+                  center_price: data.center_price,
+                  home_price: data.home_price,
+                }
+              : service
+          )
+        );
         setIsEditing(false);
       } else {
         const errorResponse = response.payload as ErrorResponse;
@@ -98,19 +110,28 @@ export default function PricingDetails() {
     dispatch(getLabTestsForAdminThunk(fetchPayload)).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         const payload = response.payload.data as ILabTestService[];
-        if (payload.length > 0) {
-          setTests(payload);
+        if (payload?.length > 0) {
+          setLabServices(payload);
         } else {
-          setTests([]);
+          setLabServices([]);
         }
         const pagingDetails = response.payload.pagination as IPagination;
         setPagination(pagingDetails);
       } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
         const errorResponse = response.payload as ErrorResponse;
         errorToast("Failed to fetch", errorResponse.message);
-        setTests([]);
+        setLabServices([]);
       }
     });
+  };
+
+  const handleSearch = (value: string) => {
+    fetchPayload.display !== value &&
+      setFetchPayload({
+        ...fetchPayload,
+        display: value,
+        page: 1,
+      });
   };
 
   return (
@@ -132,23 +153,18 @@ export default function PricingDetails() {
                     service_type: value.join(","),
                   });
                 }}
-                options={SERVICE_CATEGORIES}
+                options={serviceCategories}
                 label="Service Types"
               />
               <SearchInput
-                handleSearch={(value) => {
-                  setFetchPayload({
-                    ...fetchPayload,
-                    display: value,
-                    page: 1,
-                  });
-                }}
+                handleSearch={handleSearch}
+                placeholder="Search Service"
               />
             </div>
           </div>
           <PricingData
             onEdit={editService}
-            tests={tests}
+            tests={labServices}
             pagingDetails={pagination}
             handlePaging={handlePaging}
           />
@@ -179,7 +195,7 @@ const PricingData = ({
 
   const columns = [
     {
-      header: "test id",
+      header: "S.No",
       field: "id",
       body: (_: ILabTestService, options: { rowIndex: number }) => (
         <>
@@ -216,9 +232,10 @@ const PricingData = ({
     {
       header: "action",
       field: "",
+      headerClassName: "justify-items-center",
       body: (rowData: ILabTestService) => (
         <i
-          className="pi pi-pen-to-square text-purple-800"
+          className="pi pi-pen-to-square w-full text-center text-purple-800"
           onClick={() => onEdit(true, rowData)}
         />
       ),
@@ -233,7 +250,7 @@ const PricingData = ({
           className="rounded-lg min-w-[50rem]"
           value={tests}
           scrollable
-          scrollHeight="calc(100vh - 220px)"
+          scrollHeight="calc(100vh - 210px)"
           rowClassName={() => getRowClasses("h-[3.5rem]")}
           emptyMessage={
             <div className="w-full text-center">No Data Available</div>
@@ -245,7 +262,7 @@ const PricingData = ({
                 key={"key" + column.header}
                 header={column.header}
                 field={column.field}
-                headerClassName="uppercase border-b font-secondary"
+                headerClassName={`uppercase border-b font-secondary px-2 ${column.headerClassName}`}
                 bodyClassName="font-tertiary border-b px-2 test-wrap max-w-[10rem]"
                 body={column.body}
               />
@@ -307,7 +324,7 @@ const EditPricing = ({
     {
       name: "center_price" as const,
       disabled: false,
-      element: <InputText />,
+      element: <InputText keyfilter="num" />,
       styleClasses: "",
       label: "service center($)",
       validationRules: { validate: (value: string) => validatePrice(value) },
@@ -315,7 +332,7 @@ const EditPricing = ({
     {
       name: "home_price" as const,
       disabled: false,
-      element: <InputText />,
+      element: <InputText keyfilter="num" />,
       styleClasses: "",
       label: "at homes($)",
       validationRules: { validate: (value: string) => validatePrice(value) },

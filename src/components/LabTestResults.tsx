@@ -71,18 +71,37 @@ const LabTestResults = () => {
         </div>
       ),
     },
+    {
+      key: "imaging",
+      value: "Imaging",
+      content: (
+        <div className="py-1 ps-3 h-full">
+          <TestResult handlePageChange={handlePageChange} />
+        </div>
+      ),
+    },
+    {
+      key: "home care",
+      value: "Home Care",
+      content: (
+        <div className="py-1 ps-3 h-full">
+          <TestResult handlePageChange={handlePageChange} />
+        </div>
+      ),
+    },
   ];
   const services = [
-    { id: 1, name: "All Services" },
-    { id: 2, name: "Lab Results" },
-    { id: 3, name: "Immunization" },
+    { id: 1, name: "Lab Results", value: "lab_result" },
+    { id: 2, name: "Immunization", value: "Immunization" },
+    { id: 3, name: "Imaging", value: "Imaging" },
+    { id: 4, name: "Home Care", value: "Home_care" },
   ];
 
   const [hideTabs, setHideTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Service History");
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
-  const [selectedServices, setSelectedServices] = useState<number[]>([1, 2, 3]);
+  const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const searchInputRef = useRef<SearchInputHandle>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -98,8 +117,23 @@ const LabTestResults = () => {
     if (searchInputRef.current) {
       searchInputRef.current.clearInput();
     }
-    setSelectedServices([1, 2, 3]);
+    setSelectedServices([]);
     setSelectedTab(tab);
+  };
+
+  const getServiceType = () => {
+    switch (selectedTab) {
+      case TABS.LAB_RESULT:
+        return "lab_result";
+      case TABS.IMMUNIZATION:
+        return "Immunization";
+      case TABS.IMAGING:
+        return "Imaging";
+      case TABS.HOME_CARE:
+        return "Home_care";
+      default:
+        return "";
+    }
   };
 
   const callResource = () => {
@@ -113,27 +147,10 @@ const LabTestResults = () => {
         searchValue: searchValue,
         page: pageNumber,
         page_size: PAGE_LIMIT,
-        service_type: selectedServices.includes(1)
-          ? ""
-          : selectedServices.includes(2)
-            ? "lab_result"
-            : selectedServices.includes(3)
-              ? "immunization"
-              : "",
-      };
-      dispatch(getServiceHistoryThunk(payload)).then(({ meta }) => {
-        if (meta.requestStatus === RESPONSE.REJECTED) {
-          errorToast("Failed to load", "Failed to load service history");
-        }
-      });
-    } else if (selectedTab === TABS.IMMUNIZATION) {
-      const payload: IServiceHistoryPayload = {
-        selectedTab: selectedTab,
-        patinetId: patient?.basicDetails?.id,
-        searchValue: searchValue,
-        page: pageNumber,
-        page_size: PAGE_LIMIT,
-        service_type: "immunization",
+        service_type: services
+          .filter((obj) => selectedServices.includes(obj.id))
+          .map((obj) => obj.value)
+          .join(", "),
       };
       dispatch(getServiceHistoryThunk(payload)).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.REJECTED) {
@@ -147,7 +164,7 @@ const LabTestResults = () => {
         searchValue: searchValue,
         page: pageNumber,
         page_size: PAGE_LIMIT,
-        service_type: "lab_result",
+        service_type: getServiceType(),
       };
       dispatch(getServiceHistoryThunk(payload)).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.REJECTED) {
@@ -159,55 +176,37 @@ const LabTestResults = () => {
 
   useEffect(() => {
     callResource();
-  }, [selectedTab, searchValue, patient?.basicDetails?.id, pageNumber]);
+  }, [
+    selectedTab,
+    searchValue,
+    patient?.basicDetails?.id,
+    pageNumber,
+    selectedServices,
+  ]);
 
   const handleServiceFilter = (newService: IItem) => {
     setPageNumber(1);
-    if (
-      newService?.name?.toLowerCase() === "all services" &&
-      !selectedServices.includes(newService.id)
-    ) {
-      setSelectedServices(
-        services.map((ser) => {
-          return ser.id;
-        })
-      );
-      return;
-    } else if (newService?.name?.toLowerCase() === "all services") {
-      setSelectedServices([]);
-      return;
-    }
-
     if (selectedServices.includes(newService.id)) {
-      const servicesCopy = selectedServices.filter((service) => {
-        return service !== newService.id && service !== 1;
-      });
-      setSelectedServices(servicesCopy);
+      setSelectedServices(
+        selectedServices.filter((id) => id !== newService.id)
+      );
     } else {
-      if (selectedServices.length) {
-        setSelectedServices(
-          services.map((serv) => {
-            return serv.id;
-          })
-        );
-      } else {
-        setSelectedServices([...selectedServices, newService.id]);
-      }
+      setSelectedServices([...selectedServices, newService.id]);
     }
-  };
-
-  const handleFilter = () => {
-    callResource();
   };
 
   const getByPlaceholderText = () => {
     switch (selectedTab) {
-      case "Service History":
+      case TABS.SERVICE_HISTORY:
         return "Search For Service";
-      case "Lab Results":
+      case TABS.LAB_RESULT:
         return "Search For Test";
-      case "Immunization":
+      case TABS.IMMUNIZATION:
         return "Search For Vaccine";
+      case TABS.IMAGING:
+        return "Search For Imaging";
+      case TABS.HOME_CARE:
+        return "Search For Home Care";
       default:
         return "Search";
     }
@@ -236,13 +235,7 @@ const LabTestResults = () => {
             }}
           >
             <FilterIcon className="mx-3 color-primary" />
-            <span className="color-primary">
-              {selectedServices.includes(1) || selectedServices.length === 0
-                ? "All Services"
-                : selectedServices.includes(2)
-                  ? "Lab Results"
-                  : "Immunization"}
-            </span>
+            <span className="color-primary">All Services</span>
             <span
               className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
             />
@@ -281,6 +274,7 @@ const LabTestResults = () => {
                   onClick={(event) => {
                     op.current?.toggle(event);
                     setIsOpen((prev) => !prev);
+                    setSelectedServices([]);
                   }}
                 />
                 <Button
@@ -289,7 +283,7 @@ const LabTestResults = () => {
                   onClick={(event) => {
                     op.current?.toggle(event);
                     setIsOpen((prev) => !prev);
-                    handleFilter();
+                    // handleFilter();
                   }}
                 />
               </div>

@@ -1,6 +1,5 @@
 import { ILabTestService } from "./common";
 import { IMedicine } from "./medication";
-
 export interface ICreateAppointmentPayload {
   patientid: string;
   test_to_take: ILabTestService[];
@@ -16,6 +15,12 @@ export interface ICreateAppointmentPayload {
   current_condition_id: string;
   current_allergy_id: string;
   other_allergy_id: string;
+  total_cost: number;
+  test_location: string;
+  service_center_location: string;
+  service_type: string;
+  telehealth_required: boolean;
+  user_email: string;
 }
 
 export interface IAppointment {
@@ -68,6 +73,14 @@ export interface IGetAppointmentByIdPayload {
   appointment_id: string;
 }
 
+export interface ITestDetails {
+  display: string;
+  center_price: string;
+  currency_symbol: string;
+  home_price: string;
+  service_type: string;
+  telehealth_required: string;
+}
 export interface IDetailedAppointment {
   id: string;
   patientName: string;
@@ -86,9 +99,11 @@ export interface IDetailedAppointment {
   otherAllergies: string;
   insuranceProvider: string;
   insuraceNumber: string;
+  testDetails: ITestDetails[];
+  totalCost: string;
 }
 
-export interface SidebarAppointment {
+export interface ISidebarAppointment {
   conditions: string;
   allergies: string;
   testName: string;
@@ -97,4 +112,36 @@ export interface SidebarAppointment {
   status: string;
   otherAllergies: string;
   otherMedicalConditions: string;
+  testDetails: ITestDetails[];
+  totalCost: string;
 }
+
+export interface ITransaction {
+  patientName: string;
+  serviceType: string;
+  amountPaid: string | number;
+  transactionID: string;
+  testName: string;
+  transactionDateAndTime: string;
+  status: string;
+  testDate: string;
+  payment_mode: string;
+}
+
+export interface ICreateAppointmentResponse {
+  appointment_id: string;
+  client_secret: string;
+  created: boolean;
+  is_current_allergy_exist: boolean;
+  is_current_condition_exist: boolean;
+  is_other_allergy_exist: boolean;
+  is_other_condition_exist: boolean;
+  payment_id: string;
+}
+
+export interface IRetryPaymentPayload {
+  email: string;
+  appointmentId: string;
+}
+
+export type TAppointmentStatus = "failed" | "Succeeded";

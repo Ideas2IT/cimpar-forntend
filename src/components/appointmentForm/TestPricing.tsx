@@ -1,109 +1,88 @@
-import { useEffect, useState } from "react";
-import CustomModal from "../customModal/CustomModal";
-import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { TabPanel, TabView } from "primereact/tabview";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import DollarSign from "../../assets/icons/dollar-sign.svg?react";
 import {
-  IAllTestspayload,
+  IGetPatientServicesPayload,
   ILabService,
   ILabTestService,
 } from "../../interfaces/common";
-import { TabPanel, TabView } from "primereact/tabview";
-import DollarSign from "../../assets/icons/dollar-sign.svg?react";
+import {
+  getLabTestsForPatientThunk,
+  selectServiceCategories,
+} from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
 import {
   LAB_SERVICES,
-  PRICING_INDEX,
   RESPONSE,
+  SERVICE_MENU,
   TABLE,
 } from "../../utils/AppConstants";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { getLabTestsForAdminThunk } from "../../store/slices/masterTableSlice";
+import CustomModal from "../customModal/CustomModal";
 interface IPricingTableProps {
   tableHeader: string;
-  selectedIndex?: number;
-  serviceHeader?: string;
+  selectedTab?: string;
   values?: ILabService[];
 }
 
 const PricingModal = (props: IPricingTableProps) => {
-  const tabs = [
-    {
-      header: "Clinical Laboratory",
-      key: "clinicalLaboratory",
-      serviceHeader: "Test Name",
-    },
-    {
-      header: "X Ray Studies",
-      key: "xrayStudies",
-      serviceHeader: "X-Ray Study",
-    },
-    {
-      header: "Ultrasound Study",
-      key: "ultrasoundStudy",
-      serviceHeader: "Ultrasound Study",
-    },
-    {
-      header: "EKG Services",
-      key: "ekgServices",
-      serviceHeader: "EKG Test",
-    },
-  ];
-
-  const { tableHeader, selectedIndex } = props;
+  const serviceCategories = useSelector(selectServiceCategories);
+  const { tableHeader, selectedTab } = props;
   const [isOpenPricingModal, setIsOpenPricingModal] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number>(
-    selectedIndex ? selectedIndex : 0
-  );
+  const [activeIndex, setActiveIndex] = useState<number>(getIndex() || 0);
   const [services, setServices] = useState<ILabService[]>([]);
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    onTabChange(selectedIndex || 0);
-  }, []);
+    isOpenPricingModal && onTabChange(getIndex() || 0);
+  }, [isOpenPricingModal]);
+
+  function getIndex() {
+    if (selectedTab === SERVICE_MENU.LABORATORY) {
+      return serviceCategories.indexOf(LAB_SERVICES.CLINICAL_LABORATORY);
+    } else if (selectedTab) {
+      const tabIndex =
+        serviceCategories?.indexOf(
+          selectedTab?.charAt(0)?.toUpperCase() + selectedTab?.slice(1)
+        ) || 0;
+      return tabIndex > -1 ? tabIndex : 0;
+    }
+  }
 
   const getServiceType = (tabIndex: number | undefined) => {
-    switch (tabIndex) {
-      case PRICING_INDEX.CLINICAL_LABORATORY:
-        return LAB_SERVICES.CLINICAL_LABORATORY;
-      case PRICING_INDEX.XRAY_STUDIES:
-        return LAB_SERVICES.XRAY_STUDIES;
-      case PRICING_INDEX.ULTRASOUND_STUDIES:
-        return LAB_SERVICES.ULTRASOUND_STUDIES;
-      case PRICING_INDEX.EKG_SERVICES:
-        return LAB_SERVICES.EKG_SERVICES;
-      default:
-        return LAB_SERVICES.CLINICAL_LABORATORY;
-    }
+    if (tabIndex) {
+      return serviceCategories[tabIndex];
+    } else return serviceCategories[0];
   };
 
   const onTabChange = (tabIndex: number) => {
     setActiveIndex(tabIndex);
-    const load: IAllTestspayload = {
+    const payload: IGetPatientServicesPayload = {
       tableName: TABLE.LAB_TEST,
-      page_size: 10,
       service_type: getServiceType(tabIndex),
-      page: 1,
-      display: "",
-      all_records: true,
+      is_active: true,
     };
-    dispatch(getLabTestsForAdminThunk(load)).then((response) => {
-      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        const payload = response.payload?.data as ILabTestService[];
-        if (payload?.length) {
-          const testServices: ILabService[] = payload.map((test) => {
-            return {
-              centerPricing: test.center_price,
-              homePricing: test.home_price,
-              serviceName: test.display,
-              code: test.code,
-              id: test.id,
-              currency_symbol: test.currency_symbol,
-            } as ILabService;
-          });
-          setServices(testServices);
-        } else setServices([]);
-      }
-    });
+    isOpenPricingModal &&
+      dispatch(getLabTestsForPatientThunk(payload)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+          const payload = response.payload?.data as ILabTestService[];
+          if (payload?.length) {
+            const testServices: ILabService[] = payload.map((test) => {
+              return {
+                centerPricing: test.center_price,
+                homePricing: test.home_price,
+                serviceName: test.display,
+                code: test.code,
+                id: test.id,
+                currency_symbol: test.currency_symbol,
+              } as ILabService;
+            });
+            setServices(testServices);
+          } else setServices([]);
+        }
+      });
   };
 
   return (
@@ -112,7 +91,6 @@ const PricingModal = (props: IPricingTableProps) => {
         className="text-[16px] flex items-center font-primary text-purple-900 ms-3 cursor-pointer hover:border-b hover:border-purple-900"
         onClick={() => {
           setIsOpenPricingModal(true);
-          setActiveIndex(selectedIndex || 0);
         }}
       >
         <DollarSign className="inline h-[16px] me-2 underline" />
@@ -131,20 +109,17 @@ const PricingModal = (props: IPricingTableProps) => {
               activeIndex={activeIndex}
               onTabChange={(e) => onTabChange(e.index)}
             >
-              {tabs.map((tab) => (
-                <TabPanel
-                  header={tab.header}
-                  key={tab.key}
-                  className="border-b w-full text-center text-sm"
-                  headerClassName="border-b"
-                >
-                  <PricingTable
-                    tableHeader={tab.header}
-                    values={services}
-                    serviceHeader={tab.serviceHeader}
-                  />
-                </TabPanel>
-              ))}
+              {serviceCategories?.length &&
+                serviceCategories.map((tab) => (
+                  <TabPanel
+                    header={tab}
+                    key={tab}
+                    className="border-b w-full text-center text-sm"
+                    headerClassName="border-b"
+                  >
+                    <PricingTable tableHeader={tab} values={services} />
+                  </TabPanel>
+                ))}
             </TabView>
           </>
         </CustomModal>
@@ -153,14 +128,10 @@ const PricingModal = (props: IPricingTableProps) => {
   );
 };
 
-const PricingTable = ({
-  tableHeader,
-  values,
-  serviceHeader,
-}: IPricingTableProps) => {
+const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
   const columns = [
     {
-      header: serviceHeader,
+      header: "Service Name",
       field: "serviceName",
       headerClassName: "uppercase border-b py-0",
       bodyClassName: " max-w-[15rem] text-wrap",

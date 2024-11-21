@@ -7,25 +7,23 @@ import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
 import { Toast } from "primereact/toast";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import "react-time-picker/dist/TimePicker.css";
-import AddRecord from "../../assets/icons/addrecord.svg?react";
-import checkmark from "../../assets/icons/checkmark.svg";
-import HomeIcon from "../../assets/icons/home.svg?react";
-import HeaderContext from "../../context/HeaderContext";
-import { ICreateAppointmentPayload } from "../../interfaces/appointment";
+import {
+  ICreateAppointmentPayload,
+  ICreateAppointmentResponse,
+} from "../../interfaces/appointment";
 import {
   ErrorResponse,
-  IAllTestspayload,
+  IGetPatientServicesPayload,
   ILabTestService,
 } from "../../interfaces/common";
 import {
-  IGetLocationPayload,
   ILocation,
   ILocationResponse,
   TServiceLocationType,
@@ -45,8 +43,8 @@ import {
 import { createAppointmentThunk } from "../../store/slices/appointmentSlice";
 import {
   getAllergiesByQueryThunk,
-  getLabTestsForAdminThunk,
-  getLocationsThunk,
+  getLabTestsForPatientThunk,
+  getLocationsWithoutPaginationThunk,
   getMedicalConditionsByQueryThunk,
   selectAllergies,
   selectConditions,
@@ -57,9 +55,7 @@ import {
   DATE_FORMAT,
   DIALOG_WARNING,
   LAB_SERVICES,
-  PAGE_LIMIT,
   PATH_NAME,
-  PRICING_INDEX,
   RESPONSE,
   SERVICE_LOCATION,
   SERVICE_MENU,
@@ -72,16 +68,17 @@ import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import CustomModal from "../customModal/CustomModal";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import PreviewAppointment from "../previewAppointment/PreviewAppointment";
+import Payment from "../stripePayment/Payment";
 import useToast from "../useToast/UseToast";
 import "./AppointmentPage.css";
 import LocationDropDown from "./LocationDropDown";
 import ServiceOptions from "./ServiceOptions";
 import TestPricing from "./TestPricing";
-import Payment from "../stripePayment/Payment";
 
 export interface IItem {
   id: number;
   name: string;
+  value?: string;
 }
 
 export interface IFormData {
@@ -130,12 +127,15 @@ const AppointmentForm = () => {
   const filteredAllergies = useSelector(selectAllergies);
   const filteredConditions = useSelector(selectConditions);
 
-  const [showDialog, setShowDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [formData, setFormData] = useState({} as IFormData);
   const [tests, setTests] = useState<ILabTestService[]>([]);
   const [locations, setLocations] = useState<ILocation[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const [appointmentResponse, setAppointmentResponse] = useState(
+    {} as ICreateAppointmentResponse
+  );
   const { service } = useParams();
 
   const reasonForTest = watch("testReason");
@@ -159,13 +159,11 @@ const AppointmentForm = () => {
 
   const loadInputData = () => {
     dispatch(
-      getLabTestsForAdminThunk({
+      getLabTestsForPatientThunk({
         service_type: getServiceCategory(),
         tableName: TABLE.LAB_TEST,
-        all_records: false,
-        page: 1,
-        page_size: PAGE_LIMIT,
-      } as IAllTestspayload)
+        is_active: true,
+      } as IGetPatientServicesPayload)
     ).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         if (response?.payload?.data?.length) {
@@ -176,13 +174,7 @@ const AppointmentForm = () => {
         }
       }
     });
-    dispatch(
-      getLocationsThunk({
-        active: true,
-        page: 1,
-        page_size: PAGE_LIMIT,
-      } as IGetLocationPayload)
-    ).then((response) => {
+    dispatch(getLocationsWithoutPaginationThunk()).then((response) => {
       const locations = response.payload as ILocationResponse;
       setLocations(locations.data);
     });
@@ -243,7 +235,7 @@ const AppointmentForm = () => {
           return acc + Number(service.center_price);
         }
       }, 0);
-      setTotalCost(totalPrice);
+      setTotalCost(Number(totalPrice.toFixed(2)));
     } else {
       setTotalCost(0);
     }
@@ -256,12 +248,12 @@ const AppointmentForm = () => {
 
   const getServiceCategory = () => {
     switch (service) {
-      case SERVICE_MENU.LIBORATORY:
+      case SERVICE_MENU.LABORATORY:
         return LAB_SERVICES.CLINICAL_LABORATORY;
       case SERVICE_MENU.IMAGING:
-        return LAB_SERVICES.XRAY_STUDIES;
+        return LAB_SERVICES.IMAGING;
       case SERVICE_MENU.HOME_CARE:
-        return LAB_SERVICES.EKG_SERVICES;
+        return LAB_SERVICES.HOME_CARE;
       default:
         return LAB_SERVICES.CLINICAL_LABORATORY;
     }
@@ -343,6 +335,7 @@ const AppointmentForm = () => {
   };
 
   const handleConfirmation = (value: boolean) => {
+    setShowConfirmDialog(false);
     if (value) {
       const dateOfAppointment = formData.dateOfAppointment;
       const hours = formData.scheduledTime.getHours();
@@ -376,10 +369,18 @@ const AppointmentForm = () => {
               return { system: SYSTEM, code: CODE, display: allergy };
             })
           : ([] as IMedicine[]),
+        service_center_location: formData?.location?.center_name,
+        service_type: getServiceCategory(),
+        total_cost: totalCost,
+        telehealth_required: true,
+        test_location: formData?.serviceType,
+        user_email: patient?.basicDetails?.email || "",
       };
       dispatch(createAppointmentThunk(payload)).then((response) => {
         if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
-          setShowDialog(value);
+          const _response = response.payload as ICreateAppointmentResponse;
+          setAppointmentResponse(_response);
+          setShowPaymentModal(true);
         } else {
           const errorResponse = response.payload as ErrorResponse;
           errorToast("Failed to create Appointment", errorResponse?.message);
@@ -416,19 +417,6 @@ const AppointmentForm = () => {
       return "Location is required.";
     } else {
       return true;
-    }
-  };
-
-  const setTabIndex = () => {
-    switch (service) {
-      case SERVICE_MENU.LIBORATORY:
-        return PRICING_INDEX.CLINICAL_LABORATORY;
-      case SERVICE_MENU.IMAGING:
-        return PRICING_INDEX.XRAY_STUDIES;
-      case SERVICE_MENU.HOME_CARE:
-        return PRICING_INDEX.ULTRASOUND_STUDIES;
-      default:
-        return PRICING_INDEX.EKG_SERVICES;
     }
   };
 
@@ -521,7 +509,7 @@ const AppointmentForm = () => {
             Appointment Details
             <TestPricing
               tableHeader="View Test Pricing"
-              selectedIndex={setTabIndex()}
+              selectedTab={service || ""}
             />
           </div>
           <div className="grid grid-cols-4 mt-1 gap-4">
@@ -584,7 +572,7 @@ const AppointmentForm = () => {
               <Controller
                 control={control}
                 name="serviceType"
-                defaultValue="service center"
+                defaultValue={SERVICE_LOCATION.CENTER}
                 render={({ field }) => (
                   <ServiceOptions
                     value={field.value}
@@ -923,18 +911,6 @@ const AppointmentForm = () => {
           </div>
         </div>
       </form>
-      {showDialog && (
-        <CustomModal
-          showCloseButton={true}
-          styleClass="w-[30rem] h-[15rem] bg-white"
-          handleClose={() => {
-            setShowDialog(false);
-            navigate(PATH_NAME.HOME);
-          }}
-        >
-          <AppointmentStatus />
-        </CustomModal>
-      )}
       {showConfirmDialog && (
         <CustomModal
           isDismissable="no"
@@ -956,6 +932,17 @@ const AppointmentForm = () => {
             details={formData}
             handleResponse={handleConfirmation}
           />
+        </CustomModal>
+      )}
+      {showPaymentModal && (
+        <CustomModal
+          handleClose={() => {}}
+          styleClass="h-[100vh]"
+          header={<span className="ps-4">Payment</span>}
+        >
+          <div className="py-2">
+            <Payment clientSecretKey={appointmentResponse.client_secret} />
+          </div>
         </CustomModal>
       )}
       <Toast ref={toast} />
@@ -983,44 +970,4 @@ const DetailColumn = ({
     </div>
   );
 };
-
-const AppointmentStatus = () => {
-  const navigate = useNavigate();
-  const { updateHeaderTitle } = useContext(HeaderContext);
-
-  const handleResponse = () => {
-    navigate(PATH_NAME.TEST_RESULT);
-    updateHeaderTitle("Health Records");
-  };
-
-  return (
-    <div className="flex justify-center flex-col">
-      <div className="flex justify-center">
-        <img src={checkmark} alt="Appointment status" />
-      </div>
-      <label className="font-primary py-4 text-center">
-        Your Appointment has been Successfully fixed.
-      </label>
-      <div className="flex justify-between text-sm w-full">
-        <Button
-          setFocus={true}
-          onClick={handleResponse}
-          className="font-primary w-[13rem] focus:border focus:border-purple-1000 "
-          style="outline"
-        >
-          <HomeIcon className="stroke-purple-900 pe-1" />
-          Go to Health Records
-        </Button>
-        <Button
-          className="font-primary w-[13rem] bg-white justify-center"
-          onClick={() => navigate(PATH_NAME.HOME)}
-          style="outline"
-        >
-          <AddRecord className="stroke-purple-900 pe-1" /> Add New Service
-        </Button>
-      </div>
-    </div>
-  );
-};
-
 export default AppointmentForm;

@@ -60,7 +60,7 @@ const BackButton = ({
           {previousPage || "back"}
         </label>
       </div>
-      <label className="color-primary font-primary md:block px-1 lg:text-xl md:text-md sm:text-sm capitalize">
+      <label className="color-primary font-primary md:block lg:text-xl md:text-md sm:text-sm capitalize">
         /{currentPage || ""}
       </label>
     </div>

@@ -96,7 +96,6 @@ const Sidebar = () => {
 
   const changeMenuOption = () => {
     const pathname = location.pathname.split(SYMBOL.SLASH)[1];
-
     let tabIndex;
     switch (pathname) {
       case ABSOLUTE_PATH.PROFILE:
@@ -110,6 +109,7 @@ const Sidebar = () => {
         break;
       case ABSOLUTE_PATH.TEST_RESULT:
       case ABSOLUTE_PATH.MASTER_TABS:
+      case ABSOLUTE_PATH.SERVICE_MASTER:
         tabIndex = 1;
         break;
       default:

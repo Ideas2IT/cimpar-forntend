@@ -138,6 +138,7 @@ const immunizationToService = (resource: any) => {
     serviceFor: resource?.vaccineCode?.coding?.[0]?.display || "",
     status: resource?.status ?? "",
     type: IMMUNIZATION,
+    paymentStatus: "-",
   };
   return service;
 };
@@ -151,6 +152,7 @@ const labResultToService = (resource: any) => {
     status: RESULT_STATUS.AVAILABLE,
     type: SERVICE_CATEGORY.LAB_TEST,
     fileUrl: resource?.file_url ? resource?.file_url : "",
+    paymentStatus: "-",
   };
   return service;
 };
@@ -162,6 +164,7 @@ const appointmentToService = (data: any) => {
     id: data?.id || "",
     status: appointmentStatus(data?.end || ""),
     type: APPOINTMENT,
+    paymentStatus: "Paid",
   };
   return service;
 };
@@ -321,20 +324,38 @@ export const getServiceHistoryThunk = createAsyncThunk(
   async (payload: IServiceHistoryPayload, { rejectWithValue }) => {
     try {
       const response = await getServiceHistory(payload);
-      if (
-        payload?.selectedTab?.toLowerCase() === SERVICE_TABS.SERVICE_HISTORY
-      ) {
-        const _response = transformServiceHistory(response.data);
-        return { selectedTab: payload.selectedTab, data: _response };
-      } else if (
-        payload?.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT
-      ) {
-        const _response = transformLabTests(response.data);
-        return { selectedTab: payload.selectedTab, data: _response };
-      } else {
-        const _response = transformImmunization(response.data);
-        return { selectedTab: payload.selectedTab, data: _response };
+      switch (payload?.selectedTab?.toLowerCase()) {
+        case SERVICE_TABS.SERVICE_HISTORY: {
+          const _response = transformServiceHistory(response.data);
+          return { selectedTab: payload.selectedTab, data: _response };
+        }
+        case SERVICE_TABS.LAB_RESULT:
+        case SERVICE_TABS.IMAGING:
+        case SERVICE_TABS.HOME_CARE: {
+          const _response = transformLabTests(response.data);
+          return { selectedTab: payload.selectedTab, data: _response };
+        }
+        case SERVICE_TABS.IMMUNIZATION: {
+          const _response = transformImmunization(response.data);
+          return { selectedTab: payload.selectedTab, data: _response };
+        }
       }
+
+      // if (
+      //   payload?.selectedTab?.toLowerCase() === SERVICE_TABS.SERVICE_HISTORY
+      // ) {
+      //   const _response = transformServiceHistory(response.data);
+      //   return { selectedTab: payload.selectedTab, data: _response };
+      // } else if (
+      //   payload?.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT
+      // ) {
+      //   console.log("inside call");
+      //   const _response = transformLabTests(response.data);
+      //   return { selectedTab: payload.selectedTab, data: _response };
+      // } else {
+      //   const _response = transformImmunization(response.data);
+      //   return { selectedTab: payload.selectedTab, data: _response };
+      // }
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage = error?.response?.data?.error || "Unknown Error";
@@ -464,7 +485,9 @@ const serviceHistorySlice = createSlice({
           }
         } else if (
           payload &&
-          payload.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT
+          (payload.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT ||
+            payload.selectedTab?.toLowerCase() === SERVICE_TABS.IMAGING ||
+            payload.selectedTab?.toLowerCase() === SERVICE_TABS.HOME_CARE)
         ) {
           if (payload?.data) {
             const labTests = payload?.data?.data?.filter(isLabTest);

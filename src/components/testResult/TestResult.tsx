@@ -9,7 +9,7 @@ import Eye from "../../assets/icons/eye.svg?react";
 import {
   IDetailedAppointment,
   IGetAppointmentByIdPayload,
-  SidebarAppointment,
+  ISidebarAppointment,
 } from "../../interfaces/appointment";
 import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
 import {
@@ -45,7 +45,7 @@ const TestResult = ({
   const [selectedTest, setSelectedTest] = useState({} as ILabTest);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(
-    {} as SidebarAppointment
+    {} as ISidebarAppointment
   );
   const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
   const results = useSelector(selectLabTests);
@@ -75,7 +75,7 @@ const TestResult = ({
       dispatch(getAppointmentByIdThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           const appointment = response.payload as IDetailedAppointment;
-          const appointmentDate: SidebarAppointment = {
+          const appointmentDate: ISidebarAppointment = {
             allergies: appointment?.currentAllergies || "",
             conditions: appointment?.currentConditions || "",
             dateOfTest:
@@ -88,6 +88,8 @@ const TestResult = ({
             status: appointmentStatus(appointment?.appointmentDate),
             otherAllergies: appointment?.otherAllergies || "",
             otherMedicalConditions: appointment?.otherConditions || "",
+            testDetails: appointment?.testDetails,
+            totalCost: appointment?.totalCost,
           };
           setSelectedAppointment(appointmentDate);
         }
@@ -261,7 +263,7 @@ const TestResult = ({
           visible={!!Object.keys(selectedAppointment).length && isOpenSidebar}
           position="right"
           onHide={() => {
-            setSelectedAppointment({} as SidebarAppointment);
+            setSelectedAppointment({} as ISidebarAppointment);
             setIsOpenSidebar(false);
           }}
         >
@@ -346,7 +348,7 @@ export const TestDetailedView = ({ test }: { test: ILabTest }) => {
           false,
       },
       { label: "REFERENCE RANGE", value: test?.range, highlight: false },
-      { label: "UNITS", value: test?.unit || "-", heightlight: false },
+      { label: "UNITS", value: test?.unit || "-", heighlight: false },
       {
         label: "FLAG",
         value: test?.flag,

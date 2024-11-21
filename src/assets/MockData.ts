@@ -1,3 +1,4 @@
+import { ITransaction } from "../interfaces/appointment";
 import { IService } from "../interfaces/immunization";
 
 export interface IPatientMedicalDetails {
@@ -101,51 +102,61 @@ export const visitHistory: IVisitHistory[] = [
   },
 ];
 
-export const transactions = [
+export const transactions: ITransaction[] = [
   {
     patientName: "David Raina",
-    serviceType: "Laboratory",
+    serviceType: "at home",
     amountPaid: 10,
     transactionID: "121241241",
     testName: "MRI",
-    transactionDateAndTime: "12-12-2023: 12:12",
+    transactionDateAndTime: "12/12/2023/12:12",
     status: "pending",
+    payment_mode: "insurance",
+    testDate: "12/12/1212",
   },
   {
     patientName: "David Raina",
-    serviceType: "Laboratory",
+    serviceType: "at home",
     amountPaid: 10,
     transactionID: "121241241",
     testName: "MRI",
-    transactionDateAndTime: "12-12-2023: 12:12",
+    transactionDateAndTime: "12-12-2023",
     status: "completed",
+    payment_mode: "insurance",
+    testDate: "12/12/1212",
   },
   {
     patientName: "David Raina",
-    serviceType: "Laboratory",
+    serviceType: "service center",
     amountPaid: 10,
     transactionID: "121241241",
     testName: "MRI",
-    transactionDateAndTime: "12-12-2023: 12:12",
+    transactionDateAndTime: "12-12-2023",
     status: "refunded",
+    payment_mode: "insurance",
+    testDate: "12/12/1212",
   },
   {
     patientName: "David Raina",
-    serviceType: "Laboratory",
+    serviceType: "service center",
     amountPaid: 10,
     transactionID: "121241241",
     testName: "MRI",
-    transactionDateAndTime: "12-12-2023: 12:12",
+    transactionDateAndTime: "12-12-2023",
     status: "pending",
+    payment_mode: "cash",
+    testDate: "12/12/1212",
   },
   {
     patientName: "David Raina",
-    serviceType: "Laboratory",
+    serviceType: "at home",
     amountPaid: 10,
     transactionID: "121241241",
     testName: "MRI",
-    transactionDateAndTime: "12-12-2023: 12:12",
+    transactionDateAndTime: "12-12-2023",
     status: "refunded",
+    payment_mode: "cash",
+    testDate: "12/12/1212",
   },
 ];
 

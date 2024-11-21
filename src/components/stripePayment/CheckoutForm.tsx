@@ -3,12 +3,16 @@ import {
   PaymentElement,
   useStripe,
   useElements,
-  CardElement,
 } from "@stripe/react-stripe-js";
-import { Layout } from "@stripe/stripe-js";
-import { InputText } from "primereact/inputtext";
+import { Layout, loadStripe } from "@stripe/stripe-js";
+import { TRNASACTION_STATUS } from "../../utils/AppConstants";
+import { TAppointmentStatus } from "../../interfaces/appointment";
 
-export default function CheckoutForm() {
+export default function CheckoutForm({
+  showStatusDialog,
+}: {
+  showStatusDialog: (value: boolean, status: TAppointmentStatus) => void;
+}) {
   const dpmCheckerLink = "/home";
   const stripe = useStripe();
   const elements = useElements();
@@ -17,50 +21,42 @@ export default function CheckoutForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: any) => {
-    console.log(e);
     e.preventDefault();
 
     if (!stripe || !elements) {
-      // Stripe.js hasn't yet loaded.
-      // Make sure to disable form submission until Stripe.js has loaded.
       return;
     }
-
     setIsLoading(true);
 
-    const paymentResponse = await stripe.confirmPayment({
+    const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // Make sure to change this to your payment completion page
-        return_url: "http://localhost:3000/complete",
+        return_url: `http://localhost:5173/payment-status`,
       },
+      redirect: "if_required",
     });
+    if (result?.error) {
+      showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
+      if (
+        result.error?.type === "card_error" ||
+        result.error?.type === "validation_error"
+      ) {
+        setMessage(result?.error?.message || "");
+      } else {
+        setMessage(result?.error?.message || "Unexpected error");
+      }
 
-    console.log({ paymentResponse });
-    // This point will only be reached if there is an immediate error when
-    // confirming the payment. Otherwise, your customer will be redirected to
-    // your `return_url`. For some payment methods like iDEAL, your customer will
-    // be redirected to an intermediate site first to authorize the payment, then
-    // redirected to the `return_url`.
-    if (
-      paymentResponse.error.type === "card_error" ||
-      paymentResponse.error.type === "validation_error"
-    ) {
-      setMessage(paymentResponse.error?.message || "");
+      setIsLoading(false);
     } else {
-      setMessage("An unexpected error occurred.");
+      showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
     }
-
-    setIsLoading(false);
   };
 
   const paymentElementOptions: { layout: Layout } = {
     layout: "tabs",
   };
-
   return (
     <div className="h-full flex items-center justify-center flex-col">
-      <div>Amount:</div>
       <form id="payment-form" onSubmit={handleSubmit}>
         <PaymentElement id="payment-element" options={paymentElementOptions} />
         <button
@@ -76,23 +72,8 @@ export default function CheckoutForm() {
             )}
           </span>
         </button>
-        {/* Show any error or success messages */}
         {message && <div id="payment-message">{message}</div>}
       </form>
-      {/* <div id="dpm-annotation">
-        <p>
-          Payment methods are dynamically displayed based on customer location,
-          order amount, and currency.&nbsp;
-          <a
-            href={dpmCheckerLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            id="dpm-integration-checker"
-          >
-            Preview payment methods by transaction
-          </a>
-        </p>
-      </div> */}
     </div>
   );
 }

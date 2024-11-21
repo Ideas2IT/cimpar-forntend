@@ -10,7 +10,7 @@ import Eye from "../../assets/icons/eye.svg?react";
 import {
   IDetailedAppointment,
   IGetAppointmentByIdPayload,
-  SidebarAppointment,
+  ISidebarAppointment,
 } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
 import {
@@ -46,6 +46,7 @@ import CustomPaginator from "../customPagenator/CustomPaginator";
 import { ImmunizationDetailView } from "../testResult/Immunization";
 import { TestDetailedView } from "../testResult/TestResult";
 import useToast from "../useToast/UseToast";
+import TestDetailsTable from "../appointments/TestDetailsTable";
 
 const ServiceHistory = ({
   handlePageChange,
@@ -60,7 +61,7 @@ const ServiceHistory = ({
   const serviceData = useSelector(selectServiceHistory);
   const [selectedTest, setSelectedTest] = useState<ILabTest>({} as ILabTest);
   const [selectedAppointment, setSelectedAppointment] =
-    useState<SidebarAppointment>({} as SidebarAppointment);
+    useState<ISidebarAppointment>({} as ISidebarAppointment);
   const [selectedImmunization, setSelectedImmunization] =
     useState<IImmunization>({} as IImmunization);
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
@@ -149,7 +150,7 @@ const ServiceHistory = ({
             setIsOpenSidebar(true);
             setSelectedService(row);
             const appointment = response?.payload as IDetailedAppointment;
-            const appointmentDate: SidebarAppointment = {
+            const appointmentDate: ISidebarAppointment = {
               allergies: appointment?.currentAllergies || "",
               conditions: appointment?.currentConditions || "",
               dateOfTest:
@@ -162,6 +163,8 @@ const ServiceHistory = ({
               otherAllergies: appointment?.otherAllergies || "",
               otherMedicalConditions: appointment?.otherConditions || "",
               status: appointmentStatus(appointment?.appointmentDate),
+              testDetails: appointment?.testDetails,
+              totalCost: appointment?.totalCost,
             };
             setSelectedAppointment(appointmentDate);
           }
@@ -265,6 +268,14 @@ const ServiceHistory = ({
       ),
     },
     {
+      field: "category",
+      header: "PAYMENT",
+      bodyClassName: "py-1",
+      body: (rowData: IServiceHistory) => (
+        <div className="font-tertiary">{rowData.paymentStatus}</div>
+      ),
+    },
+    {
       field: "status",
       header: "STATUS",
       body: (rowData: IServiceHistory) => (
@@ -359,7 +370,7 @@ const ServiceHistory = ({
           visible={!!Object.keys(selectedAppointment)?.length && isOpenSidebar}
           position="right"
           onHide={() => {
-            setSelectedAppointment({} as SidebarAppointment);
+            setSelectedAppointment({} as ISidebarAppointment);
             setIsOpenSidebar(false);
             setSelectedService({} as IServiceHistory);
           }}
@@ -407,7 +418,7 @@ const ReportColumn = ({
 export const AppointentView = ({
   appointment,
 }: {
-  appointment: SidebarAppointment;
+  appointment: ISidebarAppointment;
 }) => {
   const TableCell = ({
     label,
@@ -470,12 +481,16 @@ export const AppointentView = ({
   };
   return (
     <div className="pt-6">
-      <label className="font-primary text-sm">Test details</label>
-      <div>
-        <TableCell wrap={true} label="TEST NAME" value={appointment.testName} />
+      <label className="font-primary text-sm">Test Details</label>
+      <div className="mt-4">
+        <TestDetailsTable testDetails={appointment.testDetails} />
+        <TableCell
+          label="TOTAL COST"
+          value={appointment.totalCost || "0" + " $"}
+        />
       </div>
       <div>
-        {Boolean(columnKeys.length) &&
+        {Boolean(columnKeys?.length) &&
           columnKeys.map((column, index) => {
             return (
               <TableCell

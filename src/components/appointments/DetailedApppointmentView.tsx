@@ -12,6 +12,7 @@ import { dateFormatter } from "../../utils/Date";
 import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
 import useToast from "../useToast/UseToast";
+import TestDetailsTable from "./TestDetailsTable";
 
 const DetailedAppointmentView = ({
   appointmentId,
@@ -20,11 +21,12 @@ const DetailedAppointmentView = ({
   appointmentId: string;
   patientId: string;
 }) => {
-  const [selectedAppoinement, setSelectedAppointment] = useState(
+  const [selectedAppointment, setSelectedAppointment] = useState(
     {} as IDetailedAppointment
   );
   const dispatch = useDispatch<AppDispatch>();
   const { errorToast } = useToast();
+
   useEffect(() => {
     if (patientId && appointmentId) {
       const payload: IGetAppointmentByIdPayload = {
@@ -40,28 +42,29 @@ const DetailedAppointmentView = ({
       });
     }
   }, []);
+
   const personalFields = [
-    { label: "NAME", value: selectedAppoinement?.patientName || "" },
-    { label: "GENDER", value: selectedAppoinement?.gender || "" },
+    { label: "NAME", value: selectedAppointment?.patientName || "" },
+    { label: "GENDER", value: selectedAppointment?.gender || "" },
     {
       label: "DOB (AGE)",
-      value: selectedAppoinement?.dob
-        ? selectedAppoinement?.dob + "(" + selectedAppoinement?.age + ")"
+      value: selectedAppointment?.dob
+        ? selectedAppointment?.dob + "(" + selectedAppointment?.age + ")"
         : "-",
     },
     {
       label: "CONTACT NUMBER",
       value:
-        (selectedAppoinement?.contactNumber &&
-          "+1-" + selectedAppoinement?.contactNumber) ||
+        (selectedAppointment?.contactNumber &&
+          "+1-" + selectedAppointment?.contactNumber) ||
         "",
     },
     {
       label: "INSURANCE PROVIDER & NUMBER",
-      value: selectedAppoinement?.insuranceProvider
-        ? selectedAppoinement?.insuranceProvider +
+      value: selectedAppointment?.insuranceProvider
+        ? selectedAppointment?.insuranceProvider +
           "-" +
-          obfuscateAccountNumber(selectedAppoinement?.insuraceNumber)
+          obfuscateAccountNumber(selectedAppointment?.insuraceNumber)
         : "-",
       full: true,
     },
@@ -69,26 +72,26 @@ const DetailedAppointmentView = ({
 
   const appointmentFields = [
     {
-      label: "APPOINTMENT FOR",
-      value: selectedAppoinement?.appointmentFor || "",
+      label: "TOTAL COST",
+      value: selectedAppointment?.totalCost + " $" || "N/A",
       full: true,
     },
     {
       label: "DATE OF APPOINTMENT FOR TEST",
-      value: selectedAppoinement?.appointmentDate
+      value: selectedAppointment?.appointmentDate
         ? dateFormatter(
-            selectedAppoinement?.appointmentDate,
+            selectedAppointment?.appointmentDate,
             DATE_FORMAT.DD_MMM_YYYY
           )
         : "-",
     },
     {
       label: "SCHEDULED TIME",
-      value: selectedAppoinement?.appointmentTime,
+      value: selectedAppointment?.appointmentTime,
     },
     {
       label: "REASON FOR TEST",
-      value: selectedAppoinement?.reasonForTest || "",
+      value: selectedAppointment?.reasonForTest || "",
       full: true,
     },
   ];
@@ -96,22 +99,22 @@ const DetailedAppointmentView = ({
   const remarks = [
     {
       Label: "CURRENT MEDICAL CONDITIONS",
-      value: selectedAppoinement?.currentConditions,
+      value: selectedAppointment?.currentConditions,
       full: true,
     },
     {
       Label: "OTHER MEDICAL CONDITIONS",
-      value: selectedAppoinement?.otherConditions,
+      value: selectedAppointment?.otherConditions,
       full: true,
     },
     {
       Label: "CURRENT ALLERGIES",
-      value: selectedAppoinement?.currentAllergies,
+      value: selectedAppointment?.currentAllergies,
       full: true,
     },
     {
       Label: "OTHER ALLERGIES",
-      value: selectedAppoinement?.otherAllergies,
+      value: selectedAppointment?.otherAllergies,
       full: true,
     },
   ];
@@ -133,6 +136,7 @@ const DetailedAppointmentView = ({
       <label className="font-primary text-xl pt-6 pb-3 block">
         Appointment
       </label>
+      <TestDetailsTable testDetails={selectedAppointment.testDetails} />
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
         {appointmentFields?.map((field, index) => {
           return (

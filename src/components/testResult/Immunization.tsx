@@ -155,9 +155,9 @@ export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
   const DetailRow = ({ label, value }: { label: string; value: string }) => (
     <div className="border-b">
       <div className="input-label text-gray-900 font-secondary pt-4">
-        {label}
+        {label || ""}
       </div>
-      <label className="font-primary">{value}</label>
+      <label className="font-primary">{value || ""}</label>
     </div>
   );
 

@@ -21,6 +21,7 @@ import {
 } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
+import { getServiceCategoriesThunk } from "../../store/slices/masterTableSlice";
 
 const LoginForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -44,6 +45,12 @@ const LoginForm = () => {
         dispatch(getUserProfileThunk()).then(({ meta }) => {
           if (meta?.requestStatus === RESPONSE.REJECTED) {
             errorToast("Failed To Fetch", "Failed to retrieve user profile");
+          }
+        });
+        dispatch(getServiceCategoriesThunk()).then((response) => {
+          if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+          } else {
+            errorToast("Failed to fetch", "Failed to fetch service categories");
           }
         });
       } else if (response?.meta.requestStatus === RESPONSE.REJECTED) {

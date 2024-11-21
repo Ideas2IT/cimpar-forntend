@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import {
   ErrorResponse,
   IAllTestspayload,
+  IGetPatientServicesPayload,
   ILabTestService,
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
@@ -11,11 +12,14 @@ import { IMedicine } from "../../interfaces/medication";
 import {
   addMasterRecord,
   createLocation,
+  fetchAllServicesWithoutPagnation,
+  fetchServiceCategories,
   fetchServiceRegions,
   getAllergiesByQuery,
   getAllTests,
   getInputData,
   getLabTestsWithoutPagination,
+  getLocationsWithoutPagination,
   getLocationsWithPagination,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
@@ -45,12 +49,14 @@ interface IMasterTableData {
   medications: IMedicine[];
   allergies: IMedicine[];
   medicalConditions: IMedicine[];
+  serviceCategories: string[];
 }
 
 const initialState: IMasterTableData = {
   medications: [] as IMedicine[],
   allergies: [] as IMedicine[],
   medicalConditions: [] as IMedicine[],
+  serviceCategories: [] as string[],
 };
 
 const transformMedicalCondition = (data: any) => {
@@ -258,6 +264,44 @@ export const getLabTestsForAdminThunk = createAsyncThunk(
   }
 );
 
+export const getLabTestsForPatientThunk = createAsyncThunk(
+  "services/get",
+  async (payload: IGetPatientServicesPayload, { rejectWithValue }) => {
+    try {
+      const response = await fetchAllServicesWithoutPagnation(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to load Services";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getServiceCategoriesThunk = createAsyncThunk(
+  "service-categories/get",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetchServiceCategories();
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to load Service Categories";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
 export const getLabtestsWithoutPaginationThunk = createAsyncThunk(
   "tests/get_all",
   async (_, { rejectWithValue }) => {
@@ -396,7 +440,27 @@ export const getLocationsThunk = createAsyncThunk(
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =
-          error?.response?.data?.error || "Failed to create location";
+          error?.response?.data?.error || "Failed to fetch locations";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getLocationsWithoutPaginationThunk = createAsyncThunk(
+  "location/get-all",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getLocationsWithoutPagination();
+      const locations = transformLocations(response?.data);
+      return locations;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to fetch locations";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,
@@ -430,8 +494,7 @@ export const toggleLocationStatusThunk = createAsyncThunk(
   async (payload: IToggleLocationStatusPayload, { rejectWithValue }) => {
     try {
       const response = await toggleLocaitonStatus(payload);
-      const locations = transformLocations(response?.data);
-      return locations;
+      return response;
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =
@@ -525,6 +588,13 @@ const userSlice = createSlice({
           }
         }
       )
+      .addCase(getServiceCategoriesThunk.fulfilled, (state, { payload }) => {
+        if (payload?.data?.length) {
+          state.serviceCategories = [...payload?.data];
+        } else {
+          state.serviceCategories = [];
+        }
+      })
       .addCase(getMedicalConditionsByQueryThunk.rejected, (state) => {
         state.medicalConditions = [];
       })
@@ -544,5 +614,7 @@ export const selectMedications = (state: RootState) =>
   state.masterTable.medications;
 export const selectConditions = (state: RootState) =>
   state.masterTable.medicalConditions;
+export const selectServiceCategories = (state: RootState) =>
+  state.masterTable.serviceCategories;
 
 export default reducer;

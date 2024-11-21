@@ -1,4 +1,4 @@
-import { IOptionValue } from "../interfaces/common";
+import { TAppointmentStatus } from "../interfaces/appointment";
 
 export const ERROR = {
   NAME_ERROR: "Numbers are not allowed in the name field.",
@@ -11,7 +11,7 @@ export const ROLE = {
 
 export const PATTERN = {
   NAME: /^[A-Za-z\s\W_]+$/,
-  PHONE: /^\+?\d{10,12}$/,
+  PHONE: /^\+?\d{10}$/,
   EMAIL: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/,
 };
 
@@ -32,11 +32,11 @@ export const PATH_NAME = {
   APPOINTMENTS: "/appointments",
   RESET_PASSWORD: "/reset-password",
   MASTER_TABLES: "/master-tabs",
-  ALL_TESTS: "/master-tabs/tests",
   PRICING: "/master-tabs/pricing",
   LOCATION: "/master-tabs/locations",
   TRANSACTIONS: "/transactions",
-  PAYMENT: "/payment",
+  SERVICE_MASTER: "/service-master",
+  PAYMENT_STATUS: "/payment-status",
 };
 
 export const ABSOLUTE_PATH = {
@@ -50,6 +50,7 @@ export const ABSOLUTE_PATH = {
   APPOINTMENT: "appointment",
   MASTER_TABS: "master-tabs",
   TRANSACTIONS: "transactions",
+  SERVICE_MASTER: "service-master",
 };
 
 export const RESPONSE = {
@@ -89,12 +90,16 @@ export const TABS = {
   LAB_RESULT: "Lab Results",
   IMMUNIZATION: "Immunization",
   SERVICE_HISTORY: "Service History",
+  IMAGING: "Imaging",
+  HOME_CARE: "Home Care",
 };
 
 export const SERVICE_TABS = {
   LAB_RESULT: "lab results",
   IMMUNIZATION: "immunization",
   SERVICE_HISTORY: "service history",
+  IMAGING: "imaging",
+  HOME_CARE: "home care",
 };
 export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
@@ -156,6 +161,7 @@ export const HEADER_TITLE = {
   TRANSACTION: "Transaction History",
   PRICING: "Pricing",
   CENTER_LOCATION: "Center Locations",
+  SERVICE_MASTER: "Service Master",
 };
 
 export const SYMBOL = {
@@ -182,25 +188,21 @@ export const LAB_SERVICES = {
   XRAY_STUDIES: "X Ray Studies",
   ULTRASOUND_STUDIES: "Ultrasound Study",
   EKG_SERVICES: "EKG Services",
+  IMAGING: "Imaging",
+  HOME_CARE: "Home Care",
 };
 
 export const SERVICE_MENU = {
-  LIBORATORY: "laboratory",
+  LABORATORY: "laboratory",
   IMAGING: "imaging",
   HOME_CARE: "home-care",
+  ULTRASOUND: "ultrasound",
 };
 
 export const SERVICE_LOCATION = {
   HOME: "home",
-  CENTER: "service center",
+  CENTER: "service_center",
 } as const;
-
-export const SERVICE_CATEGORIES = [
-  LAB_SERVICES.CLINICAL_LABORATORY,
-  LAB_SERVICES.EKG_SERVICES,
-  LAB_SERVICES.XRAY_STUDIES,
-  LAB_SERVICES.ULTRASOUND_STUDIES,
-];
 
 export const DATE_FORMAT = {
   DD_MMM_YYYY: "dd MMM, yyyy",
@@ -212,4 +214,15 @@ export const DATE_FORMAT = {
   HH_MM_A: "hh:mm a",
   YYYY_MM_DD_HH_MM_SS_Z: "yyyy-MM-dd'T'HH:mm:ss'Z'",
   MM_DD_YYYY: "MM/dd/yyyy",
+};
+
+export const TRNASACTION_STATUS = {
+  REJECTED: "rejected" as TAppointmentStatus,
+  SUCCEEDED: "succeeded" as TAppointmentStatus,
+};
+
+export const APPOINTMENT_STATUS_MESSAGE = {
+  SUCCESS: "Your Appointment has been Successfully fixed.",
+  FAILED: "Sorry, your payment has been failed.",
+  RETRY: "Please try again the payment for booking an appointment.",
 };
