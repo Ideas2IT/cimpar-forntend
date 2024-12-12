@@ -37,14 +37,18 @@ const ServiceFilterPanel = ({
   };
 
   const clearSelections = () => {
-    op?.current?.hide && op?.current?.hide();
+    setTimeout(() => {
+      op?.current?.hide && op?.current?.hide();
+    }, 0);
     setSelectedServices([]);
     onApplyFilter([]);
   };
 
   const applySelections = () => {
     onApplyFilter(selectedServices);
-    op?.current?.hide && op?.current?.hide();
+    setTimeout(() => {
+      op?.current?.hide && op?.current?.hide();
+    }, 0);
   };
 
   return (

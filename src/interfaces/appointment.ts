@@ -1,4 +1,5 @@
 import { ILabTestService } from "./common";
+import { IPagination } from "./immunization";
 import { IMedicine } from "./medication";
 export interface ICreateAppointmentPayload {
   patientid: string;
@@ -101,6 +102,9 @@ export interface IDetailedAppointment {
   insuraceNumber: string;
   testDetails: ITestDetails[];
   totalCost: string;
+  takeTestAt: string;
+  centerLocation: string;
+  paymentStatus: string;
 }
 
 export interface ISidebarAppointment {
@@ -114,18 +118,24 @@ export interface ISidebarAppointment {
   otherMedicalConditions: string;
   testDetails: ITestDetails[];
   totalCost: string;
+  takeTestAt: string;
+  centerLocation: string;
+  paymentStatus: string;
 }
 
 export interface ITransaction {
   patientName: string;
   serviceType: string;
   amountPaid: string | number;
-  transactionID: string;
+  transactionId: string;
   testName: string;
   transactionDateAndTime: string;
   status: string;
   testDate: string;
   payment_mode: string;
+  appointmentId: string;
+  location: string;
+  patientId: string;
 }
 
 export interface ICreateAppointmentResponse {
@@ -142,6 +152,27 @@ export interface ICreateAppointmentResponse {
 export interface IRetryPaymentPayload {
   email: string;
   appointmentId: string;
+}
+
+export interface ITransactionPayload {
+  service_category: string;
+  start_date: string;
+  end_date: string;
+  patient_name: string;
+  page: number;
+  page_size: number;
+}
+
+export interface ITransactionResponse {
+  transactions: ITransaction[];
+  pagination: IPagination;
+}
+
+export interface IDownloadCsvPayload {
+  start_date: string;
+  end_date: string;
+  transaction_id?: string;
+  appointment_id?: string;
 }
 
 export type TAppointmentStatus = "failed" | "Succeeded";

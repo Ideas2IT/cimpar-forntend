@@ -154,7 +154,7 @@ const PreviewAppointment = ({
             );
           })}
         </div>
-        <div className="h-[10%] pt-2 text-purple-800 flex justify-between font-primary border-t absolute bottom-0 right-0 left-0">
+        <div className="pt-2 text-purple-800 flex justify-between font-primary border-t relative bottom-0 right-0 left-0">
           <Button
             onClick={() => handleResponse(false)}
             icon="pi pi-times px-2"

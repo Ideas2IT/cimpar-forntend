@@ -52,7 +52,7 @@ const Layout = () => {
       case path.startsWith(PATH_NAME.EDIT_INSURANCE):
       case path.startsWith(PATH_NAME.EDIT_VISIT_HISTORY):
         return HEADER_TITLE.PROFILE;
-      case path === PATH_NAME.TEST_RESULT:
+      case path === PATH_NAME.HEALTH_RECORDS:
         return HEADER_TITLE.HEALTH_RECORD;
       case path === PATH_NAME.MASTER_TABLES:
         return HEADER_TITLE.MASTER;
@@ -74,7 +74,7 @@ const Layout = () => {
   useEffect(() => {
     if (
       location.pathname === SYMBOL.SLASH ||
-      location.pathname.startsWith(PATH_NAME.HEALTH_RECORDS)
+      location.pathname.startsWith(PATH_NAME.CREATE_APPOINTMENT)
     ) {
       setUsername("Hi, " + user);
     } else {

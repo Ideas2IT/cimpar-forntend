@@ -147,6 +147,10 @@ div {
   @apply border border-[#2d6d80];
 }
 
+.p-autocomplete-panel {
+  width: 60vw;
+}
+
 .p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {
   @apply px-2 py-0 mx-0 my-2;
 }

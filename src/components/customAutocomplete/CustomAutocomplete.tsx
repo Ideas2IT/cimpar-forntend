@@ -88,7 +88,7 @@ const ItemTemplate = ({ item }: { item: IMedicine }) => {
   return (
     <div
       key={item.display}
-      className="flex align-items-center hover:text-cyan-800 w-full h-full py-4 justify-between"
+      className="flex align-items-center hover:text-cyan-800 h-full py-4 justify-between"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

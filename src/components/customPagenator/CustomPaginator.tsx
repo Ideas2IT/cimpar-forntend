@@ -10,7 +10,9 @@ const CustomPaginator = ({
   currentPage: number;
 }) => {
   return (
-    <div className="flex w-full h-[2rem] my-2 justify-center items-center">
+    <div
+      className={`flex w-full h-[2rem] mt-2 mb-1 justify-center items-center ${totalPages < 2 && "hidden"}`}
+    >
       <Button
         disabled={currentPage <= 1}
         className="pi pi-arrow-left py-2 shadow-none"

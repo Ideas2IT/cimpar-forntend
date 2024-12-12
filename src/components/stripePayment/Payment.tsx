@@ -31,11 +31,10 @@ const Payment = ({
   const [clientSecret, setClientSecret] = useState(clientSecretKey);
 
   const onRetry = () => {
-    console.log("retry payment");
     dispatch(
       retryPaymentThunk({
-        appointmentId: "736ffc3-bc4a-4680-b74e-0eddcb2afef7",
-        email: "reachsandhiyasethumadhavan@gmail.com",
+        appointmentId: "76cf76bc-cd69-4a62-86be-344f48d6e87c",
+        email: "searchforgm@gmail.com",
       })
     );
   };

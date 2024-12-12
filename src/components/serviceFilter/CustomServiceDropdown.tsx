@@ -37,10 +37,15 @@ const CustomServiceDropDown = ({
 
   const applySelections = () => {
     onApplyFilter(selectedServices);
-    op?.current?.hide && op?.current?.hide();
+    setTimeout(() => {
+      op?.current?.hide && op?.current?.hide();
+    }, 0);
   };
 
   const clearSelections = () => {
+    setTimeout(() => {
+      op?.current?.hide && op?.current?.hide();
+    }, 0);
     op?.current?.hide && op?.current?.hide();
     setSelectedServices([]);
     onApplyFilter([]);

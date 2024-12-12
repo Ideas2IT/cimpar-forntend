@@ -21,20 +21,12 @@ interface ICard {
 const HomePage = () => {
   const cards: ICard[] = [
     {
-      id: 1,
-      title: "Laboratory",
-      icon: laboratoryIcon,
-      color: "bg-[#FDEFE5] text-[#545F71]",
-      disabled: false,
-      link: `${PATH_NAME.HEALTH_RECORDS}/laboratory`,
-    },
-    {
       id: 4,
       title: "Home Care",
       icon: healthRecordIcon,
       color: "bg-[#D3E4ff]",
       disabled: false,
-      link: `${PATH_NAME.HEALTH_RECORDS}/home-care`,
+      link: `${PATH_NAME.CREATE_APPOINTMENT}/home-care`,
     },
     {
       id: 3,
@@ -42,7 +34,15 @@ const HomePage = () => {
       icon: imagingIcon,
       color: "bg-[#F1FCF0]",
       disabled: false,
-      link: `${PATH_NAME.HEALTH_RECORDS}/imaging`,
+      link: `${PATH_NAME.CREATE_APPOINTMENT}/imaging`,
+    },
+    {
+      id: 1,
+      title: "Laboratory",
+      icon: laboratoryIcon,
+      color: "bg-[#FDEFE5] text-[#545F71]",
+      disabled: false,
+      link: `${PATH_NAME.CREATE_APPOINTMENT}/laboratory`,
     },
     {
       id: 2,

@@ -9,12 +9,17 @@ import { API_URL } from "../utils/aapiURL";
 import http from "./common.services";
 
 const getServiceHistory = (payload: IServiceHistoryPayload) => {
-  const stringifyPayload = {
-    search_name: payload.searchValue,
-    page: payload.page.toString(),
-    page_size: payload.page_size.toString(),
-    service_type: payload.service_type,
-  };
+  const stringifyPayload = Object.entries(payload)
+    .filter(
+      ([key, value]) => value !== null && value !== undefined && value !== ""
+    )
+    .reduce(
+      (acc, [key, value]) => {
+        acc[key === "searchValue" ? "search_name" : key] = value.toString();
+        return acc;
+      },
+      {} as Record<string, string>
+    );
   const params = new URLSearchParams(stringifyPayload);
   return http.get(`${API_URL.serviceHistory}/${payload.patinetId}?${params}`);
 };

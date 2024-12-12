@@ -165,6 +165,9 @@ const ServiceHistory = ({
               status: appointmentStatus(appointment?.appointmentDate),
               testDetails: appointment?.testDetails,
               totalCost: appointment?.totalCost,
+              centerLocation: appointment?.centerLocation || "-",
+              takeTestAt: appointment?.takeTestAt || "-",
+              paymentStatus: appointment.paymentStatus,
             };
             setSelectedAppointment(appointmentDate);
           }
@@ -269,7 +272,7 @@ const ServiceHistory = ({
     },
     {
       field: "category",
-      header: "PAYMENT",
+      header: "PAYMENT STATUS",
       bodyClassName: "py-1",
       body: (rowData: IServiceHistory) => (
         <div className="font-tertiary">{rowData.paymentStatus}</div>
@@ -277,7 +280,7 @@ const ServiceHistory = ({
     },
     {
       field: "status",
-      header: "STATUS",
+      header: "APPOINTMENT STATUS",
       body: (rowData: IServiceHistory) => (
         <TestStatus status={rowData?.status || "-"} />
       ),
@@ -286,7 +289,7 @@ const ServiceHistory = ({
 
   return (
     <>
-      <div className="h-[calc(100vh-200px)] overflow-auto">
+      <div className="h-[calc(100vh-175px)] overflow-auto">
         <DataTable
           selection={selectedService}
           value={serviceData?.data}
@@ -450,6 +453,18 @@ export const AppointentView = ({
       wrap: true,
     },
     {
+      key: "SERVICE CENTER LOCATION",
+    },
+    {
+      key: "TEST TO BE TAKEN AT",
+    },
+    {
+      key: "PAYMENT STATUS",
+    },
+    {
+      key: "TOTAL COST",
+    },
+    {
       key: "DATE OF TEST",
       wrap: true,
     },
@@ -463,17 +478,25 @@ export const AppointentView = ({
     if (title) {
       switch (title) {
         case "ORDER ID":
-          return appointment["orderId"];
+          return appointment.orderId;
         case "DATE OF TEST":
-          return appointment["dateOfTest"];
+          return appointment.dateOfTest;
         case "MEDICAL CONDITIONS":
-          return appointment["conditions"];
+          return appointment.conditions;
         case "OTHER MEDICAL CONDITIONS":
-          return appointment["otherMedicalConditions"];
+          return appointment.otherMedicalConditions;
         case "ALLERGIES":
-          return appointment["allergies"];
+          return appointment.allergies;
         case "OTHER ALLERGIES":
-          return appointment["otherAllergies"];
+          return appointment.otherAllergies;
+        case "SERVICE CENTER LOCATION":
+          return appointment.centerLocation;
+        case "TEST TO BE TAKEN AT":
+          return appointment.takeTestAt;
+        case "TOTAL COST":
+          return `$${appointment.totalCost ? parseFloat(Number(appointment?.totalCost).toFixed(2)) : "0"}`;
+        case "PAYMENT STATUS":
+          return appointment.paymentStatus;
         default:
           return "";
       }
@@ -484,10 +507,6 @@ export const AppointentView = ({
       <label className="font-primary text-sm">Test Details</label>
       <div className="mt-4">
         <TestDetailsTable testDetails={appointment.testDetails} />
-        <TableCell
-          label="TOTAL COST"
-          value={appointment.totalCost || "0" + " $"}
-        />
       </div>
       <div>
         {Boolean(columnKeys?.length) &&

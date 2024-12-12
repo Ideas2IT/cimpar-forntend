@@ -110,6 +110,7 @@ export interface ILabTest {
   flag: string;
   status: string;
   fileUrl: string;
+  paymentStatus: string;
 }
 
 export interface ILabTestData {

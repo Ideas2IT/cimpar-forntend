@@ -24,7 +24,10 @@ import {
 } from "../../services/serviceHistory.service";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
-import { appointmentStatus } from "../../services/commonFunctions";
+import {
+  appointmentStatus,
+  convertPaymentStatus,
+} from "../../services/commonFunctions";
 import { dateFormatter } from "../../utils/Date";
 import { IMedicine } from "../../interfaces/medication";
 import {
@@ -164,7 +167,7 @@ const appointmentToService = (data: any) => {
     id: data?.id || "",
     status: appointmentStatus(data?.end || ""),
     type: APPOINTMENT,
-    paymentStatus: "Paid",
+    paymentStatus: convertPaymentStatus(data?.payment_status),
   };
   return service;
 };
@@ -196,7 +199,8 @@ const transformServiceHistory = (data: any) => {
 
 const appointmentToResult = (data: any) => {
   return {
-    testName: getStringValuesFromObjectArray(data?.serviceType?.[0].coding),
+    testName:
+      getStringValuesFromObjectArray(data?.serviceType?.[0].coding) || "",
     category: "Lab Tests",
     status: appointmentStatus(data?.end || ""),
     collectedDateTime: "",
@@ -212,6 +216,7 @@ const appointmentToResult = (data: any) => {
     testedAt: "-",
     unit: "",
     fileUrl: "",
+    paymentStatus: data?.payment_status || "",
   } as ILabTest;
 };
 
@@ -295,6 +300,7 @@ function transformSingleTest(data: any): ILabTest {
     flag: data?.interpretation?.[0]?.coding?.[0]?.code ?? "N/A",
     status: RESULT_STATUS.AVAILABLE,
     fileUrl: data.file_url ? data?.file_url : "",
+    paymentStatus: data?.payment_status || "",
   };
 
   return test;
@@ -329,7 +335,7 @@ export const getServiceHistoryThunk = createAsyncThunk(
           const _response = transformServiceHistory(response.data);
           return { selectedTab: payload.selectedTab, data: _response };
         }
-        case SERVICE_TABS.LAB_RESULT:
+        case SERVICE_TABS.CLINICAL_LABORATORY:
         case SERVICE_TABS.IMAGING:
         case SERVICE_TABS.HOME_CARE: {
           const _response = transformLabTests(response.data);
@@ -340,22 +346,6 @@ export const getServiceHistoryThunk = createAsyncThunk(
           return { selectedTab: payload.selectedTab, data: _response };
         }
       }
-
-      // if (
-      //   payload?.selectedTab?.toLowerCase() === SERVICE_TABS.SERVICE_HISTORY
-      // ) {
-      //   const _response = transformServiceHistory(response.data);
-      //   return { selectedTab: payload.selectedTab, data: _response };
-      // } else if (
-      //   payload?.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT
-      // ) {
-      //   console.log("inside call");
-      //   const _response = transformLabTests(response.data);
-      //   return { selectedTab: payload.selectedTab, data: _response };
-      // } else {
-      //   const _response = transformImmunization(response.data);
-      //   return { selectedTab: payload.selectedTab, data: _response };
-      // }
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage = error?.response?.data?.error || "Unknown Error";
@@ -485,7 +475,8 @@ const serviceHistorySlice = createSlice({
           }
         } else if (
           payload &&
-          (payload.selectedTab?.toLowerCase() === SERVICE_TABS.LAB_RESULT ||
+          (payload.selectedTab?.toLowerCase() ===
+            SERVICE_TABS.CLINICAL_LABORATORY ||
             payload.selectedTab?.toLowerCase() === SERVICE_TABS.IMAGING ||
             payload.selectedTab?.toLowerCase() === SERVICE_TABS.HOME_CARE)
         ) {

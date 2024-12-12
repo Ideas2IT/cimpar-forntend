@@ -14,6 +14,7 @@ import {
 import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
 import {
   appointmentStatus,
+  convertPaymentStatus,
   getRowClasses,
   getStatusColors,
 } from "../../services/commonFunctions";
@@ -47,7 +48,7 @@ const TestResult = ({
   const [selectedAppointment, setSelectedAppointment] = useState(
     {} as ISidebarAppointment
   );
-  const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white";
+  const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white text-center";
   const results = useSelector(selectLabTests);
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
   const handleReports = (action: string, row: ILabTest) => {
@@ -90,6 +91,9 @@ const TestResult = ({
             otherMedicalConditions: appointment?.otherConditions || "",
             testDetails: appointment?.testDetails,
             totalCost: appointment?.totalCost,
+            centerLocation: appointment?.centerLocation,
+            takeTestAt: appointment?.takeTestAt,
+            paymentStatus: appointment?.paymentStatus,
           };
           setSelectedAppointment(appointmentDate);
         }
@@ -179,19 +183,25 @@ const TestResult = ({
       header: "ORDER ID",
       body: (rowData: ILabTest) => <TestDetails value={rowData.orderId} />,
     },
-    {
-      field: "testedAt",
-      header: "TESTED AT",
-      body: (rowData: ILabTest) => <TestDetails value={rowData.testedAt} />,
-    },
+    // {
+    //   field: "testedAt",
+    //   header: "TESTED AT",
+    //   body: (rowData: ILabTest) => <TestDetails value={rowData.testedAt} />,
+    // },
     {
       field: "dateOfTest",
       header: "DATE OF TEST",
       body: (rowData: ILabTest) => <TestDetails value={rowData.dateOfTest} />,
     },
     {
+      header: "PAYMENT STATUS",
+      body: (rowData: ILabTest) => (
+        <div> {convertPaymentStatus(rowData.paymentStatus)} </div>
+      ),
+    },
+    {
       field: "status",
-      header: "STATUS",
+      header: "APPOINTMENT STATUS",
       body: (rowData: ILabTest) => <TestStatus status={rowData.status} />,
     },
     {
@@ -205,14 +215,12 @@ const TestResult = ({
 
   return (
     <>
-      <div className="h-[calc(100vh-200px)] overflow-auto">
+      <div className="h-[calc(100vh-175px)] overflow-auto">
         <DataTable
           selection={selectedTest}
           value={results?.data}
           emptyMessage={
-            <div className="flex w-full justify-center">
-              No lab tests available
-            </div>
+            <div className="flex w-full justify-center">No tests available</div>
           }
           selectionMode="single"
           dataKey="orderId"

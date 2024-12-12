@@ -326,7 +326,7 @@ const AppointmentForm = () => {
 
   const accept = () => {
     navigate(PATH_NAME.EDIT_PROFILE, {
-      state: { from: `${PATH_NAME.HEALTH_RECORDS}/${service}` },
+      state: { from: `${PATH_NAME.CREATE_APPOINTMENT}/${service}` },
     });
   };
 
@@ -451,10 +451,11 @@ const AppointmentForm = () => {
       <div className="flex w-full">
         <div className="w-[50%]">{value?.display || "-"}</div>
         <div className="w-[20%] text-center">
-          {value.currency_symbol + value?.center_price || "0"}
+          {value.currency_symbol + Number(value?.center_price)?.toFixed(2) ||
+            "0.00"}
         </div>
         <div className="w-[10%] text-center">
-          {value.currency_symbol + value?.home_price || "0"}
+          {value.currency_symbol + Number(value?.home_price)?.toFixed(2) || "0"}
         </div>
         <div className="w-[20%] text-center capitalize">
           {value?.is_telehealth_required ? "Yes" : "No"}
@@ -936,7 +937,12 @@ const AppointmentForm = () => {
       )}
       {showPaymentModal && (
         <CustomModal
-          handleClose={() => {}}
+          handleClose={() => {
+            setShowPaymentModal(false);
+            navigate(PATH_NAME.HOME);
+          }}
+          closeButtonTitle=""
+          showCloseButton={true}
           styleClass="h-[100vh]"
           header={<span className="ps-4">Payment</span>}
         >

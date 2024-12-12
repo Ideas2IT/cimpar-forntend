@@ -45,7 +45,7 @@ import { dateFormatter } from "../../utils/Date";
 import { IItem } from "../appointmentForm/AppointmentForm";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
-import MedicalConditionDetails from "../MedicalDetails/MedicalConditionDetails";
+import MedicalConditionDetails from "../medicalDetails/MedicalConditionDetails";
 import Medication from "../medication/Medication";
 import ServiceHistory from "../serviceHistory/ServiceHistory";
 import UserDetails from "../userDetails/UserDetails";
@@ -384,16 +384,22 @@ const Appointments = () => {
     );
   };
 
+  const handleCloseCalendar = () => {
+    setTimeout(() => {
+      op?.current?.hide();
+    }, 0);
+  };
+
   const handleOnCancel = () => {
     setIsOpenCalendar(false);
-    op?.current?.hide();
+    handleCloseCalendar();
     setDateFilter([]);
   };
 
   const handleOnApply = (range: Date[]) => {
-    setIsOpenCalendar(false);
-    op?.current?.hide();
     setDateFilter(range);
+    setIsOpenCalendar(false);
+    handleCloseCalendar();
   };
 
   const handleServiceFilter = (newService: IItem) => {
@@ -550,8 +556,10 @@ const Appointments = () => {
                           className="text-white bg-primary py-2 px-6 rounded-lg"
                           label="Apply"
                           onClick={(event) => {
-                            opService.current?.toggle(event);
-                            setIsOpen((prev) => !prev);
+                            setTimeout(() => {
+                              opService.current?.toggle(event);
+                              setIsOpen((prev) => !prev);
+                            }, 0);
                           }}
                         />
                       </div>

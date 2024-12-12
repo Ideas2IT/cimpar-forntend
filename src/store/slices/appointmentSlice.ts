@@ -1,27 +1,36 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import {
   IAppointmentList,
   IAppointmentMeta,
   ICreateAppointmentPayload,
   IDetailedAppointment,
+  IDownloadCsvPayload,
   IGetAppointmentByIdPayload,
   IGetAppointmentPayload,
   IRetryPaymentPayload,
+  ITransaction,
+  ITransactionPayload,
+  ITransactionResponse,
 } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
+import { IPagination } from "../../interfaces/immunization";
 import {
   createAppointment,
+  downloadTransactionsInCsv,
   getAllTransactions,
   getAppointments,
   getApppointmentById,
   retryPayment,
 } from "../../services/appointment.service";
+import {
+  convertPaymentStatus,
+  getAgeFromDob,
+} from "../../services/commonFunctions";
+import { DATE_FORMAT, INSURANCE_TYPE } from "../../utils/AppConstants";
+import { dateFormatter } from "../../utils/Date";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
-import { dateFormatter } from "../../utils/Date";
-import { getAgeFromDob } from "../../services/commonFunctions";
-import { DATE_FORMAT, INSURANCE_TYPE } from "../../utils/AppConstants";
 
 type appointmentInitialState = {
   apointments: IAppointmentList[];
@@ -70,6 +79,39 @@ const transformConditionsAndAllergies = (data: any, type: string) => {
     });
   }
   return medicalConditions;
+};
+
+const transformTransactions = (data: any) => {
+  const pagination: IPagination = {
+    current_page: data?.pagination?.current_page || 0,
+    page_size: data?.pagination?.page_size || 0,
+    total_items: data?.pagination?.total_items || 0,
+    total_pages: data?.pagination?.total_pages || 0,
+  };
+  if (data?.data?.length) {
+    const transactions = data.data.map((item: any) => {
+      return {
+        amountPaid: item?.priority || "-",
+        patientName: item?.patient_name || "-",
+        payment_mode: "Cash",
+        serviceType: item?.location ? "Service center" : "At Home",
+        status: convertPaymentStatus(item?.status) || "-",
+        testDate: item?.start || "-",
+        testName: item?.tests_taken || "-",
+        transactionDateAndTime: item?.test_date || "-",
+        transactionId: item?.payment_id || "-",
+        appointmentId: item?.appointment_id || "-",
+        location: item?.location || "-",
+        patientId: item?.patient_id || "-",
+      } as ITransaction;
+    });
+    return {
+      transactions: transactions,
+      pagination: pagination,
+    } as ITransactionResponse;
+  } else {
+    return {} as ITransactionResponse;
+  }
 };
 
 const transformInsurance = (data: any) => {
@@ -142,7 +184,11 @@ const transformSingleAppointment = (data: any) => {
               ?.insuranceNumber
           : "",
       testDetails: appointmentCopy?.test_details ?? [],
-      totalCost: appointmentCopy?.total_cost,
+      totalCost: appointmentCopy?.total_cost || 0,
+      centerLocation: appointmentCopy?.service_centre_location || "N/A",
+      takeTestAt: appointmentCopy?.test_location || "N/A",
+      paymentStatus:
+        convertPaymentStatus(appointmentCopy?.payment_status) || "N/A",
     };
     return _appointment;
   }
@@ -229,10 +275,11 @@ export const getAppointmentByIdThunk = createAsyncThunk(
 
 export const getAllTransactionsThunk = createAsyncThunk(
   "transactions/get",
-  async (_, { rejectWithValue }) => {
+  async (payload: ITransactionPayload, { rejectWithValue }) => {
     try {
-      const response = await getAllTransactions();
-      return response.data;
+      const response = await getAllTransactions(payload);
+      const _response = transformTransactions(response.data);
+      return _response;
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =
@@ -248,14 +295,9 @@ export const getAllTransactionsThunk = createAsyncThunk(
 
 export const downloadtransactionsThunk = createAsyncThunk(
   "transactions/download",
-  async (_, { rejectWithValue }) => {
+  async (payload: IDownloadCsvPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "https://raw.githubusercontent.com/uiuc-cse/data-fa14/gh-pages/data/iris.csv",
-        {
-          responseType: "blob",
-        }
-      );
+      const response = await downloadTransactionsInCsv(payload);
       return response.data;
     } catch (error) {
       if (isAxiosError(error)) {

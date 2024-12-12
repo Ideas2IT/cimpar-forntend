@@ -225,7 +225,7 @@ const EditUserDetails = () => {
           "Profile details updated successfully"
         );
         setTimeout(() => {
-          if (location?.state?.from?.includes(PATH_NAME.HEALTH_RECORDS)) {
+          if (location?.state?.from?.includes(PATH_NAME.CREATE_APPOINTMENT)) {
             navigate(location?.state?.from);
           } else {
             navigate(PATH_NAME.PROFILE);
@@ -255,7 +255,7 @@ const EditUserDetails = () => {
   };
 
   const handleCancel = () => {
-    if (location?.state?.from.includes(PATH_NAME.HEALTH_RECORDS)) {
+    if (location?.state?.from.includes(PATH_NAME.CREATE_APPOINTMENT)) {
       navigate(location?.state?.from);
     } else {
       navigate(PATH_NAME.PROFILE);
@@ -286,13 +286,13 @@ const EditUserDetails = () => {
         <div className="flex flex-row justify-between pb-6">
           <BackButton
             previousPage={
-              location?.state?.from.includes(PATH_NAME.HEALTH_RECORDS)
+              location?.state?.from.includes(PATH_NAME.CREATE_APPOINTMENT)
                 ? "Make Appointment"
                 : "Personal"
             }
             currentPage="Edit Profile"
             backLink={
-              location?.state?.from.includes(PATH_NAME.HEALTH_RECORDS)
+              location?.state?.from.includes(PATH_NAME.CREATE_APPOINTMENT)
                 ? location?.state?.from
                 : PATH_NAME.PROFILE
             }

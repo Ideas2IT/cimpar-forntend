@@ -27,8 +27,8 @@ export const PATH_NAME = {
   SET_PASSWORD: "/set-password",
   EDIT_INSURANCE: "/edit-insurance",
   FORGOT_PASSWORD: "/forgot-password",
-  TEST_RESULT: "/test-result",
-  HEALTH_RECORDS: "/create-appointment",
+  HEALTH_RECORDS: "/health-records",
+  CREATE_APPOINTMENT: "/create-appointment",
   APPOINTMENTS: "/appointments",
   RESET_PASSWORD: "/reset-password",
   MASTER_TABLES: "/master-tabs",
@@ -51,6 +51,7 @@ export const ABSOLUTE_PATH = {
   MASTER_TABS: "master-tabs",
   TRANSACTIONS: "transactions",
   SERVICE_MASTER: "service-master",
+  HEALTH_RECORDS: "health-records",
 };
 
 export const RESPONSE = {
@@ -100,6 +101,7 @@ export const SERVICE_TABS = {
   SERVICE_HISTORY: "service history",
   IMAGING: "imaging",
   HOME_CARE: "home care",
+  CLINICAL_LABORATORY: "clinical laboratory",
 };
 export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
@@ -138,7 +140,7 @@ export const SERVICE_CATEGORY = {
 };
 
 export const DIALOG_WARNING =
-  "Appointment yet to be confirmed, Are you sure do you want you clear the appointment?";
+  "Appointment yet to be confirmed. Are you sure you want to clear the appointment?";
 export const GENDER = {
   MALE: "male",
   FEMAIL: "female",

@@ -5,26 +5,38 @@ import { DataTable } from "primereact/datatable";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Sidebar } from "primereact/sidebar";
 import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import SearchInput from "../components/SearchInput";
 import { IDualCalendarReponse } from "../components/appointments/Appointments";
 import CustomModal from "../components/customModal/CustomModal";
 import DualCalendar from "../components/dualCalendar/DualCalendar";
 import CustomServiceDropDown from "../components/serviceFilter/CustomServiceDropdown";
 import useToast from "../components/useToast/UseToast";
-import { ITransaction } from "../interfaces/appointment";
+import {
+  ITransaction,
+  ITransactionPayload,
+  ITransactionResponse,
+} from "../interfaces/appointment";
 import {
   downloadtransactionsThunk,
   getAllTransactionsThunk,
 } from "../store/slices/appointmentSlice";
 import { AppDispatch } from "../store/store";
-import { DATE_FORMAT, PAYMENT_STATUS, RESPONSE } from "../utils/AppConstants";
+import {
+  DATE_FORMAT,
+  PAGE_LIMIT,
+  PAYMENT_STATUS,
+  RESPONSE,
+} from "../utils/AppConstants";
 import { dateFormatter } from "../utils/Date";
+import CustomPaginator from "../components/customPagenator/CustomPaginator";
+import { selectServiceCategories } from "../store/slices/masterTableSlice";
+import ErrorMessage from "../components/errorMessage/ErrorMessage";
 
 const transaction = () => {
-  const filters = ["At Home", "Service Center"];
-  const [transactions, setTransactions] = useState<ITransaction[]>([]);
+  const [transactionResponse, setTransactionsResponse] =
+    useState<ITransactionResponse>({} as ITransactionResponse);
   const [selectedTransaction, setSelectedTransaction] = useState<ITransaction>(
     {} as ITransaction
   );
@@ -32,18 +44,83 @@ const transaction = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [showDownloadModal, setShowDownloadModal] = useState<boolean>(false);
   const op = useRef<OverlayPanel>(null);
+  const [dateFilter, setDateFilter] = useState<Date[]>();
+  const [transactionPayload, setTransactionPayload] =
+    useState<ITransactionPayload>({
+      page: 1,
+      page_size: PAGE_LIMIT,
+      start_date: "",
+      service_category: "",
+    } as ITransactionPayload);
   const dataTableRef = useRef<DataTable<ITransaction[]>>(null);
+  const { toast, errorToast } = useToast();
+
+  const serviceCategories = useSelector(selectServiceCategories);
 
   useEffect(() => {
-    dispatch(getAllTransactionsThunk()).then((response) => {
-      const data = response.payload as ITransaction[];
-      setTransactions(data);
+    dispatch(getAllTransactionsThunk(transactionPayload)).then((response) => {
+      const _response = response.payload as ITransactionResponse;
+      if (_response && _response?.transactions?.length) {
+        setTransactionsResponse(_response);
+      } else {
+        setTransactionsResponse({} as ITransactionResponse);
+      }
     });
+  }, [transactionPayload]);
+
+  useEffect(() => {
+    if (dateFilter?.length && dateFilter[0]) {
+      setTransactionPayload({
+        ...transactionPayload,
+        page: 1,
+        start_date: dateFilter[0]?.toString(),
+        end_date: dateFilter[0]?.toString(),
+      });
+      if (dateFilter[1]) {
+        setTransactionPayload({
+          ...transactionPayload,
+          page: 1,
+          start_date: dateFilter[0]?.toString(),
+          end_date: dateFilter[1].toString(),
+        });
+      }
+    } else {
+      setTransactionPayload({
+        ...transactionPayload,
+        start_date: "",
+        end_date: "",
+        page: 1,
+      });
+    }
+  }, [dateFilter]);
+
+  const handleCloseCalendar = () => {
+    setTimeout(() => {
+      op?.current?.hide();
+    }, 0);
+  };
+
+  const handleOnCancel = useCallback(() => {
+    setDateFilter([]);
+    setIsOpenCalendar(false);
+    handleCloseCalendar();
   }, []);
+
+  const handleOnApply = useCallback((range: Date[]) => {
+    handleCloseCalendar();
+    setDateFilter(range);
+    setIsOpenCalendar(false);
+  }, []);
+
+  const handleDateFilter: IDualCalendarReponse = {
+    onApply: handleOnApply,
+    onCancel: handleOnCancel,
+    selectedRange: dateFilter,
+  };
 
   const getColumnValue = (value: string) => {
     let bgColor = "bg-white";
-    switch (value) {
+    switch (value?.toLowerCase()) {
       case PAYMENT_STATUS.COMPLETED:
         bgColor = "bg-green-100";
         break;
@@ -76,9 +153,15 @@ const transaction = () => {
     },
     { header: "Service Type", field: "serviceType" },
 
-    { header: "Amount Paid", field: "amountPaid" },
+    {
+      header: "Amount Paid",
+      field: "amountPaid",
+      body: (row: ITransaction) => (
+        <>{`$${row.amountPaid ? row.amountPaid : "0"}`}</>
+      ),
+    },
 
-    { header: "Transaction Id", field: "transactionID" },
+    { header: "Transaction Id", field: "transactionId" },
     {
       header: "Transaction Date & Time",
       body: (row: ITransaction) => (
@@ -91,7 +174,7 @@ const transaction = () => {
       ),
     },
     {
-      header: "status",
+      header: "payment status",
       body: (row: ITransaction) => getColumnValue(row.status),
     },
     {
@@ -107,17 +190,71 @@ const transaction = () => {
     },
   ];
 
-  const exportCsv = (startDate: Date, endDate: Date) => {
-    // dataTableRef.current?.exportCSV();
-    setShowDownloadModal(false);
-  };
+  const exportCsv = useCallback(
+    (
+      startDate: Date,
+      endDate: Date,
+      appointmentId = "",
+      transactionId = ""
+    ) => {
+      dispatch(
+        downloadtransactionsThunk({
+          transaction_id: transactionId,
+          appointment_id: appointmentId,
+          start_date: dateFormatter(startDate, "MM/dd/yyyy")?.toString(),
+          end_date: dateFormatter(endDate, "MM/dd/yyyy")?.toString(),
+        })
+      ).then((response) => {
+        if (
+          response?.payload &&
+          response.meta.requestStatus === RESPONSE.FULFILLED
+        ) {
+          const url = window.URL.createObjectURL(new Blob([response.payload]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `transaction_list.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          errorToast("Failed to download", "Failed to download csv file");
+        }
+      });
+      setShowDownloadModal(false);
+    },
+    [errorToast, dispatch]
+  );
 
+  const handleSearch = useCallback(
+    (patient_name: string) => {
+      setTransactionPayload({
+        ...transactionPayload,
+        patient_name: patient_name,
+        page: 1,
+      });
+    },
+    [transactionPayload]
+  );
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setTransactionPayload({ ...transactionPayload, page: newPage });
+    },
+    [transactionPayload]
+  );
   const sidebarHeader = () => {
     return (
       <div className="flex justify-start gap-3 items-center w-full">
         <span>Transaction Header</span>
         <Button
-          onClick={() => setShowDownloadModal(true)}
+          onClick={() =>
+            exportCsv(
+              {} as Date,
+              {} as Date,
+              selectedTransaction.appointmentId,
+              selectedTransaction.transactionId
+            )
+          }
           icon="pi pi-download px-1"
           className="rounded-full font-primary text-purple-900 bg-purple-100 h-[2.5rem] px-4 text-sm py-3 border border-purple-900"
           title="Download CSV"
@@ -129,10 +266,15 @@ const transaction = () => {
   };
 
   const tableProps = {
-    value: transactions || [],
+    value: transactionResponse.transactions,
     ref: dataTableRef,
     selectionMode: "single",
     selection: selectedTransaction,
+    scrollable: true,
+    scrollHeight: "calc(100vh - 190px)",
+    emptyMessage: (
+      <div className="flex justify-center w-full">No transaction found</div>
+    ),
   } as const;
   return (
     <div>
@@ -155,11 +297,20 @@ const transaction = () => {
         <span className="h-[2.5rem] w-[20rem]">
           <CustomServiceDropDown
             label="All Services"
-            options={filters}
-            onApplyFilter={() => {}}
+            options={serviceCategories}
+            onApplyFilter={(selectedCategories) => {
+              setTransactionPayload({
+                ...transactionPayload,
+                page: 1,
+                service_category: selectedCategories.join(","),
+              });
+            }}
           />
         </span>
-        <SearchInput />
+        <SearchInput
+          placeholder="Search for Patient"
+          handleSearch={(patient_name: string) => handleSearch(patient_name)}
+        />
         <Button
           onClick={() => setShowDownloadModal(true)}
           icon="pi pi-download px-1"
@@ -173,7 +324,7 @@ const transaction = () => {
           className="w-auto"
           onHide={() => setIsOpenCalendar(false)}
         >
-          <DualCalendar dateFilter={{} as IDualCalendarReponse} />
+          <DualCalendar dateFilter={handleDateFilter} />
         </OverlayPanel>
         {showDownloadModal && (
           <CustomModal
@@ -183,13 +334,15 @@ const transaction = () => {
             header={<div className="px-3">Download Transactions</div>}
           >
             <DownloadTransactions
-              exportCsv={exportCsv}
+              exportCsv={(start_date, end_date) =>
+                exportCsv(start_date, end_date)
+              }
               onCancel={() => setShowDownloadModal(false)}
             />
           </CustomModal>
         )}
       </div>
-      <div className="rounded-lg bg-white p-2 h-[calc(100vh-175px)] flex-grow">
+      <div className="rounded-lg bg-white py-2 h-[calc(100vh-180px)] flex-grow">
         <DataTable {...tableProps}>
           {columns.map((column, index) => (
             <Column
@@ -202,12 +355,14 @@ const transaction = () => {
             />
           ))}
         </DataTable>
+        {transactionResponse?.pagination?.total_pages > 1 && (
+          <CustomPaginator
+            currentPage={transactionResponse?.pagination?.current_page}
+            handlePageChange={(newPage) => handlePageChange(newPage)}
+            totalPages={transactionResponse?.pagination?.total_pages}
+          />
+        )}
       </div>
-      {/* <CustomPaginator
-          currentPage={1}
-          handlePageChange={() => {}}
-          totalPages={10}
-        /> */}
       {!!Object.keys(selectedTransaction)?.length && (
         <Sidebar
           header={sidebarHeader()}
@@ -219,6 +374,7 @@ const transaction = () => {
           <TransactionDetailedView transaction={selectedTransaction} />
         </Sidebar>
       )}
+      <Toast ref={toast} />
     </div>
   );
 };
@@ -232,50 +388,67 @@ const DownloadTransactions = ({
 }) => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleDownload = () => {
+    if (!errorMessage) {
+      exportCsv(startDate, endDate);
+    }
+  };
+
+  const handleValidation = (start: Date, end: Date) => {
+    if (start > end) {
+      setErrorMessage("From date should be less than or equal to To date.");
+    } else {
+      setErrorMessage("");
+    }
+  };
+
   const calendarProps = {
     classNames: "h-[2.5rem] rounded-lg border border-gray-300 p-2",
     showIcon: true,
     icon: "pi pi-calendar-minus",
   } as const;
-  const { errorToast, toast } = useToast();
-
-  const dispatch = useDispatch<AppDispatch>();
-  const downloadCsvFile = () => {
-    dispatch(downloadtransactionsThunk()).then((response) => {
-      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        const url = window.URL.createObjectURL(new Blob([response.payload]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "iris-data.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        errorToast("Failed to download", "Failed to download csv file");
-      }
-    });
-  };
   const buttonStyle =
     "w-full pe-3 py-2 border rounded-full border-purple-900 font-primary text-purple-900 justify-center items-center";
   return (
     <div className="flex-grow">
       <p className="font-primary text-xl py-6">Select Date Range</p>
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
-        <span>
+        <span className="relative">
           <label>From*</label>
           <Calendar
             value={startDate}
-            onChange={(e) => e.target.value && setStartDate(e?.target?.value)}
+            maxDate={new Date()}
+            dateFormat="dd/M/yy"
+            onChange={(e) => {
+              if (e?.target?.value) {
+                setStartDate(e.target.value);
+                handleValidation(e.target.value, endDate);
+              }
+            }}
             className={calendarProps.classNames}
             showIcon
             icon={calendarProps.icon}
           />
+          {errorMessage && (
+            <span>
+              <ErrorMessage message={errorMessage} />
+            </span>
+          )}
         </span>
         <span>
           <label>To*</label>
           <Calendar
+            dateFormat="dd/M/yy"
+            maxDate={new Date()}
+            minDate={startDate}
             value={endDate}
-            onChange={(e) => e.target.value && setEndDate(e?.target?.value)}
+            onChange={(e) => {
+              if (e?.target?.value) {
+                handleValidation(startDate, e.target.value);
+                setEndDate(e?.target?.value);
+              }
+            }}
             className={calendarProps.classNames}
             showIcon
             icon={calendarProps.icon}
@@ -292,13 +465,11 @@ const DownloadTransactions = ({
         <Button
           className={`${buttonStyle} bg-purple-100`}
           icon="pi pi-download px-3 py-2"
-          // onClick={() => exportCsv(startDate, endDate)}
-          onClick={downloadCsvFile}
+          onClick={handleDownload}
         >
           Download CSV
         </Button>
       </div>
-      <Toast ref={toast} />
     </div>
   );
 };
@@ -357,7 +528,7 @@ const TransactionDetailedView = ({
     },
     {
       label: "transaction id",
-      value: transaction.transactionID,
+      value: transaction.transactionId,
     },
     {
       label: "transaction status",

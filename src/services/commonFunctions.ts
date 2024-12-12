@@ -343,3 +343,20 @@ export const getStringArrayFromObjectArray = (values: IMedicine[]) => {
 export const cleanString = (str: string | undefined) => {
   return str ? str.replace(/\s+/g, " ").trim() : "";
 };
+
+export const convertPaymentStatus = (status: string | null | undefined) => {
+  if (status) {
+    switch (status.toLowerCase()) {
+      case "draft":
+        return "Pending";
+      case "active":
+        return "Paid";
+      case "cancelled":
+        return "Failed";
+      default:
+        return "N/A";
+    }
+  } else {
+    return "N/A";
+  }
+};

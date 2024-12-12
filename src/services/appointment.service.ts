@@ -1,11 +1,13 @@
-import { transactions } from "../assets/MockData";
 import {
   ICreateAppointmentPayload,
+  IDownloadCsvPayload,
   IGetAppointmentByIdPayload,
   IGetAppointmentPayload,
   IRetryPaymentPayload,
+  ITransactionPayload,
 } from "../interfaces/appointment";
 import { API_URL } from "../utils/aapiURL";
+import { dateFormatter } from "../utils/Date";
 import http from "./common.services";
 
 const createAppointment = (payload: ICreateAppointmentPayload) => {
@@ -36,23 +38,46 @@ const confirmPayment = (paymentId: string, status: string) => {
   return http.put(`${API_URL.payment}/${status}/resource_id${paymentId}`);
 };
 
-const getAllTransactions = () => {
-  return { data: transactions };
-  // return http.get(`${API_URL.appointment}`);
+const getAllTransactions = (payload: ITransactionPayload) => {
+  const params: Record<string, string> = {};
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== "") {
+      if (key === "start_date" || key === "end_date") {
+        params[key] = dateFormatter(value, "dd/MM/yyyy");
+      } else {
+        params[key] = value;
+      }
+    }
+  });
+  const queryString = new URLSearchParams(params).toString();
+  return http.get(`${API_URL.transaction}?${queryString}`);
+};
+
+const downloadTransactionsInCsv = (payload: IDownloadCsvPayload) => {
+  const params: Record<string, string> = {};
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== "") {
+      params[key] = value;
+    }
+  });
+  const queryString = new URLSearchParams(params).toString();
+  return http.post(
+    `${API_URL.transaction}/${API_URL.download_csv}?${queryString}`
+  );
 };
 
 const retryPayment = (payload: IRetryPaymentPayload) => {
-  console.log(payload);
   return http.post(`${API_URL.repayment}/${payload.appointmentId}`, {
     email: payload.email,
   });
 };
 
 export {
+  confirmPayment,
   createAppointment,
+  getAllTransactions,
   getAppointments,
   getApppointmentById,
-  confirmPayment,
-  getAllTransactions,
   retryPayment,
+  downloadTransactionsInCsv,
 };

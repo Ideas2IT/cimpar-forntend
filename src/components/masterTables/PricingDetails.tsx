@@ -72,8 +72,8 @@ export default function PricingDetails() {
 
   const updatePricing = (data: ILabTestService) => {
     const payload: IUpdatePricingPayload = {
-      center_price: data.center_price,
-      home_price: data.home_price,
+      center_price: Number(data.center_price)?.toFixed(2),
+      home_price: Number(data.home_price)?.toFixed(2),
       resource_id: data.id,
       tableName: TABLE.LAB_TEST,
     };
@@ -88,8 +88,8 @@ export default function PricingDetails() {
             data.id === service.id
               ? {
                   ...service,
-                  center_price: data.center_price,
-                  home_price: data.home_price,
+                  center_price: Number(data.center_price)?.toFixed(2),
+                  home_price: Number(data.home_price)?.toFixed(2),
                 }
               : service
           )
@@ -158,7 +158,7 @@ export default function PricingDetails() {
               />
               <SearchInput
                 handleSearch={handleSearch}
-                placeholder="Search Service"
+                placeholder="Search for Test"
               />
             </div>
           </div>
@@ -193,6 +193,13 @@ const PricingData = ({
 }) => {
   const tableRef = useRef<DataTable<any>>(null);
 
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+    });
+  };
+
   const columns = [
     {
       header: "S.No",
@@ -215,14 +222,14 @@ const PricingData = ({
       header: "service center",
       field: "center_price",
       body: (row: ILabTestService) => (
-        <>${row.center_price ? row.center_price : "-"}</>
+        <>{row.center_price ? formatCurrency(Number(row.center_price)) : "-"}</>
       ),
     },
     {
       header: "at home",
       field: "atHome",
       body: (row: ILabTestService) => (
-        <>${row.home_price ? row.home_price : "-"}</>
+        <>{row.home_price ? formatCurrency(Number(row.home_price)) : "-"}</>
       ),
     },
     {

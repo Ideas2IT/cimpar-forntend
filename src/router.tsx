@@ -11,7 +11,7 @@ import LoginForm from "./components/loginForm/LoginForm";
 import SignUpForm from "./components/loginForm/SignUpForm";
 import MasterTables from "./components/masterTables/MasterTables";
 import ServiceList from "./components/masterTables/ServiceList";
-import EditMedicalConditions from "./components/MedicalDetails/EditMedicalConditions";
+import EditMedicalConditions from "./components/medicalDetails/EditMedicalConditions";
 import EditMedicationDetails from "./components/medication/EditMedicationDetails";
 import PageNotFound from "./components/PageNotFound";
 import ResetPassword from "./components/setPassword/ResetPassowrd";
@@ -81,7 +81,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: `${PATH_NAME.HEALTH_RECORDS}/:service`,
+        path: `${PATH_NAME.CREATE_APPOINTMENT}/:service`,
         element: (
           <RoleBasedRoute
             requiredRole={ROLE.PATIENT}
@@ -90,7 +90,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: PATH_NAME.TEST_RESULT,
+        path: PATH_NAME.HEALTH_RECORDS,
         element: (
           <RoleBasedRoute
             element={<LabTestResults />}

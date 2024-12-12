@@ -342,7 +342,7 @@ const EditVisitHistory = () => {
             </PrimeButton>
           </div>
         </div>
-        <div className="bg-white rounded-lg m-6 p-6">
+        <div className="bg-white rounded-lg mx-6 p-6 pb-2 h-[calc(100vh-175px)] overflow-auto">
           <div className="grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-4">
             <div className="relative">
               <label className="input-label block pb-1" htmlFor="visitLocation">

@@ -260,6 +260,7 @@ const EditMedicationDetails = () => {
                       render={({ field }) => (
                         <CustomAutoComplete
                           {...field}
+                          key="medication"
                           handleSearch={searchMedications}
                           selectedItems={field.value}
                           handleSelection={(medicines) => {
@@ -336,6 +337,7 @@ const EditMedicationDetails = () => {
                       }}
                       render={({ field }) => (
                         <CustomAutoComplete
+                          key="medicationtakenBefore"
                           {...field}
                           handleSearch={searchMedications}
                           selectedItems={field.value}

@@ -8,7 +8,7 @@ import UserDetails from "../userDetails/UserDetails";
 import { useNavigate } from "react-router-dom";
 import Medication from "../medication/Medication";
 import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
-import MedicalConditionDetails from "../MedicalDetails/MedicalConditionDetails";
+import MedicalConditionDetails from "../medicalDetails/MedicalConditionDetails";
 import VisitHistory from "../visitHistory/VisitHistory";
 import { useDispatch, useSelector } from "react-redux";
 import AddRecord from "../../assets/icons/addrecord.svg?react";

@@ -36,7 +36,7 @@ const Sidebar = () => {
         header: HEADER_TITLE.HEALTH_RECORD,
         key: "labTestResults",
         icon: <AddRecord />,
-        routerLink: PATH_NAME.TEST_RESULT,
+        routerLink: PATH_NAME.HEALTH_RECORDS,
       },
       {
         header: HEADER_TITLE.PROFILE,
@@ -107,7 +107,7 @@ const Sidebar = () => {
       case ABSOLUTE_PATH.TRANSACTIONS:
         tabIndex = 2;
         break;
-      case ABSOLUTE_PATH.TEST_RESULT:
+      case ABSOLUTE_PATH.HEALTH_RECORDS:
       case ABSOLUTE_PATH.MASTER_TABS:
       case ABSOLUTE_PATH.SERVICE_MASTER:
         tabIndex = 1;

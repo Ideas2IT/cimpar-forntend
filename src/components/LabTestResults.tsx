@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
+import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../assets/icons/filter.svg?react";
 import SlideBack from "../assets/icons/slideback.svg?react";
@@ -12,7 +12,12 @@ import Tab from "../interfaces/Tab";
 import { selectSelectedPatient } from "../store/slices/PatientSlice";
 import { getServiceHistoryThunk } from "../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../store/store";
-import { PAGE_LIMIT, RESPONSE, TABS } from "../utils/AppConstants";
+import {
+  LAB_SERVICES,
+  PAGE_LIMIT,
+  RESPONSE,
+  TABS,
+} from "../utils/AppConstants";
 import { IItem } from "./appointmentForm/AppointmentForm";
 import SearchInput, { SearchInputHandle } from "./SearchInput";
 import ServiceHistory from "./serviceHistory/ServiceHistory";
@@ -45,7 +50,7 @@ const LabTestResults = () => {
 
   const tabs: Tab[] = [
     {
-      key: "pastHealthRecord",
+      key: "HealthRecord",
       value: "Service History",
       content: (
         <div className="py-1 ps-3 h-full">
@@ -55,7 +60,7 @@ const LabTestResults = () => {
     },
     {
       key: "labTestResults",
-      value: "Lab Results",
+      value: "Clinical Laboratory",
       content: (
         <div className="py-1 ps-3 h-full">
           <TestResult handlePageChange={handlePageChange} />
@@ -91,7 +96,7 @@ const LabTestResults = () => {
     },
   ];
   const services = [
-    { id: 1, name: "Lab Results", value: "lab_result" },
+    { id: 1, name: "Clinical Laboratory", value: "Clinical Laboratory" },
     { id: 2, name: "Immunization", value: "Immunization" },
     { id: 3, name: "Imaging", value: "Imaging" },
     { id: 4, name: "Home Care", value: "Home_care" },
@@ -124,11 +129,11 @@ const LabTestResults = () => {
   const getServiceType = () => {
     switch (selectedTab) {
       case TABS.LAB_RESULT:
-        return "lab_result";
+        return LAB_SERVICES.CLINICAL_LABORATORY;
       case TABS.IMMUNIZATION:
-        return "Immunization";
+        return TABS.IMMUNIZATION;
       case TABS.IMAGING:
-        return "Imaging";
+        return TABS.IMAGING;
       case TABS.HOME_CARE:
         return "Home_care";
       default:
@@ -200,13 +205,11 @@ const LabTestResults = () => {
       case TABS.SERVICE_HISTORY:
         return "Search For Service";
       case TABS.LAB_RESULT:
+      case TABS.IMAGING:
+      case TABS.HOME_CARE:
         return "Search For Test";
       case TABS.IMMUNIZATION:
         return "Search For Vaccine";
-      case TABS.IMAGING:
-        return "Search For Imaging";
-      case TABS.HOME_CARE:
-        return "Search For Home Care";
       default:
         return "Search";
     }
@@ -241,10 +244,14 @@ const LabTestResults = () => {
             />
           </div>
           <OverlayPanel
-            unstyled
-            className="bg-white py-2 mt-5 shadow-md rounded-lg"
-            onHide={() => setIsOpen(false)}
             ref={op}
+            unstyled
+            closeOnEscape
+            dismissable={true}
+            className="bg-white py-2 mt-5 shadow-md rounded-lg"
+            onHide={() => {
+              setIsOpen(false);
+            }}
           >
             <div className="w-[20rem] min-h-[12rem] p-4 pb-1">
               {services.map((option, index) => {
@@ -272,8 +279,10 @@ const LabTestResults = () => {
                   label="Cancel"
                   outlined
                   onClick={(event) => {
-                    op.current?.toggle(event);
-                    setIsOpen((prev) => !prev);
+                    setTimeout(() => {
+                      op.current?.toggle(event);
+                    }, 0);
+                    setIsOpen(false);
                     setSelectedServices([]);
                   }}
                 />
@@ -281,9 +290,10 @@ const LabTestResults = () => {
                   className="text-white bg-primary py-2 px-6 rounded-lg"
                   label="Apply"
                   onClick={(event) => {
-                    op.current?.toggle(event);
-                    setIsOpen((prev) => !prev);
-                    // handleFilter();
+                    setTimeout(() => {
+                      op?.current?.toggle(event);
+                    }, 0);
+                    setIsOpen(false);
                   }}
                 />
               </div>

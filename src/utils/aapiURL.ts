@@ -26,4 +26,6 @@ export const API_URL = {
   activeLocation: "active_location",
   payment: "payment",
   repayment: "repayment",
+  transaction: "transaction",
+  download_csv: "download_pdf",
 };

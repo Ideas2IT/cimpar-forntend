@@ -73,8 +73,23 @@ const DetailedAppointmentView = ({
   const appointmentFields = [
     {
       label: "TOTAL COST",
-      value: selectedAppointment?.totalCost + " $" || "N/A",
+      value: `$${selectedAppointment?.totalCost ? parseFloat(Number(selectedAppointment?.totalCost)?.toFixed(2)) : "-"}`,
       full: true,
+    },
+    {
+      label: "TEST TO BE TAKEN AT",
+      value: selectedAppointment?.takeTestAt || "-",
+      full: false,
+    },
+    {
+      label: "PAYMENT STATUS",
+      value: selectedAppointment?.paymentStatus || "N/A",
+      full: false,
+    },
+    {
+      label: "SERVICE CENTER NAME",
+      value: selectedAppointment?.centerLocation || "N/A",
+      full: false,
     },
     {
       label: "DATE OF APPOINTMENT FOR TEST",

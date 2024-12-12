@@ -40,14 +40,13 @@ const PricingModal = (props: IPricingTableProps) => {
   }, [isOpenPricingModal]);
 
   function getIndex() {
-    if (selectedTab === SERVICE_MENU.LABORATORY) {
-      return serviceCategories.indexOf(LAB_SERVICES.CLINICAL_LABORATORY);
-    } else if (selectedTab) {
-      const tabIndex =
-        serviceCategories?.indexOf(
-          selectedTab?.charAt(0)?.toUpperCase() + selectedTab?.slice(1)
-        ) || 0;
-      return tabIndex > -1 ? tabIndex : 0;
+    switch (selectedTab) {
+      case SERVICE_MENU.LABORATORY:
+        return serviceCategories.indexOf(LAB_SERVICES.CLINICAL_LABORATORY);
+      case SERVICE_MENU.HOME_CARE:
+        return serviceCategories.indexOf(LAB_SERVICES.HOME_CARE);
+      case SERVICE_MENU.IMAGING:
+        return serviceCategories.indexOf(LAB_SERVICES.IMAGING);
     }
   }
 
@@ -131,7 +130,7 @@ const PricingModal = (props: IPricingTableProps) => {
 const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
   const columns = [
     {
-      header: "Service Name",
+      header: "Test Name",
       field: "serviceName",
       headerClassName: "uppercase border-b py-0",
       bodyClassName: " max-w-[15rem] text-wrap",
@@ -145,14 +144,19 @@ const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
       header: "service center",
       bodyClassName: " max-w-[5rem]",
       body: (row: ILabService) => (
-        <> {row?.currency_symbol + row?.centerPricing || "-"}</>
+        <>
+          {" "}
+          {row?.currency_symbol + Number(row?.centerPricing)?.toFixed(2) || "-"}
+        </>
       ),
     },
     {
       header: "at home",
       bodyClassName: " max-w-[5rem]",
       body: (row: ILabService) => (
-        <>{row?.currency_symbol + row?.homePricing || "-"}</>
+        <>
+          {row?.currency_symbol + Number(row?.homePricing)?.toFixed(2) || "-"}
+        </>
       ),
     },
   ];

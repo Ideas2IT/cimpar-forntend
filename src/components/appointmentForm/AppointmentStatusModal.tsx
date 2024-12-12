@@ -24,7 +24,7 @@ export const AppointmentStatus = ({
   const { updateHeaderTitle } = useContext(HeaderContext);
 
   const handleResponse = () => {
-    navigate(PATH_NAME.TEST_RESULT);
+    navigate(PATH_NAME.HEALTH_RECORDS);
     updateHeaderTitle("Health Records");
   };
 
@@ -47,46 +47,49 @@ export const AppointmentStatus = ({
         </label>
       )}
       <div className="flex justify-center gap-3 text-sm pt-3 w-full">
-        {status === TRNASACTION_STATUS.SUCCEEDED ? (
-          <>
-            <Button
-              setFocus={true}
-              onClick={handleResponse}
-              className="font-primary w-[13rem] focus:border focus:border-purple-900 "
-              style="outline"
-            >
-              <HomeIcon className="stroke-purple-900 pe-1" />
-              Go to Health Records
-            </Button>
-            <Button
-              className="font-primary w-[13rem] bg-white justify-center"
-              onClick={() => navigate(PATH_NAME.HOME)}
-              style="outline"
-            >
-              <AddRecord className="stroke-purple-900 pe-1" /> Add New Service
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              setFocus={true}
-              onClick={() => navigate(PATH_NAME.HOME)}
-              className="font-primary w-[7rem] justify-center focus:border bg-white focus:border-purple-900 "
-              style="outline"
-            >
-              <i className="pi pi-times pe-2" />
-              Cancel
-            </Button>
-            <Button
-              className="font-primary w-[10rem] bg-purple-100 justify-center"
-              style="outline"
-              onClick={() => onRetry && onRetry()}
-            >
-              <i className="stroke-purple-900 pe-2 pi pi-sync" />
-              Retry Payment
-            </Button>
-          </>
-        )}
+        {
+          status === TRNASACTION_STATUS.SUCCEEDED && (
+            <>
+              <Button
+                setFocus={true}
+                onClick={handleResponse}
+                className="font-primary w-[13rem] focus:border focus:border-purple-900 "
+                style="outline"
+              >
+                <HomeIcon className="stroke-purple-900 pe-1" />
+                Go to Health Records
+              </Button>
+              <Button
+                className="font-primary w-[13rem] bg-white justify-center"
+                onClick={() => navigate(PATH_NAME.HOME)}
+                style="outline"
+              >
+                <AddRecord className="stroke-purple-900 pe-1" /> Add New Service
+              </Button>
+            </>
+          )
+          // : (
+          //   <>
+          //     <Button
+          //       setFocus={true}
+          //       onClick={() => navigate(PATH_NAME.HOME)}
+          //       className="font-primary w-[7rem] justify-center focus:border bg-white focus:border-purple-900 "
+          //       style="outline"
+          //     >
+          //       <i className="pi pi-times pe-2" />
+          //       Cancel
+          //     </Button>
+          //     <Button
+          //       className="font-primary w-[10rem] bg-purple-100 justify-center"
+          //       style="outline"
+          //       onClick={() => onRetry && onRetry()}
+          //     >
+          //       <i className="stroke-purple-900 pe-2 pi pi-sync" />
+          //       Retry Payment
+          //     </Button>
+          //   </>
+          // )
+        }
       </div>
     </div>
   );

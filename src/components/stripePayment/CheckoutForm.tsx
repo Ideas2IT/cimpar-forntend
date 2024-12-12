@@ -36,7 +36,7 @@ export default function CheckoutForm({
       redirect: "if_required",
     });
     if (result?.error) {
-      showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
+      // showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
       if (
         result.error?.type === "card_error" ||
         result.error?.type === "validation_error"
