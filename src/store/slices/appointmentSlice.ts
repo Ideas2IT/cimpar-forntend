@@ -8,7 +8,6 @@ import {
   IDownloadCsvPayload,
   IGetAppointmentByIdPayload,
   IGetAppointmentPayload,
-  IRetryPaymentPayload,
   ITransaction,
   ITransactionPayload,
   ITransactionResponse,
@@ -21,7 +20,6 @@ import {
   getAllTransactions,
   getAppointments,
   getApppointmentById,
-  retryPayment,
 } from "../../services/appointment.service";
 import {
   convertPaymentStatus,
@@ -93,12 +91,12 @@ const transformTransactions = (data: any) => {
       return {
         amountPaid: item?.priority || "-",
         patientName: item?.patient_name || "-",
-        payment_mode: "Cash",
+        payment_mode: "Card",
         serviceType: item?.location ? "Service center" : "At Home",
         status: convertPaymentStatus(item?.status) || "-",
-        testDate: item?.start || "-",
+        testDate: item?.test_date || "-",
         testName: item?.tests_taken || "-",
-        transactionDateAndTime: item?.test_date || "-",
+        transactionDateAndTime: item?.start || "-",
         transactionId: item?.payment_id || "-",
         appointmentId: item?.appointment_id || "-",
         location: item?.location || "-",
@@ -185,10 +183,10 @@ const transformSingleAppointment = (data: any) => {
           : "",
       testDetails: appointmentCopy?.test_details ?? [],
       totalCost: appointmentCopy?.total_cost || 0,
-      centerLocation: appointmentCopy?.service_centre_location || "N/A",
-      takeTestAt: appointmentCopy?.test_location || "N/A",
+      centerLocation: appointmentCopy?.service_center_location || "-",
+      takeTestAt: appointmentCopy?.test_location || "-",
       paymentStatus:
-        convertPaymentStatus(appointmentCopy?.payment_status) || "N/A",
+        convertPaymentStatus(appointmentCopy?.payment_status) || "-",
     };
     return _appointment;
   }
@@ -204,25 +202,6 @@ export const createAppointmentThunk = createAsyncThunk(
       if (isAxiosError(error)) {
         const errorMessage =
           error.response?.data?.error || "Failed to create appointment";
-        return rejectWithValue({
-          message: errorMessage,
-          response: error?.message,
-        } as ErrorResponse);
-      }
-    }
-  }
-);
-
-export const retryPaymentThunk = createAsyncThunk(
-  "repayment/get",
-  async (payload: IRetryPaymentPayload, { rejectWithValue }) => {
-    try {
-      const response = await retryPayment(payload);
-      return response;
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const errorMessage =
-          error.response?.data?.error || "Failed to make payment";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,
@@ -319,9 +298,9 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(createAppointmentThunk.fulfilled, (state, { payload }) => {
-        state.apointments = payload?.data;
-      })
+      // .addCase(createAppointmentThunk.fulfilled, (state, { payload }) => {
+      //   state.apointments = payload?.data;
+      // })
       .addCase(getAllAppointmentsThunk.fulfilled, (state, { payload }) => {
         if (payload) {
           state.apointments = [...payload?.response];

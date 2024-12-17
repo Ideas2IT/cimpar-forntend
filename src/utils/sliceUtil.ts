@@ -8,4 +8,5 @@ export const SLICE_NAME = {
   patinetSlice: "patient",
   immunizationSlice: "immunizationSlice",
   appointmentSlice: "appointmentSlice",
+  paymentSlice: "paymentSlice",
 };

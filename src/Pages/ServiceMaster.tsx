@@ -28,6 +28,14 @@ const ServiceMaster = () => {
 
   const cards: ICard[] = [
     {
+      id: 1,
+      title: "Clinical Laboratory",
+      icon: laboratoryIcon,
+      color: "bg-[#FDEFE5] text-[#545F71]",
+      disabled: false,
+      link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.LABORATORY}`,
+    },
+    {
       id: 3,
       title: "Home Care",
       icon: healthRecordIcon,
@@ -42,14 +50,6 @@ const ServiceMaster = () => {
       color: "bg-[#F1FCF0]",
       disabled: false,
       link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.IMAGING}`,
-    },
-    {
-      id: 1,
-      title: "Laboratory",
-      icon: laboratoryIcon,
-      color: "bg-[#FDEFE5] text-[#545F71]",
-      disabled: false,
-      link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.LABORATORY}`,
     },
     {
       id: 4,

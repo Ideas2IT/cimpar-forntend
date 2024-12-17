@@ -191,13 +191,18 @@ const PricingData = ({
   handlePaging: (value: number) => void;
   pagingDetails: IPagination;
 }) => {
-  const tableRef = useRef<DataTable<any>>(null);
+  const tableRef = useRef<DataTable<ILabTestService[]>>(null);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
     });
+  };
+
+  const handlePagination = (page: number) => {
+    handlePaging(page);
+    tableRef?.current && tableRef.current?.resetScroll();
   };
 
   const columns = [
@@ -280,7 +285,7 @@ const PricingData = ({
       {pagingDetails?.total_pages > 1 && (
         <CustomPaginator
           currentPage={pagingDetails?.current_page}
-          handlePageChange={handlePaging}
+          handlePageChange={handlePagination}
           totalPages={pagingDetails?.total_pages}
         />
       )}

@@ -66,6 +66,7 @@ const transaction = () => {
         setTransactionsResponse({} as ITransactionResponse);
       }
     });
+    dataTableRef?.current && dataTableRef.current.resetScroll();
   }, [transactionPayload]);
 
   useEffect(() => {
@@ -121,7 +122,7 @@ const transaction = () => {
   const getColumnValue = (value: string) => {
     let bgColor = "bg-white";
     switch (value?.toLowerCase()) {
-      case PAYMENT_STATUS.COMPLETED:
+      case PAYMENT_STATUS.PAID:
         bgColor = "bg-green-100";
         break;
       case PAYMENT_STATUS.PENDING:
@@ -245,7 +246,7 @@ const transaction = () => {
   const sidebarHeader = () => {
     return (
       <div className="flex justify-start gap-3 items-center w-full">
-        <span>Transaction Header</span>
+        <span>Transaction Details</span>
         <Button
           onClick={() =>
             exportCsv(
@@ -512,7 +513,7 @@ const TransactionDetailedView = ({
       value: dateFormatter(transaction.testDate, DATE_FORMAT.DD_MMM_YYYY),
     },
     {
-      label: "service type",
+      label: "Preferred Location",
       value: transaction.serviceType,
     },
     {

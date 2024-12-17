@@ -158,7 +158,7 @@ const PreviewAppointment = ({
           <Button
             onClick={() => handleResponse(false)}
             icon="pi pi-times px-2"
-            className="py-1 rounded-full max-h-[2.5rem] border border-purple-800 h-full w-[48%] justify-center"
+            className="py-2 rounded-full max-h-[2.5rem] border border-purple-800 h-full w-[48%] justify-center"
           >
             No, I want to edit
           </Button>
@@ -167,7 +167,7 @@ const PreviewAppointment = ({
               handleResponse(true);
             }}
             icon="pi pi-check px-2"
-            className="py-1 rounded-full max-h-[2.5rem] border border-purple-800 bg-purple-100 w-[48%] justify-center"
+            className="py-2 rounded-full max-h-[2.5rem] border border-purple-800 bg-purple-100 w-[48%] justify-center"
           >
             Yes, Confirm & Pay ${totalCost || 0}
           </Button>

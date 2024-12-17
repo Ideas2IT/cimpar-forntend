@@ -1,42 +1,62 @@
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { Toast } from "primereact/toast";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { TAppointmentStatus } from "../../interfaces/appointment";
+import { retryPaymentThunk } from "../../store/slices/paymentSlice";
+import { AppDispatch } from "../../store/store";
+import {
+  PATH_NAME,
+  RESPONSE,
+  TRNASACTION_STATUS,
+} from "../../utils/AppConstants";
+import AppointmentStatus from "../appointmentForm/AppointmentStatusModal";
+import CustomModal from "../customModal/CustomModal";
+import useToast from "../useToast/UseToast";
 import CheckoutForm from "./CheckoutForm";
 import "./payment.css";
-import CustomModal from "../customModal/CustomModal";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { PATH_NAME, TRNASACTION_STATUS } from "../../utils/AppConstants";
-import { TAppointmentStatus } from "../../interfaces/appointment";
-import AppointmentStatus from "../appointmentForm/AppointmentStatusModal";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { retryPaymentThunk } from "../../store/slices/appointmentSlice";
+
 const stripePromise = loadStripe(
   import.meta.env.VITE_APP_STRIPE_PUBLISHABLE_KEY
 );
 
 const Payment = ({
   clientSecretKey,
-  paymentId,
+  appointmentId,
+  handleClose,
 }: {
   clientSecretKey: string;
-  paymentId?: string;
+  appointmentId?: string;
+  handleClose: () => void;
 }) => {
   const navigate = useNavigate();
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<TAppointmentStatus>(
     TRNASACTION_STATUS.REJECTED
   );
+  const { toast, errorToast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const [clientSecret, setClientSecret] = useState(clientSecretKey);
 
   const onRetry = () => {
-    dispatch(
-      retryPaymentThunk({
-        appointmentId: "76cf76bc-cd69-4a62-86be-344f48d6e87c",
-        email: "searchforgm@gmail.com",
-      })
-    );
+    appointmentId &&
+      dispatch(retryPaymentThunk(appointmentId)).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+          const _response = response.payload.client_secret as string;
+          setClientSecret(_response);
+        } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
+          errorToast(
+            "Payment Retry Failed",
+            " We were unable to process your payment. Please try again later"
+          );
+          setTimeout(() => {
+            handleClose();
+            navigate(PATH_NAME.HOME);
+          }, 3000);
+        }
+      });
   };
 
   const handleDialog = (value: boolean, status: TAppointmentStatus) => {
@@ -55,13 +75,16 @@ const Payment = ({
           stripe={stripePromise}
           options={{ clientSecret, appearance, loader }}
         >
-          <CheckoutForm showStatusDialog={handleDialog} />
+          <CheckoutForm
+            showStatusDialog={handleDialog}
+            clientSecret={clientSecret}
+          />
         </Elements>
       )}
       {showStatusDialog && (
         <CustomModal
           showCloseButton={true}
-          styleClass="w-[30rem] h-[15rem] bg-white"
+          styleClass="w-[30rem] h-[17rem] bg-white"
           handleClose={() => {
             setShowStatusDialog(false);
             navigate(PATH_NAME.HOME);
@@ -76,6 +99,7 @@ const Payment = ({
           />
         </CustomModal>
       )}
+      <Toast ref={toast} />
     </>
   );
 };

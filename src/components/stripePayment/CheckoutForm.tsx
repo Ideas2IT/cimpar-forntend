@@ -1,24 +1,67 @@
-import { useState } from "react";
 import {
   PaymentElement,
-  useStripe,
   useElements,
+  useStripe,
 } from "@stripe/react-stripe-js";
-import { Layout, loadStripe } from "@stripe/stripe-js";
-import { TRNASACTION_STATUS } from "../../utils/AppConstants";
+import { Layout } from "@stripe/stripe-js";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { TAppointmentStatus } from "../../interfaces/appointment";
+import { getPaymentStatusThunk } from "../../store/slices/paymentSlice";
+import { AppDispatch } from "../../store/store";
+import {
+  ERROR_CODES,
+  PAYMENT_RETURN_URL,
+  PAYMENT_STATUS,
+  RESPONSE,
+  TRNASACTION_STATUS,
+} from "../../utils/AppConstants";
 
 export default function CheckoutForm({
   showStatusDialog,
+  clientSecret,
 }: {
   showStatusDialog: (value: boolean, status: TAppointmentStatus) => void;
+  clientSecret: string;
 }) {
-  const dpmCheckerLink = "/home";
   const stripe = useStripe();
   const elements = useElements();
+  const dispatch = useDispatch<AppDispatch>();
 
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const checkStatus = (count: number) => {
+    dispatch(getPaymentStatusThunk(clientSecret)).then((response) => {
+      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+        const status = response.payload.status as string;
+        switch (true) {
+          case status === PAYMENT_STATUS.ACTIVE:
+            {
+              setIsLoading(false);
+              showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
+            }
+            break;
+          case status === PAYMENT_STATUS.DRAFT && count < 3: {
+            count++;
+            setTimeout(() => {
+              checkStatus(count++);
+            }, 2000);
+            break;
+          }
+          case status === PAYMENT_STATUS.DRAFT && count >= 3: {
+            setIsLoading(false);
+            showStatusDialog(true, TRNASACTION_STATUS.PENDING);
+            break;
+          }
+          case status === PAYMENT_STATUS.CANCELLED:
+            showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
+            break;
+          default:
+            showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
+        }
+      }
+    });
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -31,30 +74,30 @@ export default function CheckoutForm({
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `http://localhost:5173/payment-status`,
+        return_url: PAYMENT_RETURN_URL,
       },
       redirect: "if_required",
     });
+
     if (result?.error) {
-      // showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
       if (
-        result.error?.type === "card_error" ||
-        result.error?.type === "validation_error"
+        result.error?.type === ERROR_CODES.CARD_ERROR ||
+        result.error?.type === ERROR_CODES.STRIPE_VALIDATION_ERROR
       ) {
         setMessage(result?.error?.message || "");
       } else {
         setMessage(result?.error?.message || "Unexpected error");
       }
-
       setIsLoading(false);
     } else {
-      showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
+      checkStatus(1);
     }
   };
 
   const paymentElementOptions: { layout: Layout } = {
     layout: "tabs",
   };
+
   return (
     <div className="h-full flex items-center justify-center flex-col">
       <form id="payment-form" onSubmit={handleSubmit}>

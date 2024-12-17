@@ -10,6 +10,7 @@ export const ROLE = {
 };
 
 export const PATTERN = {
+  TEST_CODE: /^[a-zA-Z0-9]+$/,
   NAME: /^[A-Za-z\s\W_]+$/,
   PHONE: /^\+?\d{10}$/,
   EMAIL: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/,
@@ -93,6 +94,7 @@ export const TABS = {
   SERVICE_HISTORY: "Service History",
   IMAGING: "Imaging",
   HOME_CARE: "Home Care",
+  CLINICAL_LABORATORY: "Clinical Laboratory",
 };
 
 export const SERVICE_TABS = {
@@ -107,6 +109,7 @@ export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
 export const SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
 export const CODE = "1020";
+export const PAYMENT_RETURN_URL = "http://localhost:5173/payment-status";
 
 export const TABLE = {
   STATE: "state",
@@ -131,6 +134,7 @@ export const RESULT_STATUS = {
   UNDER_PROCESSING: "pending",
   AVAILABLE: "available",
   ICARE: "icare",
+  UPCOMING: "upcoming",
 };
 
 export const SERVICE_CATEGORY = {
@@ -151,6 +155,8 @@ export const ERROR_CODES = {
   EXPIRED_TOKEN: 401,
   FORBIDDEN: 403,
   VALIDATION_ERROR: "validation error",
+  CARD_ERROR: "card_error",
+  STRIPE_VALIDATION_ERROR: "validation_error",
 };
 
 export const HEADER_TITLE = {
@@ -183,6 +189,11 @@ export const PAYMENT_STATUS = {
   REFUNDED: "refunded",
   COMPLETED: "completed",
   PENDING: "pending",
+  DRAFT: "draft",
+  ACTIVE: "active",
+  FAILED: "failed",
+  CANCELLED: "cancelled",
+  PAID: "paid",
 };
 
 export const LAB_SERVICES = {
@@ -221,10 +232,14 @@ export const DATE_FORMAT = {
 export const TRNASACTION_STATUS = {
   REJECTED: "rejected" as TAppointmentStatus,
   SUCCEEDED: "succeeded" as TAppointmentStatus,
+  PENDING: "pending" as TAppointmentStatus,
 };
 
 export const APPOINTMENT_STATUS_MESSAGE = {
-  SUCCESS: "Your Appointment has been Successfully fixed.",
+  WAIT: "Please check the status in the service history after a few hours. Any deducted amount will be appropriately processed",
+  SUCCESS: "Your Appointment has been Scheduled.",
   FAILED: "Sorry, your payment has been failed.",
-  RETRY: "Please try again the payment for booking an appointment.",
+  RETRY:
+    "Please try the payment again to book. Don't worry if any amount has been deducted, it will be credited back to the original account within 5-7 business days.",
+  PENDING: "Your Payment Status is Pending",
 };

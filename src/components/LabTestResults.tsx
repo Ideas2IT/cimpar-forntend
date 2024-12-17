@@ -128,7 +128,7 @@ const LabTestResults = () => {
 
   const getServiceType = () => {
     switch (selectedTab) {
-      case TABS.LAB_RESULT:
+      case TABS.CLINICAL_LABORATORY:
         return LAB_SERVICES.CLINICAL_LABORATORY;
       case TABS.IMMUNIZATION:
         return TABS.IMMUNIZATION;

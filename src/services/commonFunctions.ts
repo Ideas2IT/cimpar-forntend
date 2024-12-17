@@ -16,6 +16,7 @@ import {
 export const getStatusColors = (status = "") => {
   switch (status.toLowerCase()) {
     case RESULT_STATUS.UPCOMING_APPOINTMENT:
+    case RESULT_STATUS.UPCOMING:
       return "bg-purple-100";
     case RESULT_STATUS.UNDER_PROCESSING:
       return "bg-orange-400 bg-opacity-20";
@@ -279,7 +280,7 @@ export const appointmentStatus = (appointmentDateStr: string | Date) => {
       ? parseISO(appointmentDateStr)
       : appointmentDateStr;
   if (isNaN(appointmentDate.getTime())) {
-    return RESULT_STATUS.UPCOMING_APPOINTMENT;
+    return RESULT_STATUS.UPCOMING;
   }
   const appointmentDateUTC = new Date(
     formatInTimeZone(appointmentDate, "UTC", DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
@@ -288,7 +289,7 @@ export const appointmentStatus = (appointmentDateStr: string | Date) => {
     formatInTimeZone(new Date(), "UTC", DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
   );
   if (isBefore(currentDateUTC, appointmentDateUTC)) {
-    return RESULT_STATUS.UPCOMING_APPOINTMENT;
+    return RESULT_STATUS.UPCOMING;
   } else {
     return RESULT_STATUS.UNDER_PROCESSING;
   }

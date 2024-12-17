@@ -149,11 +149,6 @@ export interface ICreateAppointmentResponse {
   payment_id: string;
 }
 
-export interface IRetryPaymentPayload {
-  email: string;
-  appointmentId: string;
-}
-
 export interface ITransactionPayload {
   service_category: string;
   start_date: string;
@@ -175,4 +170,4 @@ export interface IDownloadCsvPayload {
   appointment_id?: string;
 }
 
-export type TAppointmentStatus = "failed" | "Succeeded";
+export type TAppointmentStatus = "failed" | "Succeeded" | "pending";

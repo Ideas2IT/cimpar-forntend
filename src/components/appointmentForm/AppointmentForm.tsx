@@ -296,7 +296,7 @@ const AppointmentForm = () => {
   };
   const confirmEdit = () => {
     confirmDialog({
-      header: "Confirmation",
+      header: "Confirm Cancellation",
       className: "max-w-[50vw]",
       message: DIALOG_WARNING,
       icon: "pi pi-info-circle",
@@ -310,7 +310,7 @@ const AppointmentForm = () => {
 
   const confirmCancle = () => {
     confirmDialog({
-      header: "Confirmation",
+      header: "Confirm Cancellation",
       className: "max-w-[50vw]",
       message: DIALOG_WARNING,
       icon: "pi pi-info-circle",
@@ -389,7 +389,6 @@ const AppointmentForm = () => {
     }
     setShowConfirmDialog(false);
   };
-
   const validateScheduledTime = (appointmentTime: Date) => {
     const currentDate = new Date();
     const hours = appointmentTime.getHours();
@@ -505,7 +504,7 @@ const AppointmentForm = () => {
             </Button>
           </div>
         </div>
-        <div className="p-6 mx-4 bg-white rounded-xl max-h-[100%] overflow-auto">
+        <div className="p-6 mx-4 bg-white rounded-xl max-h-[98%] overflow-auto">
           <div className="font-primary text-xl flex items-center">
             Appointment Details
             <TestPricing
@@ -947,7 +946,11 @@ const AppointmentForm = () => {
           header={<span className="ps-4">Payment</span>}
         >
           <div className="py-2">
-            <Payment clientSecretKey={appointmentResponse.client_secret} />
+            <Payment
+              clientSecretKey={appointmentResponse.client_secret}
+              appointmentId={appointmentResponse.appointment_id}
+              handleClose={() => setShowPaymentModal(false)}
+            />
           </div>
         </CustomModal>
       )}

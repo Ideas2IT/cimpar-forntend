@@ -25,6 +25,7 @@ export const API_URL = {
   locationDetails: `location/location-details`,
   activeLocation: "active_location",
   payment: "payment",
+  paymentStaus: "payment/status",
   repayment: "repayment",
   transaction: "transaction",
   download_csv: "download_pdf",

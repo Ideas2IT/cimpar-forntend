@@ -29,10 +29,12 @@ import {
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
 import {
+  ERROR,
   HEADER_TITLE,
   LAB_SERVICES,
   PAGE_LIMIT,
   PATH_NAME,
+  PATTERN,
   RESPONSE,
   SERVICE_MENU,
   TABLE,
@@ -67,6 +69,7 @@ const ServiceList = () => {
   } as IPagging);
   const { toast, errorToast, successToast } = useToast();
   const searchInputRef = useRef<SearchInputHandle>(null);
+  const dataTableRef = useRef<DataTable<ILabTestService[]>>(null);
 
   const getServiceType = () => {
     switch (service) {
@@ -99,6 +102,7 @@ const ServiceList = () => {
   useEffect(() => {
     if (Object?.keys(fetchPayload)?.length) {
       fetchTests();
+      dataTableRef?.current && dataTableRef.current?.resetScroll();
     }
   }, [fetchPayload]);
 
@@ -310,6 +314,7 @@ const ServiceList = () => {
       >
         <DataTable
           value={tests}
+          ref={dataTableRef}
           tableClassName="border-b"
           className="mt-2 tests-wrapper font-tertiary"
           emptyMessage={
@@ -428,7 +433,13 @@ export const AddMasterModal = ({
             <Controller
               control={control}
               name="code"
-              rules={{ validate: (value) => validateField(value, "Code") }}
+              rules={{
+                validate: (value) => validateField(value, "Code"),
+                pattern: {
+                  value: PATTERN.TEST_CODE,
+                  message: "Only letters and numbers are allowed",
+                },
+              }}
               render={({ field }) => (
                 <InputText
                   id="code"

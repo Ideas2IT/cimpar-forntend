@@ -3,7 +3,6 @@ import {
   IDownloadCsvPayload,
   IGetAppointmentByIdPayload,
   IGetAppointmentPayload,
-  IRetryPaymentPayload,
   ITransactionPayload,
 } from "../interfaces/appointment";
 import { API_URL } from "../utils/aapiURL";
@@ -43,7 +42,7 @@ const getAllTransactions = (payload: ITransactionPayload) => {
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== "") {
       if (key === "start_date" || key === "end_date") {
-        params[key] = dateFormatter(value, "dd/MM/yyyy");
+        params[key] = dateFormatter(value, "yyyy-MM-dd");
       } else {
         params[key] = value;
       }
@@ -66,18 +65,11 @@ const downloadTransactionsInCsv = (payload: IDownloadCsvPayload) => {
   );
 };
 
-const retryPayment = (payload: IRetryPaymentPayload) => {
-  return http.post(`${API_URL.repayment}/${payload.appointmentId}`, {
-    email: payload.email,
-  });
-};
-
 export {
   confirmPayment,
   createAppointment,
   getAllTransactions,
   getAppointments,
   getApppointmentById,
-  retryPayment,
   downloadTransactionsInCsv,
 };

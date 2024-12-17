@@ -161,7 +161,7 @@ const labResultToService = (resource: any) => {
 };
 const appointmentToService = (data: any) => {
   const service: IServiceHistory = {
-    category: SERVICE_CATEGORY.LAB_TEST,
+    category: data?.serviceCategory?.[0]?.coding?.[0]?.display || "-",
     serviceFor: getStringValuesFromObjectArray(data?.serviceType?.[0]?.coding),
     dateOfService: data?.end || "",
     id: data?.id || "",
