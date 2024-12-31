@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Toast } from "primereact/toast";
-import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import {  useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../assets/icons/filter.svg?react";
 import SlideBack from "../assets/icons/slideback.svg?react";
@@ -68,15 +68,6 @@ const LabTestResults = () => {
       ),
     },
     {
-      key: "immunization",
-      value: "Immunization",
-      content: (
-        <div className="py-1 ps-3 h-full">
-          <Immunization handlePageChange={handlePageChange} />
-        </div>
-      ),
-    },
-    {
       key: "imaging",
       value: "Imaging",
       content: (
@@ -94,12 +85,21 @@ const LabTestResults = () => {
         </div>
       ),
     },
+    {
+      key: "immunization",
+      value: "Immunization",
+      content: (
+        <div className="py-1 ps-3 h-full">
+          <Immunization handlePageChange={handlePageChange} />
+        </div>
+      ),
+    },
   ];
   const services = [
     { id: 1, name: "Clinical Laboratory", value: "Clinical Laboratory" },
-    { id: 2, name: "Immunization", value: "Immunization" },
     { id: 3, name: "Imaging", value: "Imaging" },
     { id: 4, name: "Home Care", value: "Home_care" },
+    { id: 2, name: "Immunization", value: "Immunization" },
   ];
 
   const [hideTabs, setHideTabs] = useState(false);

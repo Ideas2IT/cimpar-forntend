@@ -25,7 +25,12 @@ import {
   convertPaymentStatus,
   getAgeFromDob,
 } from "../../services/commonFunctions";
-import { DATE_FORMAT, INSURANCE_TYPE } from "../../utils/AppConstants";
+import {
+  DATE_FORMAT,
+  INSURANCE_TYPE,
+  NONE,
+  YES,
+} from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
@@ -94,9 +99,9 @@ const transformTransactions = (data: any) => {
         payment_mode: "Card",
         serviceType: item?.location ? "Service center" : "At Home",
         status: convertPaymentStatus(item?.status) || "-",
-        testDate: item?.test_date || "-",
+        testDate: item?.start || "-",
         testName: item?.tests_taken || "-",
-        transactionDateAndTime: item?.start || "-",
+        transactionDateAndTime: item?.transaction_date_time || "-",
         transactionId: item?.payment_id || "-",
         appointmentId: item?.appointment_id || "-",
         location: item?.location || "-",
@@ -170,23 +175,24 @@ const transformSingleAppointment = (data: any) => {
             appointmentCopy?.condition.allergies,
             "other"
           )
-        : "",
+        : NONE,
       insuranceProvider:
-        appointmentCopy?.insurance?.insurance === "Yes"
+        appointmentCopy?.insurance?.insurance === YES
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
               ?.insurnaceProvider
           : "",
       insuraceNumber:
-        appointmentCopy?.insurance?.insurance === "Yes"
+        appointmentCopy?.insurance?.insurance === YES
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
               ?.insuranceNumber
-          : "",
+          : NONE,
       testDetails: appointmentCopy?.test_details ?? [],
       totalCost: appointmentCopy?.total_cost || 0,
-      centerLocation: appointmentCopy?.service_center_location || "-",
-      takeTestAt: appointmentCopy?.test_location || "-",
+      centerLocation: appointmentCopy?.service_center_location || NONE,
+      takeTestAt: appointmentCopy?.test_location || NONE,
       paymentStatus:
         convertPaymentStatus(appointmentCopy?.payment_status) || "-",
+      reason_for_test: appointmentCopy?.reason_for_test || "-",
     };
     return _appointment;
   }

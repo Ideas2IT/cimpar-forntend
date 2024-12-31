@@ -1,10 +1,9 @@
+import { isBefore, parseISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { KeyboardEvent } from "react";
 import { IItem } from "../components/appointmentForm/AppointmentForm";
-import { dateFormatter } from "../utils/Date";
 import { IInsurance } from "../interfaces/User";
 import { IMedicine } from "../interfaces/medication";
-import { parseISO, isBefore } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
 import {
   CODE,
   DATE_FORMAT,
@@ -12,6 +11,7 @@ import {
   RESULT_STATUS,
   SYSTEM,
 } from "../utils/AppConstants";
+import { dateFormatter } from "../utils/Date";
 
 export const getStatusColors = (status = "") => {
   switch (status.toLowerCase()) {
@@ -349,10 +349,13 @@ export const convertPaymentStatus = (status: string | null | undefined) => {
   if (status) {
     switch (status.toLowerCase()) {
       case "draft":
+      case "pending":
         return "Pending";
       case "active":
+      case "paid":
         return "Paid";
       case "cancelled":
+      case "failed":
         return "Failed";
       default:
         return "N/A";
@@ -361,3 +364,17 @@ export const convertPaymentStatus = (status: string | null | undefined) => {
     return "N/A";
   }
 };
+
+export function capitalizeFirstLetter(
+  input: string | null | undefined
+): string {
+  if (input === undefined || input === null || input === "") {
+    return "-";
+  }
+
+  if (typeof input === "string") {
+    return input.charAt(0).toUpperCase() + input.slice(1);
+  }
+
+  return "-";
+}

@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { Calendar, CalendarViewChangeEvent } from "primereact/calendar";
 import { FormEvent } from "primereact/ts-helpers";
 import { SyntheticEvent, useState } from "react";
+import { DATE_FORMAT } from "../../utils/AppConstants";
 import { IDualCalendarReponse } from "../appointments/Appointments";
 import "./DualCalendar.css";
 
@@ -64,17 +65,17 @@ const DualCalendar = ({ dateFilter }: { dateFilter: IDualCalendarReponse }) => {
           inline
         />
       </div>
-      <div className="absolute left-1/2 w-[2px] h-[75%] bg-gray-300"></div>
+      <div className="absolute left-1/2 w-[2px] h-[75%] bg-gray-300" />
       <div className="col-span-2 flex border-t-2">
         <div className="flex justify-start w-full gap-4 p-3">
           {range.length > 0 && range[0] !== null && (
             <span className="border p-2 color-primary rounded-md">
-              {format(range[0], "dd/MM/yyyy")}
+              {format(range[0], DATE_FORMAT.DD_MM_YYYY)}
             </span>
           )}
           {range?.length > 1 && range[1] !== null && (
             <span className="border p-2 color-primary rounded-md">
-              {format(range[1], "dd/MM/yyyy")}
+              {format(range[1], DATE_FORMAT.DD_MM_YYYY)}
             </span>
           )}
         </div>

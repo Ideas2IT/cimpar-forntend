@@ -10,7 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import SearchInput from "../components/SearchInput";
 import { IDualCalendarReponse } from "../components/appointments/Appointments";
 import CustomModal from "../components/customModal/CustomModal";
+import CustomPaginator from "../components/customPagenator/CustomPaginator";
 import DualCalendar from "../components/dualCalendar/DualCalendar";
+import ErrorMessage from "../components/errorMessage/ErrorMessage";
 import CustomServiceDropDown from "../components/serviceFilter/CustomServiceDropdown";
 import useToast from "../components/useToast/UseToast";
 import {
@@ -22,6 +24,7 @@ import {
   downloadtransactionsThunk,
   getAllTransactionsThunk,
 } from "../store/slices/appointmentSlice";
+import { selectServiceCategories } from "../store/slices/masterTableSlice";
 import { AppDispatch } from "../store/store";
 import {
   DATE_FORMAT,
@@ -30,9 +33,6 @@ import {
   RESPONSE,
 } from "../utils/AppConstants";
 import { dateFormatter } from "../utils/Date";
-import CustomPaginator from "../components/customPagenator/CustomPaginator";
-import { selectServiceCategories } from "../store/slices/masterTableSlice";
-import ErrorMessage from "../components/errorMessage/ErrorMessage";
 
 const transaction = () => {
   const [transactionResponse, setTransactionsResponse] =
@@ -131,6 +131,9 @@ const transaction = () => {
       case PAYMENT_STATUS.REFUNDED:
         bgColor = "bg-purple-100";
         break;
+      case PAYMENT_STATUS.FAILED:
+        bgColor = "bg-red-300";
+        break;
       default:
         bgColor = "white";
     }
@@ -152,7 +155,7 @@ const transaction = () => {
       header: "Test Name",
       field: "testName",
     },
-    { header: "Service Type", field: "serviceType" },
+    { header: "Service Location", field: "serviceType" },
 
     {
       header: "Amount Paid",
@@ -213,7 +216,7 @@ const transaction = () => {
           const url = window.URL.createObjectURL(new Blob([response.payload]));
           const link = document.createElement("a");
           link.href = url;
-          link.setAttribute("download", `transaction_list.csv`);
+          link.setAttribute("download", `transactions.csv`);
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -243,6 +246,7 @@ const transaction = () => {
     },
     [transactionPayload]
   );
+
   const sidebarHeader = () => {
     return (
       <div className="flex justify-start gap-3 items-center w-full">
@@ -272,7 +276,7 @@ const transaction = () => {
     selectionMode: "single",
     selection: selectedTransaction,
     scrollable: true,
-    scrollHeight: "calc(100vh - 190px)",
+    scrollHeight: "calc(100vh - 200px)",
     emptyMessage: (
       <div className="flex justify-center w-full">No transaction found</div>
     ),
@@ -343,7 +347,7 @@ const transaction = () => {
           </CustomModal>
         )}
       </div>
-      <div className="rounded-lg bg-white py-2 h-[calc(100vh-180px)] flex-grow">
+      <div className="rounded-lg bg-white p-2 h-[calc(100vh-180px)] flex-grow">
         <DataTable {...tableProps}>
           {columns.map((column, index) => (
             <Column
@@ -387,11 +391,13 @@ const DownloadTransactions = ({
   exportCsv: (startDate: Date, endDate: Date) => void;
   onCancel: () => void;
 }) => {
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
+
   const [errorMessage, setErrorMessage] = useState("");
+
   const handleDownload = () => {
-    if (!errorMessage) {
+    if (!errorMessage && startDate && endDate) {
       exportCsv(startDate, endDate);
     }
   };
@@ -404,6 +410,19 @@ const DownloadTransactions = ({
     }
   };
 
+  const getMaxEndDate = (): Date | null => {
+    if (startDate) {
+      const minEndDate = new Date(startDate);
+      minEndDate.setMonth(minEndDate.getMonth() + 1);
+      return minEndDate;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    setEndDate(startDate);
+  }, [startDate]);
+
   const calendarProps = {
     classNames: "h-[2.5rem] rounded-lg border border-gray-300 p-2",
     showIcon: true,
@@ -411,6 +430,7 @@ const DownloadTransactions = ({
   } as const;
   const buttonStyle =
     "w-full pe-3 py-2 border rounded-full border-purple-900 font-primary text-purple-900 justify-center items-center";
+
   return (
     <div className="flex-grow">
       <p className="font-primary text-xl py-6">Select Date Range</p>
@@ -420,9 +440,9 @@ const DownloadTransactions = ({
           <Calendar
             value={startDate}
             maxDate={new Date()}
-            dateFormat="dd/M/yy"
+            dateFormat={DATE_FORMAT.DD_MM_YY}
             onChange={(e) => {
-              if (e?.target?.value) {
+              if (e?.target?.value && endDate) {
                 setStartDate(e.target.value);
                 handleValidation(e.target.value, endDate);
               }
@@ -440,12 +460,12 @@ const DownloadTransactions = ({
         <span>
           <label>To*</label>
           <Calendar
-            dateFormat="dd/M/yy"
-            maxDate={new Date()}
-            minDate={startDate}
+            dateFormat={DATE_FORMAT.DD_MM_YY}
+            maxDate={getMaxEndDate() || undefined}
+            minDate={startDate || new Date()}
             value={endDate}
             onChange={(e) => {
-              if (e?.target?.value) {
+              if (e?.target?.value && startDate) {
                 handleValidation(startDate, e.target.value);
                 setEndDate(e?.target?.value);
               }

@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import { useState } from "react";
 import { useSelector } from "react-redux";
 import { ILabTestService } from "../../interfaces/common";
 import {
@@ -12,7 +11,7 @@ import {
   getStringValuesFromObjectArray,
 } from "../../services/commonFunctions";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
-import { DATE_FORMAT, SERVICE_LOCATION } from "../../utils/AppConstants";
+import { DATE_FORMAT, NONE, SERVICE_LOCATION } from "../../utils/AppConstants";
 import { IFormData } from "../appointmentForm/AppointmentForm";
 import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
@@ -76,27 +75,27 @@ const PreviewAppointment = ({
       full: true,
       value: details?.medicalConditions?.length
         ? getStringValuesFromObjectArray(details?.medicalConditions)
-        : "",
+        : NONE,
     },
     {
       header: "OTHER MEDICAL CONDITIONS",
       value: details?.otherMedicalConditions?.length
         ? details?.otherMedicalConditions.join(", ")
-        : "-",
+        : NONE,
       full: true,
     },
     {
       header: "ALLERGIES",
       value: details?.allergies?.length
         ? getStringValuesFromObjectArray(details.allergies)
-        : "",
+        : NONE,
       full: true,
     },
     {
       header: "OTHER ALLERGIES",
       value: details?.otherAllergies?.length
         ? details?.otherAllergies.join(", ")
-        : "-",
+        : NONE,
       full: true,
     },
 

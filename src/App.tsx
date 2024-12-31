@@ -8,17 +8,24 @@ import { useEffect, useState } from "react";
 import { AppDispatch } from "./store/store.ts";
 import { logoutThunk } from "./store/slices/loginSlice.ts";
 import localStorageService from "./services/localStorageService.ts";
-import { PATH_NAME } from "./utils/AppConstants.ts";
+import { LOGOUT, OFFLINE, ONLINE, PATH_NAME } from "./utils/AppConstants.ts";
+import packageJson from "../package.json";
 
 function App() {
   const isLoading = useSelector(selectLoading);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const dispatch = useDispatch<AppDispatch>();
-
   useEffect(() => {
+    console.log(
+      "Application Name:" +
+        packageJson.name +
+        "\n" +
+        "Version:" +
+        packageJson.version
+    );
     const syncLogout = (event: StorageEvent) => {
-      if (event.key === "logout") {
+      if (event.key === LOGOUT) {
         localStorageService.logout();
         dispatch(logoutThunk());
       } else if (event.key === "role" && event.newValue === null) {
@@ -34,11 +41,11 @@ function App() {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener(ONLINE, handleOnline);
+    window.addEventListener(OFFLINE, handleOffline);
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener(ONLINE, handleOnline);
+      window.removeEventListener(OFFLINE, handleOffline);
     };
   }, []);
 

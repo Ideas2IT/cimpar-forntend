@@ -22,6 +22,7 @@ import {
 } from "../../interfaces/immunization";
 import {
   appointmentStatus,
+  capitalizeFirstLetter,
   getRowClasses,
   getStatusColor,
   getStatusColors,
@@ -42,11 +43,11 @@ import {
   SERVICE_CATEGORY,
 } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
+import TestDetailsTable from "../appointments/TestDetailsTable";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { ImmunizationDetailView } from "../testResult/Immunization";
 import { TestDetailedView } from "../testResult/TestResult";
 import useToast from "../useToast/UseToast";
-import TestDetailsTable from "../appointments/TestDetailsTable";
 
 const ServiceHistory = ({
   handlePageChange,
@@ -168,6 +169,7 @@ const ServiceHistory = ({
               centerLocation: appointment?.centerLocation || "-",
               takeTestAt: appointment?.takeTestAt || "-",
               paymentStatus: appointment.paymentStatus,
+              reasonForTest: appointment?.reason_for_test,
             };
             setSelectedAppointment(appointmentDate);
           }
@@ -231,9 +233,9 @@ const ServiceHistory = ({
     };
     return (
       <div>
-        <label className="pe-3">Lab Results</label>
+        <label className="pe-3">Lab Test</label>
         <span
-          className={`sidebar-header ${getStatusColors(selectedAppointment.status)}`}
+          className={`sidebar-header ms-4 ${getStatusColors(selectedAppointment.status)}`}
         >
           {getValue() || "-"}
         </span>
@@ -453,21 +455,20 @@ export const AppointentView = ({
       wrap: true,
     },
     {
-      key: "SERVICE CENTER LOCATION",
+      key: "PAYMENT STATUS",
     },
     {
       key: "TEST TO BE TAKEN AT",
     },
     {
-      key: "PAYMENT STATUS",
+      key: "SERVICE CENTER LOCATION",
     },
     {
-      key: "TOTAL COST",
-    },
-    {
-      key: "DATE OF TEST",
+      key: "DATE & TIME OF TEST",
       wrap: true,
     },
+    { key: "REASON FOR TEST" },
+
     { key: "MEDICAL CONDITIONS", wrap: true },
     { key: "OTHER MEDICAL CONDITIONS", wrap: true },
     { key: "ALLERGIES", wrap: true },
@@ -479,8 +480,10 @@ export const AppointentView = ({
       switch (title) {
         case "ORDER ID":
           return appointment.orderId;
-        case "DATE OF TEST":
+        case "DATE & TIME OF TEST":
           return appointment.dateOfTest;
+        case "REASON FOR TEST":
+          return appointment.reasonForTest;
         case "MEDICAL CONDITIONS":
           return appointment.conditions;
         case "OTHER MEDICAL CONDITIONS":
@@ -492,7 +495,7 @@ export const AppointentView = ({
         case "SERVICE CENTER LOCATION":
           return appointment.centerLocation;
         case "TEST TO BE TAKEN AT":
-          return appointment.takeTestAt;
+          return capitalizeFirstLetter(appointment.takeTestAt);
         case "TOTAL COST":
           return `$${appointment.totalCost ? parseFloat(Number(appointment?.totalCost).toFixed(2)) : "0"}`;
         case "PAYMENT STATUS":
@@ -506,7 +509,11 @@ export const AppointentView = ({
     <div className="pt-6">
       <label className="font-primary text-sm">Test Details</label>
       <div className="mt-4">
-        <TestDetailsTable testDetails={appointment.testDetails} />
+        <TestDetailsTable
+          testLocation={appointment.takeTestAt}
+          totalCost={appointment.totalCost}
+          testDetails={appointment.testDetails}
+        />
       </div>
       <div>
         {Boolean(columnKeys?.length) &&

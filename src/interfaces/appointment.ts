@@ -80,7 +80,7 @@ export interface ITestDetails {
   currency_symbol: string;
   home_price: string;
   service_type: string;
-  telehealth_required: string;
+  telehealth_required: boolean;
 }
 export interface IDetailedAppointment {
   id: string;
@@ -105,6 +105,7 @@ export interface IDetailedAppointment {
   takeTestAt: string;
   centerLocation: string;
   paymentStatus: string;
+  reason_for_test: string;
 }
 
 export interface ISidebarAppointment {
@@ -121,6 +122,7 @@ export interface ISidebarAppointment {
   takeTestAt: string;
   centerLocation: string;
   paymentStatus: string;
+  reasonForTest: string;
 }
 
 export interface ITransaction {

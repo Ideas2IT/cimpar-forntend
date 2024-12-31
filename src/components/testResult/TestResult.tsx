@@ -2,6 +2,7 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Sidebar } from "primereact/sidebar";
+import { Toast } from "primereact/toast";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Download from "../../assets/icons/download.svg?react";
@@ -11,6 +12,7 @@ import {
   IGetAppointmentByIdPayload,
   ISidebarAppointment,
 } from "../../interfaces/appointment";
+import { ErrorResponse } from "../../interfaces/common";
 import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
 import {
   appointmentStatus,
@@ -31,11 +33,10 @@ import {
   RESPONSE,
   RESULT_STATUS,
 } from "../../utils/AppConstants";
+import { dateFormatter } from "../../utils/Date";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { AppointentView } from "../serviceHistory/ServiceHistory";
-import { dateFormatter } from "../../utils/Date";
 import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
 
 const TestResult = ({
   handlePageChange,
@@ -48,7 +49,8 @@ const TestResult = ({
   const [selectedAppointment, setSelectedAppointment] = useState(
     {} as ISidebarAppointment
   );
-  const columnHeaderStyle = "text-sm font-secondary py-1 border-b bg-white text-center";
+  const columnHeaderStyle =
+    "text-sm font-secondary py-1 border-b bg-white text-center";
   const results = useSelector(selectLabTests);
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
   const handleReports = (action: string, row: ILabTest) => {
@@ -66,7 +68,7 @@ const TestResult = ({
       }
     }
     if (
-      row.status?.toLowerCase() === RESULT_STATUS.UPCOMING_APPOINTMENT ||
+      row.status?.toLowerCase() === RESULT_STATUS.UPCOMING ||
       row.status?.toLowerCase() === RESULT_STATUS.UNDER_PROCESSING
     ) {
       const payload: IGetAppointmentByIdPayload = {
@@ -94,8 +96,12 @@ const TestResult = ({
             centerLocation: appointment?.centerLocation,
             takeTestAt: appointment?.takeTestAt,
             paymentStatus: appointment?.paymentStatus,
+            reasonForTest: appointment?.reasonForTest,
           };
           setSelectedAppointment(appointmentDate);
+        } else {
+          const errorMessage = response.payload as ErrorResponse;
+          errorToast("Failed to load appointment", errorMessage.message);
         }
       });
     } else {
@@ -130,7 +136,7 @@ const TestResult = ({
     return (
       <div className="flex items-center justify-between w-full">
         <div>
-          <span className="pe-3">Lab Result</span>
+          <span className="pe-3">Lab Test</span>
           <span
             className={`${getStatusColors(selectedTest.status)} py-2 px-3 rounded-full text-sm font-tertiary`}
           >

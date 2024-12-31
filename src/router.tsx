@@ -54,7 +54,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: PATH_NAME.EIDT_MEDICATION,
+        path: PATH_NAME.EDIT_MEDICATION,
         element: (
           <RoleBasedRoute
             requiredRole={ROLE.PATIENT}

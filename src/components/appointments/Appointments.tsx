@@ -155,6 +155,7 @@ const Appointments = () => {
   const [dateFilter, setDateFilter] = useState<Date[]>();
   const op = useRef<OverlayPanel>(null);
   const opService = useRef<OverlayPanel>(null);
+  const divRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { toast, errorToast } = useToast();
 
@@ -183,6 +184,7 @@ const Appointments = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    divRef?.current && divRef.current?.scrollTo(0, 0);
     if (Object.keys(appointmentPayload).length) {
       dispatch(getAllAppointmentsThunk(appointmentPayload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.REJECTED) {
@@ -578,9 +580,9 @@ const Appointments = () => {
               </div>
             )}
           </div>
-          <div className="bg-white rounded-xl mt-2 h-[90%]">
+          <div className="bg-white rounded-xl mt-2">
             {!showPatientDetails ? (
-              <div className="h-[calc(100vh-150px)] overflow-auto">
+              <div ref={divRef} className="h-[calc(100vh-150px)] overflow-auto">
                 <DataTable
                   value={appointments}
                   emptyMessage={
@@ -591,7 +593,7 @@ const Appointments = () => {
                   selectionMode="single"
                   dataKey="appointmentId"
                   tableStyle={{ minWidth: "50rem" }}
-                  className="mt-2 rowHoverable px-6 py-3"
+                  className="mt-2 rowHoverable px-2 py-3"
                   rowClassName={() => getRowClasses("h-10 border-b")}
                 >
                   {columns.map((column) => {

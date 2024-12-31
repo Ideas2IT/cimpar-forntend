@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
-import Tab from "../../interfaces/Tab";
-import VerticalTabView from "../VerticalTabView";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import AddRecord from "../../assets/icons/addrecord.svg?react";
 import SlideOpen from "../../assets/icons/slideOpen.svg?react";
 import SlideBack from "../../assets/icons/slideback.svg?react";
-import Button from "../Button";
-import UserDetails from "../userDetails/UserDetails";
-import { useNavigate } from "react-router-dom";
-import Medication from "../medication/Medication";
-import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
-import MedicalConditionDetails from "../medicalDetails/MedicalConditionDetails";
-import VisitHistory from "../visitHistory/VisitHistory";
-import { useDispatch, useSelector } from "react-redux";
-import AddRecord from "../../assets/icons/addrecord.svg?react";
+import Tab from "../../interfaces/Tab";
+import {
+  selectHasMedicalConditions,
+  selectSelectedPatient,
+} from "../../store/slices/PatientSlice";
 import {
   selectTab,
   setSelectedSidebarTab,
 } from "../../store/slices/commonSlice";
 import { AppDispatch } from "../../store/store";
 import { PATH_NAME } from "../../utils/AppConstants";
-import {
-  selectHasMedicalConditions,
-  selectSelectedPatient,
-} from "../../store/slices/PatientSlice";
+import Button from "../Button";
+import VerticalTabView from "../VerticalTabView";
+import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
+import MedicalConditionDetails from "../medicalDetails/MedicalConditionDetails";
+import Medication from "../medication/Medication";
+import UserDetails from "../userDetails/UserDetails";
+import VisitHistory from "../visitHistory/VisitHistory";
 
 export const tabs: Tab[] = [
   {
@@ -91,7 +91,7 @@ const UserProfilePage = () => {
         navigate(PATH_NAME.EDIT_PROFILE, { state: { from: "menu" } });
         break;
       case "medications":
-        navigate(PATH_NAME.EIDT_MEDICATION);
+        navigate(PATH_NAME.EDIT_MEDICATION);
         break;
       case "medical conditions & allergies":
         navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS);
@@ -151,7 +151,7 @@ const UserProfilePage = () => {
               variant="primary"
               style="outline"
               onClick={() => {
-                navigate(PATH_NAME.EIDT_MEDICATION);
+                navigate(PATH_NAME.EDIT_MEDICATION);
               }}
             >
               <AddRecord className="stroke-purple-900 mx-2" />

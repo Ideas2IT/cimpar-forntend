@@ -41,11 +41,10 @@ export default function CheckoutForm({
               showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
             }
             break;
-          case status === PAYMENT_STATUS.DRAFT && count < 3: {
-            count++;
+          case status === PAYMENT_STATUS.DRAFT && count <= 3: {
             setTimeout(() => {
-              checkStatus(count++);
-            }, 2000);
+              checkStatus(count + 1);
+            }, count * 4000);
             break;
           }
           case status === PAYMENT_STATUS.DRAFT && count >= 3: {
@@ -54,6 +53,7 @@ export default function CheckoutForm({
             break;
           }
           case status === PAYMENT_STATUS.CANCELLED:
+            setIsLoading(false);
             showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
             break;
           default:
@@ -99,8 +99,12 @@ export default function CheckoutForm({
   };
 
   return (
-    <div className="h-full flex items-center justify-center flex-col">
+    <div className="h-full flex relative items-center justify-center flex-col">
       <form id="payment-form" onSubmit={handleSubmit}>
+        <div
+          style={{ zIndex: 9999 }}
+          className={`${isLoading ? "fixed flex items-center justify-center bg-gray-100/50 left-0 top-0 bottom-0 right-0" : "hidden"}`}
+        />
         <PaymentElement id="payment-element" options={paymentElementOptions} />
         <button
           disabled={isLoading || !stripe || !elements}

@@ -13,6 +13,8 @@ import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
 import useToast from "../useToast/UseToast";
 import TestDetailsTable from "./TestDetailsTable";
+import { ErrorResponse } from "../../interfaces/common";
+import { Toast } from "primereact/toast";
 
 const DetailedAppointmentView = ({
   appointmentId,
@@ -25,7 +27,7 @@ const DetailedAppointmentView = ({
     {} as IDetailedAppointment
   );
   const dispatch = useDispatch<AppDispatch>();
-  const { errorToast } = useToast();
+  const { errorToast, toast } = useToast();
 
   useEffect(() => {
     if (patientId && appointmentId) {
@@ -37,7 +39,8 @@ const DetailedAppointmentView = ({
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           setSelectedAppointment(response.payload as IDetailedAppointment);
         } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
-          errorToast("Failed To Load", "Failed to Load Appointment");
+          const errorMessage = response.payload as ErrorResponse;
+          errorToast("Failed to load appointment", errorMessage.message);
         }
       });
     }
@@ -107,7 +110,7 @@ const DetailedAppointmentView = ({
     {
       label: "REASON FOR TEST",
       value: selectedAppointment?.reasonForTest || "",
-      full: true,
+      full: false,
     },
   ];
 
@@ -133,7 +136,6 @@ const DetailedAppointmentView = ({
       full: true,
     },
   ];
-
   return (
     <div className="pt-4">
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
@@ -151,7 +153,12 @@ const DetailedAppointmentView = ({
       <label className="font-primary text-xl pt-6 pb-3 block">
         Appointment
       </label>
-      <TestDetailsTable testDetails={selectedAppointment.testDetails} />
+      <TestDetailsTable
+        testDetails={selectedAppointment.testDetails}
+        totalCost={selectedAppointment.totalCost}
+        testLocation={selectedAppointment.takeTestAt}
+        key="apppointment"
+      />
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
         {appointmentFields?.map((field, index) => {
           return (
@@ -171,6 +178,7 @@ const DetailedAppointmentView = ({
           />
         );
       })}
+      <Toast ref={toast} />
     </div>
   );
 };

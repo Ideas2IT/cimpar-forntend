@@ -505,7 +505,7 @@ export const AddMasterModal = ({
             className={`relative ${selectedItem && !!Object.keys(selectedItem)?.length && "opacity-60 cursor-not-allowed"}`}
           >
             <label className="capitalize block input-label" htmlFor="athome">
-              at home price($)*
+              Home price($)*
             </label>
             <Controller
               name="home_price"
@@ -518,7 +518,8 @@ export const AddMasterModal = ({
               render={({ field }) => (
                 <InputText
                   {...field}
-                  placeholder="Home Price"
+                  placeholder="Enter Price"
+                  keyfilter="pnum"
                   disabled={selectedItem && !!Object.keys(selectedItem)?.length}
                   onChange={(e) =>
                     setValue("home_price", String(e?.target?.value))
@@ -550,12 +551,13 @@ export const AddMasterModal = ({
               render={({ field }) => (
                 <InputText
                   {...field}
+                  keyfilter="pnum"
                   disabled={selectedItem && !!Object.keys(selectedItem)?.length}
                   onChange={(e) => {
                     setValue("center_price", e.target?.value);
                   }}
                   id="atCenter"
-                  placeholder="Center Price"
+                  placeholder="Enter Price"
                   className="cimpar-input"
                 />
               )}

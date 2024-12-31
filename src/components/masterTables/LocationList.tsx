@@ -4,7 +4,11 @@ import SearchInput, { SearchInputHandle } from "../SearchInput";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { cleanString, getRowClasses } from "../../services/commonFunctions";
+import {
+  capitalizeFirstLetter,
+  cleanString,
+  getRowClasses,
+} from "../../services/commonFunctions";
 import { Sidebar } from "primereact/sidebar";
 import CustomModal from "../customModal/CustomModal";
 import EditLocation from "./EditLocation";
@@ -68,6 +72,8 @@ const LocationList = () => {
     {} as ILocation
   );
 
+  const tableRef = useRef<DataTable<any>>(null);
+
   const { toast, errorToast, successToast } = useToast();
   const { updateHeaderTitle } = useContext(HeaderContext);
 
@@ -108,6 +114,7 @@ const LocationList = () => {
   }, [locationPayload]);
 
   const fetchAllLocations = () => {
+    tableRef?.current && tableRef.current?.resetScroll();
     dispatch(getLocationsThunk(locationPayload)).then((response) => {
       const locations = response.payload as ILocationResponse;
       setLocations(locations);
@@ -164,7 +171,7 @@ const LocationList = () => {
 
   const locationColumns = [
     {
-      header: "ID",
+      header: "S.NO",
       body: (_: ILocation, options: { rowIndex: number }) => (
         <>
           {(locations?.pagination?.current_page - 1) * PAGE_LIMIT +
@@ -180,7 +187,7 @@ const LocationList = () => {
     {
       header: "Address",
       body: (rowData: ILocation) => (
-        <div>{`${rowData?.address_line1 || ""}, ${rowData?.address_line2 && rowData?.address_line2 + "," || ""} ${rowData?.city || ""}, ${rowData?.state || ""}, ${rowData?.zip_code || ""}`}</div>
+        <div>{`${rowData?.address_line1 || ""}, ${(rowData?.address_line2 && rowData?.address_line2 + ",") || ""} ${rowData?.city || ""}, ${rowData?.state || ""}, ${rowData?.zip_code || ""}`}</div>
       ),
     },
     { header: "Contact", field: "contact_phone" },
@@ -341,6 +348,7 @@ const LocationList = () => {
       >
         <DataTable
           scrollable
+          ref={tableRef}
           scrollHeight="flex"
           value={locations?.data || []}
           rowClassName={() => getRowClasses("border-b")}
@@ -409,70 +417,68 @@ const LocationList = () => {
 const DetailedLocationView = ({ location }: { location: ILocation }) => {
   const locationsFields = [
     {
-      header: "Id",
-      value: location?.id || "-",
-    },
-    {
-      header: "Service Center Name",
+      header: "SERVIICE CENTER NAME",
       value: location?.center_name || "-",
-      styleClasses: "col-span-2",
+      styleClasses: "col-span-2 capitalize",
     },
     {
-      header: "Address Line I",
+      header: "ADDRESS LINE I",
       value: location?.address_line1 || "-",
-      styleClasses: "col-span-2",
+      styleClasses: "col-span-2 capitalize",
     },
     {
-      header: "Address Line II",
+      header: "ADDRESS LINE II",
       value: location?.address_line2 || "-",
       styleClasses: "col-span-2",
     },
     {
-      header: "City",
+      header: "CITY",
       value: location?.city || "-",
+      styleClasses: "capitalize",
     },
     {
-      header: "Zip Code",
+      header: "ZIP CODE",
       value: location?.zip_code || "-",
     },
     {
-      header: "State",
+      header: "STATE",
       value: location?.state || "-",
     },
 
     {
-      header: "Country",
+      header: "COUNTRY",
       value: location?.country || "-",
     },
     {
-      header: "Status",
+      header: "STATUS",
       value: location?.status || "-",
+      styleClasses: "capitalize",
     },
     {
-      header: "Opening Time",
+      header: "OPENING TIME",
       value: location?.opening_time || "-",
     },
     {
-      header: "Closing Time",
+      header: "CLOSING TIME",
       value: location?.closing_time || "-",
     },
 
     {
-      header: "Contact person",
+      header: "CONTACT PERSON",
       value: location?.contact_person || "-",
-      styleClasses: "col-span-2",
+      styleClasses: "col-span-2 capitalize",
     },
     {
-      header: "Phone Number",
+      header: "PHONE NUMBER",
       value: "+1-" + location?.contact_phone || "-",
     },
     {
-      header: "Email",
+      header: "EMAIL",
       value: location?.contact_email || "-",
       styleClasses: "col-span-2",
     },
     {
-      header: "Working Days",
+      header: "WORKING DAYS",
       value: location.working_days?.length
         ? location?.working_days.join(", ")
         : "-",

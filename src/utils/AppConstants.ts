@@ -13,7 +13,7 @@ export const PATTERN = {
   TEST_CODE: /^[a-zA-Z0-9]+$/,
   NAME: /^[A-Za-z\s\W_]+$/,
   PHONE: /^\+?\d{10}$/,
-  EMAIL: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/,
+  EMAIL: /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,3})$/,
 };
 
 export const PATH_NAME = {
@@ -22,7 +22,7 @@ export const PATH_NAME = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   EDIT_PROFILE: "/edit-profile",
-  EIDT_MEDICATION: "/edit-medication",
+  EDIT_MEDICATION: "/edit-medication",
   EDIT_MEDICAL_CONDITIONS: "/edit-medical-conditions",
   EDIT_VISIT_HISTORY: "/edit-visit-history",
   SET_PASSWORD: "/set-password",
@@ -110,6 +110,9 @@ export const GRANT_TYPE = "password";
 export const SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
 export const CODE = "1020";
 export const PAYMENT_RETURN_URL = "http://localhost:5173/payment-status";
+export const LOGOUT = "logout";
+export const ONLINE = "online";
+export const OFFLINE = "offline";
 
 export const TABLE = {
   STATE: "state",
@@ -128,6 +131,9 @@ export const APPOINTMENT = "appointment";
 export const IMMUNIZATION = "immunization";
 export const OBSERVATION = "observation";
 export const NORMAL = "normal";
+export const role = "role";
+export const NONE = "None";
+export const YES = "yes";
 
 export const RESULT_STATUS = {
   UPCOMING_APPOINTMENT: "upcoming appointment",
@@ -227,10 +233,11 @@ export const DATE_FORMAT = {
   HH_MM_A: "hh:mm a",
   YYYY_MM_DD_HH_MM_SS_Z: "yyyy-MM-dd'T'HH:mm:ss'Z'",
   MM_DD_YYYY: "MM/dd/yyyy",
+  DD_MM_YYYY: "dd/MM/yyyy",
 };
 
 export const TRNASACTION_STATUS = {
-  REJECTED: "rejected" as TAppointmentStatus,
+  REJECTED: "failed" as TAppointmentStatus,
   SUCCEEDED: "succeeded" as TAppointmentStatus,
   PENDING: "pending" as TAppointmentStatus,
 };
@@ -242,4 +249,9 @@ export const APPOINTMENT_STATUS_MESSAGE = {
   RETRY:
     "Please try the payment again to book. Don't worry if any amount has been deducted, it will be credited back to the original account within 5-7 business days.",
   PENDING: "Your Payment Status is Pending",
+};
+
+export const PRICING_SCHEME = {
+  HOME: "home",
+  SERVICE_CENTER: "service_center",
 };

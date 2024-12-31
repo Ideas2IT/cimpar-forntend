@@ -1,5 +1,5 @@
 import { Toast } from "primereact/toast";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import HeaderContext from ".././context/HeaderContext";
@@ -40,36 +40,33 @@ const Layout = () => {
   const profileId = useSelector(selectUserProfile)?.id;
   const location = useLocation();
 
-  const getHeaderTitle = () => {
+  const getHeaderTitle = useMemo(() => {
     const path = location.pathname;
-    switch (true) {
-      case path === PATH_NAME.PROFILE:
-      case path === PATH_NAME.EDIT_INSURANCE:
-      case path === PATH_NAME.EDIT_MEDICAL_CONDITIONS:
-      case path === PATH_NAME.EDIT_PROFILE:
-      case path === PATH_NAME.EIDT_MEDICATION:
-      case path === PATH_NAME.EDIT_VISIT_HISTORY:
-      case path.startsWith(PATH_NAME.EDIT_INSURANCE):
-      case path.startsWith(PATH_NAME.EDIT_VISIT_HISTORY):
-        return HEADER_TITLE.PROFILE;
-      case path === PATH_NAME.HEALTH_RECORDS:
-        return HEADER_TITLE.HEALTH_RECORD;
-      case path === PATH_NAME.MASTER_TABLES:
-        return HEADER_TITLE.MASTER;
-      case path === PATH_NAME.APPOINTMENTS:
-        return HEADER_TITLE.APPOINTMENT;
-      case path.includes(PATH_NAME.SERVICE_MASTER):
-        return HEADER_TITLE.SERVICE_MASTER;
-      case path === PATH_NAME.TRANSACTIONS:
-        return HEADER_TITLE.TRANSACTION;
-      case path === PATH_NAME.PRICING:
-        return HEADER_TITLE.PRICING;
-      case path === PATH_NAME.LOCATION:
-        return HEADER_TITLE.CENTER_LOCATION;
-      default:
-        return "Home";
+    const pathToTitleMap = {
+      [PATH_NAME.PROFILE]: HEADER_TITLE.PROFILE,
+      [PATH_NAME.EDIT_INSURANCE]: HEADER_TITLE.PROFILE,
+      [PATH_NAME.EDIT_MEDICAL_CONDITIONS]: HEADER_TITLE.PROFILE,
+      [PATH_NAME.EDIT_PROFILE]: HEADER_TITLE.PROFILE,
+      [PATH_NAME.EDIT_MEDICATION]: HEADER_TITLE.PROFILE,
+      [PATH_NAME.EDIT_VISIT_HISTORY]: HEADER_TITLE.PROFILE,
+      [PATH_NAME.HEALTH_RECORDS]: HEADER_TITLE.HEALTH_RECORD,
+      [PATH_NAME.MASTER_TABLES]: HEADER_TITLE.MASTER,
+      [PATH_NAME.APPOINTMENTS]: HEADER_TITLE.APPOINTMENT,
+      [PATH_NAME.TRANSACTIONS]: HEADER_TITLE.TRANSACTION,
+      [PATH_NAME.PRICING]: HEADER_TITLE.PRICING,
+      [PATH_NAME.LOCATION]: HEADER_TITLE.CENTER_LOCATION,
+    };
+    if (
+      path.startsWith(PATH_NAME.EDIT_INSURANCE) ||
+      path.startsWith(PATH_NAME.EDIT_VISIT_HISTORY)
+    ) {
+      return HEADER_TITLE.PROFILE;
     }
-  };
+    if (path.includes(PATH_NAME.SERVICE_MASTER)) {
+      return HEADER_TITLE.SERVICE_MASTER;
+    }
+    return pathToTitleMap[path] || "Home";
+  }, [location.pathname]);
 
   useEffect(() => {
     if (
@@ -78,7 +75,7 @@ const Layout = () => {
     ) {
       setUsername("Hi, " + user);
     } else {
-      setUsername(getHeaderTitle());
+      setUsername(getHeaderTitle);
     }
   }, [user]);
 
@@ -127,7 +124,7 @@ const Layout = () => {
           <LoginForm />
         )
       ) : (
-        <div className="flex h-full">
+        <div className="flex h-full overflow-auto">
           <HeaderContext.Provider value={{ username, updateHeaderTitle }}>
             <Sidebar />
             <Main />

@@ -6,6 +6,7 @@ import { Toast } from "primereact/toast";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import HeaderContext from "../../context/HeaderContext";
 import {
   ErrorResponse,
   IAllTestspayload,
@@ -29,11 +30,10 @@ import {
 } from "../../utils/AppConstants";
 import BackButton from "../backButton/BackButton";
 import CustomPaginator from "../customPagenator/CustomPaginator";
+import ErrorMessage from "../errorMessage/ErrorMessage";
 import SearchInput from "../SearchInput";
 import CustomServiceDropDown from "../serviceFilter/CustomServiceDropdown";
 import useToast from "../useToast/UseToast";
-import ErrorMessage from "../errorMessage/ErrorMessage";
-import HeaderContext from "../../context/HeaderContext";
 
 export default function PricingDetails() {
   const serviceCategories = useSelector(selectServiceCategories);
@@ -336,7 +336,7 @@ const EditPricing = ({
     {
       name: "center_price" as const,
       disabled: false,
-      element: <InputText keyfilter="num" />,
+      element: <InputText keyfilter="pnum" />,
       styleClasses: "",
       label: "service center($)",
       validationRules: { validate: (value: string) => validatePrice(value) },
@@ -344,7 +344,7 @@ const EditPricing = ({
     {
       name: "home_price" as const,
       disabled: false,
-      element: <InputText keyfilter="num" />,
+      element: <InputText keyfilter="pnum" />,
       styleClasses: "",
       label: "at homes($)",
       validationRules: { validate: (value: string) => validatePrice(value) },
@@ -401,8 +401,8 @@ const EditPricing = ({
           </div>
         </div>
         <div className="flex-grow bg-white rounded-lg p-6 mt-6">
-          <label className="font-primary capitalize text-xl">
-            service details
+          <label className="font-primary capitalize text-xl pb-2 block">
+            Pricing details
           </label>
           <div className="grid md:grid-cols-4 gap-3">
             {inputs.map((input, index) => (

@@ -1,14 +1,14 @@
-import { useForm, Controller } from "react-hook-form";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
-import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
+import { Dropdown } from "primereact/dropdown";
+import { InputText } from "primereact/inputtext";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { IOptionValue } from "../../interfaces/common";
 import { ILocation } from "../../interfaces/location";
 import { PATTERN } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { useEffect } from "react";
 import DaysSelector from "./DaySelector";
-import { IOptionValue } from "../../interfaces/common";
 
 const EditLocation = ({
   selectedLocation,
@@ -257,6 +257,10 @@ const EditLocation = ({
             name="contact_person"
             rules={{
               required: "Contact Person is required",
+              pattern: {
+                value: PATTERN.NAME,
+                message: "Only alphanumeric characters are allowed",
+              },
             }}
             render={({ field }) => (
               <InputText
@@ -343,6 +347,12 @@ const EditLocation = ({
               <Dropdown
                 {...field}
                 inputId="status"
+                itemTemplate={(item) => (
+                  <span className="capitalize">{item}</span>
+                )}
+                valueTemplate={(value) => (
+                  <span className="capitalize">{value}</span>
+                )}
                 panelClassName="capitalize"
                 className="input-field w-full test-dropdown"
                 options={["active", "inactive"]}

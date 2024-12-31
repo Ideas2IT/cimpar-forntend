@@ -10,7 +10,7 @@ import { API_URL } from "../utils/aapiURL";
 import http from "./common.services";
 
 const login = (payload: ILoginPayload) => {
-  return http.post("/login", JSON.stringify(payload));
+  return http.post(API_URL.login, JSON.stringify(payload));
 };
 
 const signup = (payload: ISignupPayload) => {

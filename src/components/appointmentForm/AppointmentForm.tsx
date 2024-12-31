@@ -49,6 +49,7 @@ import {
   selectAllergies,
   selectConditions,
 } from "../../store/slices/masterTableSlice";
+import { updatePaymentStatusThunk } from "../../store/slices/paymentSlice";
 import { AppDispatch } from "../../store/store";
 import {
   CODE,
@@ -71,6 +72,7 @@ import PreviewAppointment from "../previewAppointment/PreviewAppointment";
 import Payment from "../stripePayment/Payment";
 import useToast from "../useToast/UseToast";
 import "./AppointmentPage.css";
+import AppointmentStatus from "./AppointmentStatusModal";
 import LocationDropDown from "./LocationDropDown";
 import ServiceOptions from "./ServiceOptions";
 import TestPricing from "./TestPricing";
@@ -133,6 +135,7 @@ const AppointmentForm = () => {
   const [tests, setTests] = useState<ILabTestService[]>([]);
   const [locations, setLocations] = useState<ILocation[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [appointmentResponse, setAppointmentResponse] = useState(
     {} as ICreateAppointmentResponse
   );
@@ -461,6 +464,14 @@ const AppointmentForm = () => {
         </div>
       </div>
     );
+  };
+
+  const handleClosePaymentModal = () => {
+    if (appointmentResponse?.client_secret) {
+      dispatch(updatePaymentStatusThunk(appointmentResponse.client_secret));
+    }
+    setShowPaymentModal(false);
+    setShowStatusDialog(true);
   };
 
   return (
@@ -936,10 +947,7 @@ const AppointmentForm = () => {
       )}
       {showPaymentModal && (
         <CustomModal
-          handleClose={() => {
-            setShowPaymentModal(false);
-            navigate(PATH_NAME.HOME);
-          }}
+          handleClose={handleClosePaymentModal}
           closeButtonTitle=""
           showCloseButton={true}
           styleClass="h-[100vh]"
@@ -947,11 +955,28 @@ const AppointmentForm = () => {
         >
           <div className="py-2">
             <Payment
-              clientSecretKey={appointmentResponse.client_secret}
-              appointmentId={appointmentResponse.appointment_id}
-              handleClose={() => setShowPaymentModal(false)}
+              clientSecretKey={appointmentResponse?.client_secret}
+              appointmentId={appointmentResponse?.appointment_id}
+              handleClose={handleClosePaymentModal}
             />
           </div>
+        </CustomModal>
+      )}
+      {showStatusDialog && (
+        <CustomModal
+          showCloseButton={true}
+          styleClass="w-[30rem] h-[17rem] bg-white"
+          handleClose={() => {
+            setShowStatusDialog(false);
+            navigate(PATH_NAME.HOME);
+          }}
+        >
+          <AppointmentStatus
+            status={"pending"}
+            onRetry={() => {
+              setShowStatusDialog(false);
+            }}
+          />
         </CustomModal>
       )}
       <Toast ref={toast} />
