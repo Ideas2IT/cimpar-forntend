@@ -28,7 +28,7 @@ export const tabs: Tab[] = [
     key: "Personal",
     value: "Personal",
     content: (
-      <div className="px-6 py-1 h-full">
+      <div className="px-6 py-1 h-[calc(100vh-170px)] overflow-auto">
         <UserDetails />
       </div>
     ),

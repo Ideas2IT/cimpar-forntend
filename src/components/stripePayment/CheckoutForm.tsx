@@ -35,24 +35,26 @@ export default function CheckoutForm({
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         const status = response.payload.status as string;
         switch (true) {
-          case status === PAYMENT_STATUS.ACTIVE:
+          case status?.toLocaleLowerCase() === PAYMENT_STATUS.PAID:
             {
               setIsLoading(false);
               showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
             }
             break;
-          case status === PAYMENT_STATUS.DRAFT && count <= 3: {
+          case status?.toLocaleLowerCase() === PAYMENT_STATUS.PENDING &&
+            count <= 3: {
             setTimeout(() => {
               checkStatus(count + 1);
             }, count * 4000);
             break;
           }
-          case status === PAYMENT_STATUS.DRAFT && count >= 3: {
+          case status?.toLocaleLowerCase() === PAYMENT_STATUS.PENDING &&
+            count >= 3: {
             setIsLoading(false);
             showStatusDialog(true, TRNASACTION_STATUS.PENDING);
             break;
           }
-          case status === PAYMENT_STATUS.CANCELLED:
+          case status?.toLocaleLowerCase() === PAYMENT_STATUS.FAILED:
             setIsLoading(false);
             showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
             break;

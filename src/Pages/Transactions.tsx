@@ -164,8 +164,6 @@ const transaction = () => {
         <>{`$${row.amountPaid ? row.amountPaid : "0"}`}</>
       ),
     },
-
-    { header: "Transaction Id", field: "transactionId" },
     {
       header: "Transaction Date & Time",
       body: (row: ITransaction) => (

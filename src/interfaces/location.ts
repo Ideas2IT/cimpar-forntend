@@ -1,3 +1,4 @@
+import { IBooking } from "./common";
 import { IPagination } from "./immunization";
 
 export interface ICreateLocationPayload {
@@ -20,6 +21,7 @@ export interface ICreateLocationPayload {
 
 export interface ILocation extends ICreateLocationPayload {
   id: string;
+  bookingName: IBooking;
 }
 
 export interface IGetLocationPayload {

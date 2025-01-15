@@ -29,4 +29,5 @@ export const API_URL = {
   repayment: "repayment",
   transaction: "transaction",
   download_csv: "download_pdf",
+  registry: "endpoint-registry",
 };

@@ -35,9 +35,11 @@ export const PATH_NAME = {
   MASTER_TABLES: "/master-tabs",
   PRICING: "/master-tabs/pricing",
   LOCATION: "/master-tabs/locations",
+  TRANSPORATION_LIST: "/master-tabs/transportation",
   TRANSACTIONS: "/transactions",
   SERVICE_MASTER: "/service-master",
   PAYMENT_STATUS: "/payment-status",
+  TRANSPORTATION: "/transportation",
 };
 
 export const ABSOLUTE_PATH = {
@@ -138,7 +140,7 @@ export const YES = "yes";
 export const RESULT_STATUS = {
   UPCOMING_APPOINTMENT: "upcoming appointment",
   UNDER_PROCESSING: "pending",
-  AVAILABLE: "available",
+  AVAILABLE: "result available",
   ICARE: "icare",
   UPCOMING: "upcoming",
 };
@@ -193,12 +195,8 @@ export const PRICING_INDEX = {
 
 export const PAYMENT_STATUS = {
   REFUNDED: "refunded",
-  COMPLETED: "completed",
   PENDING: "pending",
-  DRAFT: "draft",
-  ACTIVE: "active",
   FAILED: "failed",
-  CANCELLED: "cancelled",
   PAID: "paid",
 };
 
@@ -254,4 +252,15 @@ export const APPOINTMENT_STATUS_MESSAGE = {
 export const PRICING_SCHEME = {
   HOME: "home",
   SERVICE_CENTER: "service_center",
+};
+
+export const URL_CATEGORIES = {
+  VACCINATION: "Vaccination",
+  TRANSPORTATION: "Transportation",
+};
+
+export const CONDITIONS_AND_ALLERGIER = {
+  OTHER: "other",
+  CURRENT: "current",
+  FAMILY: "family",
 };

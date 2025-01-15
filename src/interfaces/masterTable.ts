@@ -17,3 +17,11 @@ export interface IUpdatePricingPayload {
   center_price: string;
   home_price: string;
 }
+
+export interface IMasterUrl {
+  url: string;
+  category: string;
+  name: string;
+  description: string;
+  id: string;
+}

@@ -7,7 +7,7 @@ import {
 } from "../../store/slices/PatientSlice";
 import { AppDispatch } from "../../store/store";
 import { LargeDataField } from "../medication/Medication";
-import { RESPONSE } from "../../utils/AppConstants";
+import { NONE, RESPONSE } from "../../utils/AppConstants";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
 
@@ -32,35 +32,35 @@ const MedicalConditionDetails = () => {
       value:
         getStringValuesFromObjectArray(
           patient?.medicalConditionsAndAllergies?.medicalConditions
-        ) || "-",
+        ) || NONE,
     },
     {
       label: "OTHER MEDICAL CONDITIONS",
       value:
         getStringValuesFromObjectArray(
           patient?.medicalConditionsAndAllergies?.otherMedicalConditions
-        ) || "-",
+        ) || NONE,
     },
     {
       label: "ALLERGIES YOU HAVE",
       value:
         getStringValuesFromObjectArray(
           patient?.medicalConditionsAndAllergies?.allergies
-        ) || "-",
+        ) || NONE,
     },
     {
       label: "OTHER ALLERGIES",
       value:
         getStringValuesFromObjectArray(
           patient?.medicalConditionsAndAllergies?.otherAllergies
-        ) || "-",
+        ) || NONE,
     },
     {
       label: "FAMILY MEDICAL CONDITIONS",
       value:
         getStringValuesFromObjectArray(
           patient?.medicalConditionsAndAllergies?.familyMedicalConditions
-        ) || "-",
+        ) || NONE,
     },
   ];
   return (

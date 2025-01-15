@@ -6,7 +6,8 @@ import {
   retryPayment,
   updatePayment,
 } from "../../services/payment.service";
-import { SLICE_NAME } from "../../utils/sliceUtil";
+import { SLICE_NAME, THUNK_NAME } from "../../utils/sliceUtil";
+import { handleAxiosError } from "../../services/commonFunctions";
 
 interface IProfileSlice {}
 
@@ -32,37 +33,27 @@ export const getPaymentStatusThunk = createAsyncThunk(
 );
 
 export const retryPaymentThunk = createAsyncThunk(
-  "payment/verify_status",
+  THUNK_NAME.retryPayment,
   async (appointmentId: string, { rejectWithValue }) => {
     try {
       const userResponse = await retryPayment(appointmentId);
       return userResponse.data;
     } catch (error) {
       if (isAxiosError(error)) {
-        const errorMessage = error.response?.data?.error || "Unknown Error";
-        return rejectWithValue({
-          message: errorMessage,
-          response: error.message,
-        } as ErrorResponse);
+        rejectWithValue(handleAxiosError(error));
       }
     }
   }
 );
 
 export const updatePaymentStatusThunk = createAsyncThunk(
-  "payment/cancel",
+  THUNK_NAME.updatePaymentStatus,
   async (client_secret: string, { rejectWithValue }) => {
     try {
       const userResponse = await updatePayment(client_secret);
       return userResponse.data;
     } catch (error) {
-      if (isAxiosError(error)) {
-        const errorMessage = error.response?.data?.error || "Unknown Error";
-        return rejectWithValue({
-          message: errorMessage,
-          response: error.message,
-        } as ErrorResponse);
-      }
+      rejectWithValue(handleAxiosError(error));
     }
   }
 );

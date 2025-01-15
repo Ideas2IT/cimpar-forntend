@@ -8,6 +8,19 @@ import {
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
 } from "../../interfaces/common";
+import { IPagination } from "../../interfaces/immunization";
+import {
+  ICreateLocationPayload,
+  IGetLocationPayload,
+  ILocation,
+  ILocationResponse,
+  IToggleLocationStatusPayload,
+} from "../../interfaces/location";
+import {
+  ICreateLabTest,
+  IMasterUrl,
+  IUpdatePricingPayload,
+} from "../../interfaces/masterTable";
 import { IMedicine } from "../../interfaces/medication";
 import {
   addMasterRecord,
@@ -17,33 +30,24 @@ import {
   fetchServiceRegions,
   getAllergiesByQuery,
   getAllTests,
+  getBookingNames,
   getInputData,
   getLabTestsWithoutPagination,
   getLocationsWithoutPagination,
   getLocationsWithPagination,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
+  getUrlByCategory,
   toggleLocaitonStatus,
   toggleRecordStatus,
   updateLocation,
   updateMasterRecord,
   updatePricing,
+  updateUrlById,
 } from "../../services/masterTable.service";
+import { ERROR_CODES } from "../../utils/AppConstants";
 import { SLICE_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
-import {
-  ICreateLocationPayload,
-  IGetLocationPayload,
-  ILocation,
-  ILocationResponse,
-  IToggleLocationStatusPayload,
-} from "../../interfaces/location";
-import { IPagination } from "../../interfaces/immunization";
-import {
-  ICreateLabTest,
-  IUpdatePricingPayload,
-} from "../../interfaces/masterTable";
-import { ERROR_CODES } from "../../utils/AppConstants";
 
 interface IMasterTableData {
   medications: IMedicine[];
@@ -387,7 +391,7 @@ export const addMasterRecordThunk = createAsyncThunk(
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =
-          error?.response?.data?.error ||
+          error?.response?.data?.detail ||
           "Failed to add record to master table";
         return rejectWithValue({
           message: errorMessage,
@@ -549,6 +553,62 @@ export const updatePricingThunk = createAsyncThunk(
       if (isAxiosError(error)) {
         const errorMessage =
           error?.response?.data?.error || "Failed to update service pricing";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+export const getUrlByCategoryThunk = createAsyncThunk(
+  "url/get",
+  async (payload: string, { rejectWithValue }) => {
+    try {
+      const response = await getUrlByCategory(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to load Url";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const updateUrlByIdThunk = createAsyncThunk(
+  "url/update",
+  async (payload: IMasterUrl, { rejectWithValue }) => {
+    try {
+      const response = await updateUrlById(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to update URL";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getBookingNamesThunk = createAsyncThunk(
+  "",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getBookingNames();
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to update URL";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,

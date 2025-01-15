@@ -69,7 +69,7 @@ const ResetPassword = () => {
           <div className="flex flex-row justify-center w-full h-[3rem]">
             <ReyaIcon className="block" data-testid="reya-icon" />
           </div>
-          <div className="font-primary text-2xl py-3">Set new Password</div>
+          <div className="font-primary text-2xl py-3">Set New Password</div>
           <div className="w-full relative">
             <label className="input-label" htmlFor="newPassword">
               New Password*

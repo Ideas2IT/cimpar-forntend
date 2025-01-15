@@ -21,10 +21,7 @@ import {
   getAppointments,
   getApppointmentById,
 } from "../../services/appointment.service";
-import {
-  convertPaymentStatus,
-  getAgeFromDob,
-} from "../../services/commonFunctions";
+import { getAgeFromDob } from "../../services/commonFunctions";
 import {
   DATE_FORMAT,
   INSURANCE_TYPE,
@@ -98,7 +95,7 @@ const transformTransactions = (data: any) => {
         patientName: item?.patient_name || "-",
         payment_mode: "Card",
         serviceType: item?.location ? "Service center" : "At Home",
-        status: convertPaymentStatus(item?.status) || "-",
+        status: item?.status || "-",
         testDate: item?.start || "-",
         testName: item?.tests_taken || "-",
         transactionDateAndTime: item?.transaction_date_time || "-",
@@ -141,16 +138,18 @@ const transformSingleAppointment = (data: any) => {
   const appointmentCopy = data?.data?.[0];
   if (appointmentCopy) {
     const _appointment: IDetailedAppointment = {
-      id: appointmentCopy?.appointmentId,
-      patientName: appointmentCopy?.name,
-      age: getAgeFromDob(appointmentCopy?.dob),
-      dob: dateFormatter(appointmentCopy?.dob, DATE_FORMAT.DD_MMM_YYYY),
+      category: appointmentCopy.service_type || "",
+      id: appointmentCopy?.appointmentId || "",
+      patientName: appointmentCopy?.name || "",
+      age: getAgeFromDob(appointmentCopy?.dob) || "",
+      dob: dateFormatter(appointmentCopy?.dob, DATE_FORMAT.DD_MMM_YYYY) || "",
       contactNumber: appointmentCopy?.phoneNo ?? "",
-      gender: appointmentCopy?.gender,
-      insurance: appointmentCopy?.insurance,
+      gender: appointmentCopy?.gender || "",
+      insurance: appointmentCopy?.insurance || "",
       appointmentDate: appointmentCopy?.end || "",
-      appointmentTime: dateFormatter(appointmentCopy?.end, DATE_FORMAT.HH_MM_A),
-      appointmentFor: appointmentCopy?.appointmentFor,
+      appointmentTime:
+        dateFormatter(appointmentCopy?.end, DATE_FORMAT.HH_MM_A) || "",
+      appointmentFor: appointmentCopy?.appointmentFor || "",
       reasonForTest: appointmentCopy?.reason_for_test ?? "-",
       currentConditions: appointmentCopy?.condition?.conditions.length
         ? transformConditionsAndAllergies(
@@ -190,8 +189,7 @@ const transformSingleAppointment = (data: any) => {
       totalCost: appointmentCopy?.total_cost || 0,
       centerLocation: appointmentCopy?.service_center_location || NONE,
       takeTestAt: appointmentCopy?.test_location || NONE,
-      paymentStatus:
-        convertPaymentStatus(appointmentCopy?.payment_status) || "-",
+      paymentStatus: appointmentCopy?.payment_status || "-",
       reason_for_test: appointmentCopy?.reason_for_test || "-",
     };
     return _appointment;

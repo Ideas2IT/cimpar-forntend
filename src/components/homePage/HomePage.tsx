@@ -5,8 +5,8 @@ import healthRecordIcon from "../../assets/icons/healthRecordIcon.svg";
 import imagingIcon from "../../assets/icons/imagingicon.svg";
 import laboratoryIcon from "../../assets/icons/laboratoryIcon.svg";
 import pharmacyIcon from "../../assets/icons/pharmacyIcon.svg";
+import car from "../../assets/icons/transportationIcon.svg";
 import vaccinationIcon from "../../assets/icons/vaccination.svg";
-import car from "../../assets/icons/car.svg";
 import { selectServiceTitle } from "../../store/slices/loginSlice";
 import { PATH_NAME } from "../../utils/AppConstants";
 
@@ -32,7 +32,7 @@ const HomePage = () => {
       id: 4,
       title: "Home Care",
       icon: healthRecordIcon,
-      color: "bg-[#D3E4ff]",
+      color: "bg-[#D3E4D3]",
       disabled: false,
       link: `${PATH_NAME.CREATE_APPOINTMENT}/home-care`,
     },
@@ -43,6 +43,14 @@ const HomePage = () => {
       color: "bg-[#F1FCF0]",
       disabled: false,
       link: `${PATH_NAME.CREATE_APPOINTMENT}/imaging`,
+    },
+    {
+      id: 7,
+      title: "Transportation",
+      icon: car,
+      color: "bg-[#D3E5FF]",
+      disabled: false,
+      link: "transportation",
     },
     {
       id: 2,
@@ -68,21 +76,13 @@ const HomePage = () => {
       disabled: true,
       link: "",
     },
-    {
-      id: 7,
-      title: "Transportation",
-      icon: car,
-      color: "bg-[#E7E0EF]",
-      disabled: true,
-      link: "",
-    },
   ];
   const title = useSelector(selectServiceTitle);
   return (
     <>
       <div className="px-6 color-primary font-primary text-xl">
         {title}
-        <div className="mt-4 flex grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl">
+        <div className="mt-4 flex grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl h-[calc(100vh-175px)] overflow-auto">
           {cards.map((card: ICard) => {
             return <Card card={card} key={card.id} />;
           })}

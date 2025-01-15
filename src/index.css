@@ -67,7 +67,7 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 5px !important;
 }
 
 input {
@@ -206,4 +206,20 @@ input::placeholder {
 
 .cimpar-background {
   @apply bg-[#F7E9FF];
+}
+
+.custom-header > div {
+  width: 100%;
+  display: inline-block;
+  text-align: center;
+}
+
+.details-header > div {
+  width: 100%;
+  display: inline-block;
+  text-align: right;
+}
+
+.p-datatable .p-datatable-header {
+  @apply p-0;
 }

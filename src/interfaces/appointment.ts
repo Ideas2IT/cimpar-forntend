@@ -80,9 +80,10 @@ export interface ITestDetails {
   currency_symbol: string;
   home_price: string;
   service_type: string;
-  telehealth_required: boolean;
+  is_telehealth_required: boolean;
 }
 export interface IDetailedAppointment {
+  category: string;
   id: string;
   patientName: string;
   age: string;
@@ -109,6 +110,7 @@ export interface IDetailedAppointment {
 }
 
 export interface ISidebarAppointment {
+  category: string;
   conditions: string;
   allergies: string;
   testName: string;
@@ -172,4 +174,9 @@ export interface IDownloadCsvPayload {
   appointment_id?: string;
 }
 
-export type TAppointmentStatus = "failed" | "Succeeded" | "pending";
+export type TAppointmentStatus =
+  | "failed"
+  | "Succeeded"
+  | "pending"
+  | "failed"
+  | "paid";

@@ -29,7 +29,6 @@ import {
 } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
 import {
-  ERROR,
   HEADER_TITLE,
   LAB_SERVICES,
   PAGE_LIMIT,
@@ -37,7 +36,7 @@ import {
   PATTERN,
   RESPONSE,
   SERVICE_MENU,
-  TABLE,
+  TABLE
 } from "../../utils/AppConstants";
 import SearchInput, { SearchInputHandle } from "../SearchInput";
 import BackButton from "../backButton/BackButton";
@@ -235,9 +234,10 @@ const ServiceList = () => {
     },
     {
       header: "telehealth required",
-      headerClassName: "justify-items-center",
+      headerClassName:
+        "custom-header justify-items-center !align-middle",
       body: (row: ILabTestService) => (
-        <div className="font-tertiary text-center">
+        <div className="font-tertiary text-center justify-items-center">
           {row.is_telehealth_required ? "Yes" : "No"}
         </div>
       ),
@@ -257,7 +257,8 @@ const ServiceList = () => {
     },
     {
       field: "",
-      headerClassName: "border-b font-primary justify-items-center",
+      headerClassName:
+        "custom-header font-primary justify-center justify-items-center",
       header: "ACTION",
       body: (row: ILabTestService) => (
         <div className="font-primary text-purple-800 text-center w-full">
@@ -267,7 +268,7 @@ const ServiceList = () => {
               showModal();
               setSelectedTest(row);
             }}
-          ></span>
+          />
         </div>
       ),
     },

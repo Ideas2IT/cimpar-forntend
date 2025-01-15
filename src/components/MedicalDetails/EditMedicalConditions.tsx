@@ -309,7 +309,7 @@ const EditMedicalConditions = () => {
                     className="min-h-[5rem] border border-gray-300 p-1 block w-full rounded-md"
                     placeholder={
                       !field?.value?.length
-                        ? "Enter your Medical Condition(s), seperated by commos"
+                        ? "Enter your Medical Condition(s), seperated by commas"
                         : ""
                     }
                     removeIcon={"pi pi-times"}

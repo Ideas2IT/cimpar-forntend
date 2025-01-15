@@ -95,6 +95,7 @@ export interface IGetImmunizationPaylaod {
 }
 
 export interface ILabTest {
+  category: string;
   testName: string;
   dateOfTest: string;
   orderId: string;

@@ -1,9 +1,11 @@
+import { Toast } from "primereact/toast";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   IDetailedAppointment,
   IGetAppointmentByIdPayload,
 } from "../../interfaces/appointment";
+import { ErrorResponse } from "../../interfaces/common";
 import { obfuscateAccountNumber } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { AppDispatch } from "../../store/store";
@@ -13,8 +15,6 @@ import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
 import useToast from "../useToast/UseToast";
 import TestDetailsTable from "./TestDetailsTable";
-import { ErrorResponse } from "../../interfaces/common";
-import { Toast } from "primereact/toast";
 
 const DetailedAppointmentView = ({
   appointmentId,
@@ -74,11 +74,6 @@ const DetailedAppointmentView = ({
   ];
 
   const appointmentFields = [
-    {
-      label: "TOTAL COST",
-      value: `$${selectedAppointment?.totalCost ? parseFloat(Number(selectedAppointment?.totalCost)?.toFixed(2)) : "-"}`,
-      full: true,
-    },
     {
       label: "TEST TO BE TAKEN AT",
       value: selectedAppointment?.takeTestAt || "-",

@@ -9,8 +9,11 @@ import LabTestResults from "./components/LabTestResults";
 import Layout from "./components/Layout";
 import LoginForm from "./components/loginForm/LoginForm";
 import SignUpForm from "./components/loginForm/SignUpForm";
+import LocationList from "./components/masterTables/LocationList";
 import MasterTables from "./components/masterTables/MasterTables";
+import PricingDetails from "./components/masterTables/PricingDetails";
 import ServiceList from "./components/masterTables/ServiceList";
+import TransportationList from "./components/masterTables/TransportationList";
 import EditMedicalConditions from "./components/medicalDetails/EditMedicalConditions";
 import EditMedicationDetails from "./components/medication/EditMedicationDetails";
 import PageNotFound from "./components/PageNotFound";
@@ -19,13 +22,11 @@ import SetPassword from "./components/setPassword/SetPassword";
 import EditUserDetails from "./components/userDetails/EditUserDetails";
 import UserProfilePage from "./components/userProfilePage/UserProfilePage";
 import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
-import { PATH_NAME, ROLE } from "./utils/AppConstants";
-import PricingDetails from "./components/masterTables/PricingDetails";
-import Transactions from "./Pages/Transactions";
-import LocationList from "./components/masterTables/LocationList";
-import Payment from "./components/stripePayment/Payment";
-import ServiceMaster from "./Pages/ServiceMaster";
 import PaymentStatus from "./Pages/PaymentStatus";
+import ServiceMaster from "./Pages/ServiceMaster";
+import Transactions from "./Pages/Transactions";
+import Transportation from "./Pages/Transportation";
+import { PATH_NAME, ROLE } from "./utils/AppConstants";
 const router = createBrowserRouter([
   {
     path: PATH_NAME.HOME,
@@ -182,6 +183,24 @@ const router = createBrowserRouter([
           <RoleBasedRoute
             requiredRole={ROLE.ADMIN}
             element={<ServiceMaster />}
+          />
+        ),
+      },
+      {
+        path: PATH_NAME.TRANSPORTATION,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.PATIENT}
+            element={<Transportation />}
+          />
+        ),
+      },
+      {
+        path: PATH_NAME.TRANSPORATION_LIST,
+        element: (
+          <RoleBasedRoute
+            requiredRole={ROLE.ADMIN}
+            element={<TransportationList />}
           />
         ),
       },

@@ -138,7 +138,7 @@ const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
     {
       header: "code",
       field: "code",
-      bodyClassName: " max-w-[5rem] break-all px-1",
+      bodyClassName: " max-w-[5rem] break-all",
     },
     {
       header: "service center",

@@ -43,7 +43,7 @@ const BackButton = ({
   };
 
   return (
-    <div className="flex justify-between items-center lg:flex-row md:flex-col sm:flex-col">
+    <div className="flex justify-between items-center lg:flex-row whitespace-nowrap overflow-hidden text-ellipsis">
       <div
         onClick={handleBackLink}
         className="flex align-items-center item-center"
@@ -60,7 +60,10 @@ const BackButton = ({
           {previousPage || "back"}
         </label>
       </div>
-      <label className="color-primary font-primary md:block lg:text-xl md:text-md sm:text-sm capitalize">
+      <label
+        title={currentPage}
+        className="lg:show hidden color-primary font-primary md:block lg:text-xl md:text-md sm:text-sm capitalize"
+      >
         /{currentPage || ""}
       </label>
     </div>

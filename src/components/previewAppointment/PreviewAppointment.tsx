@@ -38,7 +38,7 @@ const PreviewAppointment = ({
 
   const getPreferedLocation = () => {
     if (details.serviceType === SERVICE_LOCATION.HOME) {
-      return "-";
+      return NONE;
     }
     return `${details?.location?.center_name}, ${details?.location?.city}, ${details?.location?.state}`;
   };
@@ -52,7 +52,7 @@ const PreviewAppointment = ({
     },
     {
       header: "PREFFERED LOCATION",
-      value: getPreferedLocation() || "-",
+      value: getPreferedLocation() || NONE,
     },
     {
       header: "DATE OF TEST",
@@ -66,7 +66,7 @@ const PreviewAppointment = ({
       header: "REASON FOR TEST",
       value:
         details?.testReason.name === "Other"
-          ? details?.otherReasonForTest || "-"
+          ? details?.otherReasonForTest || NONE
           : details.testReason.name,
       full: true,
     },
@@ -159,7 +159,7 @@ const PreviewAppointment = ({
             icon="pi pi-times px-2"
             className="py-2 rounded-full max-h-[2.5rem] border border-purple-800 h-full w-[48%] justify-center"
           >
-            No, I want to edit
+            No, I Want To Edit
           </Button>
           <Button
             onClick={() => {
@@ -189,17 +189,16 @@ const TestDetailsTable = ({
     {
       field: "display",
       header: "Test Name",
-      bodyClass: "max-w-[10rem] break-all font-tertiary",
-    },
-    {
-      field: "is_telehealth_required",
-      header: "Telehealth Visit",
-      headerClass: "justify-items-center",
-      bodyClass: "text-center max-w-[3rem] font-tertiary",
-      body: (rowData: any) => (
-        <div className="text-center">
-          {rowData.is_telehealth_required ? "Yes" : "No"}
-        </div>
+      bodyClass: "max-w-[15rem] break-all font-tertiary",
+      body: (rowData: ILabTestService) => (
+        <span>
+          {rowData.is_telehealth_required ? (
+            <span className="text-red-500">*</span>
+          ) : (
+            <span>&nbsp;</span>
+          )}
+          {rowData.display} $
+        </span>
       ),
     },
     {
@@ -229,7 +228,7 @@ const TestDetailsTable = ({
     <div className="rounded-lg py-1 border w-full">
       <DataTable
         scrollable
-        scrollHeight="10rem"
+        // scrollHeight="10rem"
         value={tests}
         rowClassName={() => getRowClasses("border-b")}
         footer={tableFooter}

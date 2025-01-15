@@ -16,7 +16,6 @@ import { ErrorResponse } from "../../interfaces/common";
 import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
 import {
   appointmentStatus,
-  convertPaymentStatus,
   getRowClasses,
   getStatusColors,
 } from "../../services/commonFunctions";
@@ -79,6 +78,7 @@ const TestResult = ({
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           const appointment = response.payload as IDetailedAppointment;
           const appointmentDate: ISidebarAppointment = {
+            category: appointment.category || "",
             allergies: appointment?.currentAllergies || "",
             conditions: appointment?.currentConditions || "",
             dateOfTest:
@@ -136,7 +136,7 @@ const TestResult = ({
     return (
       <div className="flex items-center justify-between w-full">
         <div>
-          <span className="pe-3">Lab Test</span>
+          <span className="pe-3">{selectedTest.category}</span>
           <span
             className={`${getStatusColors(selectedTest.status)} py-2 px-3 rounded-full text-sm font-tertiary`}
           >
@@ -167,7 +167,7 @@ const TestResult = ({
     return (
       <div className="flex items-center justify-between w-full">
         <div>
-          <span className="pe-3">Lab Result</span>
+          <span className="pe-3">{selectedAppointment.category}</span>
           <span
             className={`${getStatusColors(selectedAppointment.status)} py-2 px-3 rounded-full text-sm font-tertiary`}
           >
@@ -201,9 +201,7 @@ const TestResult = ({
     },
     {
       header: "PAYMENT STATUS",
-      body: (rowData: ILabTest) => (
-        <div> {convertPaymentStatus(rowData.paymentStatus)} </div>
-      ),
+      body: (rowData: ILabTest) => <div> {rowData.paymentStatus || "-"} </div>,
     },
     {
       field: "status",

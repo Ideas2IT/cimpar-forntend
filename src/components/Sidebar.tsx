@@ -121,16 +121,16 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-20 flex flex-col bg-white">
+    <div className="md:w-20 w-10 flex flex-col bg-white">
       <div className="pt-7 pb-10 px-1">
         <ReyaLogo />
       </div>
-      <div className="flex-grow m-3">
+      <div className="flex-grow md:m-3">
         {tabs[role]?.map((tab) => (
           <NavLink to={tab.routerLink} key={tab?.key}>
             <button
               key={tab?.key}
-              className={`flex justify-center items-center h-12 rounded-lg w-14 mb-4 text-sm ${selectedTab?.key === tab?.key ? "bg-purple-800" : ""}`}
+              className={`flex justify-center items-center h-12 rounded-lg md:w-14 w-7 mb-4 text-sm ${selectedTab?.key === tab?.key ? "bg-purple-800" : ""}`}
               onClick={() => handleOnTabClick(tab)}
             >
               <span

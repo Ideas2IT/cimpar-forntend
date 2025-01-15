@@ -5,6 +5,7 @@ import { Calendar } from "primereact/calendar";
 import { Chips } from "primereact/chips";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
+import { InputText } from "primereact/inputtext";
 import { MultiSelect } from "primereact/multiselect";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
@@ -135,6 +136,7 @@ const AppointmentForm = () => {
   const [tests, setTests] = useState<ILabTestService[]>([]);
   const [locations, setLocations] = useState<ILocation[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const [filterValue, setFilterValue] = useState("");
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [appointmentResponse, setAppointmentResponse] = useState(
     {} as ICreateAppointmentResponse
@@ -421,37 +423,58 @@ const AppointmentForm = () => {
       return true;
     }
   };
+  const filteredOptions = tests.filter((option) =>
+    option.display.toLowerCase().includes(filterValue.toLowerCase())
+  );
 
   const panelHeaderTemplate = () => {
     const columnHeaders = [
-      { lable: "Test Name", classNames: "w-[50%]" },
+      { lable: "Available Tests", classNames: "w-[70%]" },
       { lable: "Service Center", classNames: "w-[20%] text-center" },
       { lable: "At Home", classNames: "w-[10%] text-center" },
-      { lable: "Telehealth Visit", classNames: "w-[20%] text-center" },
     ];
     return (
-      <div className="w-[100%] border-b">
-        <div
-          className="header test-sm p-2 flex"
-          style={{ width: "calc(100% - 35px)" }}
-        >
-          {columnHeaders.map((columnHeader, index) => (
-            <div
-              key={index}
-              className={`${columnHeader.classNames} capitalize`}
-            >
-              {columnHeader.lable}
-            </div>
-          ))}
+      <>
+        <div className="w-full mb-1">
+          <InputText
+            className="border w-full py-1 rounded"
+            onChange={(event) => setFilterValue(event.target.value)}
+            placeholder="Enter Test Name to search..."
+          />
         </div>
-      </div>
+        <div className="w-[100%] border-b">
+          <div
+            className="header test-sm ps-2 pe-1 py-0 flex"
+            style={{ width: "calc(100% - 35px)" }}
+          >
+            {columnHeaders.map((columnHeader, index) => (
+              <div
+                key={index}
+                className={`${columnHeader.classNames} capitalize`}
+              >
+                {columnHeader.lable}
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
     );
   };
 
   const itemTemplate = (value: ILabTestService) => {
     return (
-      <div className="flex w-full">
-        <div className="w-[50%]">{value?.display || "-"}</div>
+      <div
+        className="flex w-full"
+        title="Asterisk (*) denotes Telehealth is required"
+      >
+        <div className="w-[70%]">
+          <span className="!inline">
+            {value?.is_telehealth_required && (
+              <span className="text-red-500 !inline">*</span>
+            )}
+            {value?.display || "-"}
+          </span>
+        </div>
         <div className="w-[20%] text-center">
           {value.currency_symbol + Number(value?.center_price)?.toFixed(2) ||
             "0.00"}
@@ -459,9 +482,9 @@ const AppointmentForm = () => {
         <div className="w-[10%] text-center">
           {value.currency_symbol + Number(value?.home_price)?.toFixed(2) || "0"}
         </div>
-        <div className="w-[20%] text-center capitalize">
+        {/* <div className="w-[20%] text-center capitalize">
           {value?.is_telehealth_required ? "Yes" : "No"}
-        </div>
+        </div> */}
       </div>
     );
   };
@@ -511,7 +534,7 @@ const AppointmentForm = () => {
               type="submit"
             >
               <i className="pi pi-check me-2" />
-              Confirm
+              Review To Pay
             </Button>
           </div>
         </div>
@@ -519,7 +542,7 @@ const AppointmentForm = () => {
           <div className="font-primary text-xl flex items-center">
             Appointment Details
             <TestPricing
-              tableHeader="View Test Pricing"
+              tableHeader="View Pricing"
               selectedTab={service || ""}
             />
           </div>
@@ -544,9 +567,10 @@ const AppointmentForm = () => {
                     inputId="testToTake"
                     optionLabel="display"
                     ref={multiSelectRef}
-                    options={tests}
+                    options={filteredOptions}
                     resetFilterOnHide
                     filter
+                    onHide={() => setFilterValue("")}
                     itemTemplate={(value) => itemTemplate(value)}
                     panelHeaderTemplate={panelHeaderTemplate}
                     showSelectAll={false}
@@ -578,7 +602,7 @@ const AppointmentForm = () => {
             </div>
             <div className="xl:col-span-1 md:col-span-2 col-span-4 relative">
               <label className="input-label block">
-                Planning to take test at?
+                Planning to take test at*
               </label>
               <Controller
                 control={control}
@@ -755,7 +779,7 @@ const AppointmentForm = () => {
                     }}
                     disabled={reasonForTest?.name !== "Other"}
                     type="text"
-                    className="cimpar-input py-[.6rem] h-[2.5rem] focus:outline-none font-tertiary"
+                    className={`cimpar-input py-[.6rem] h-[2.5rem] focus:outline-none font-tertiary ${reasonForTest?.name !== "Other" && "cursor-not-allowed"}`}
                     placeholder="Type the test reason here"
                   />
                 )}
@@ -765,7 +789,7 @@ const AppointmentForm = () => {
               )}
             </div>
           </div>
-          <div className="font-primary text-xl py-2">Medical Condition</div>
+          <div className="font-primary text-xl py-2">Medical Conditions</div>
           <>
             <label htmlFor="medicalConditions" className="block input-label">
               Please select the medical conditions you currently have.
@@ -806,7 +830,7 @@ const AppointmentForm = () => {
                     className="min-h-[2.5rem] border border-gray-300 p-1 block w-full rounded-md"
                     placeholder={
                       !field?.value?.length
-                        ? "Enter your Medical Condition(s), seperated by commos"
+                        ? "Enter your Medical Condition(s), seperated by commas"
                         : ""
                     }
                     removeIcon={"pi pi-times"}
@@ -936,7 +960,7 @@ const AppointmentForm = () => {
             setShowConfirmDialog(false);
             navigate(PATH_NAME.HOME);
           }}
-          styleClass="md:w-[40rem] md:h-[35rem] bg-white"
+          styleClass="lg:w-[60vw] lg:h-[90vh] w-full bg-white"
         >
           <PreviewAppointment
             totalCost={totalCost}

@@ -15,6 +15,8 @@ import {
   IServiceHistoryPayload,
   ITestResultPayload,
 } from "../../interfaces/immunization";
+import { IMedicine } from "../../interfaces/medication";
+import { appointmentStatus } from "../../services/commonFunctions";
 import {
   getImmunizationById,
   getImmunizationByPatientId,
@@ -22,14 +24,6 @@ import {
   getLabTests,
   getServiceHistory,
 } from "../../services/serviceHistory.service";
-import { SLICE_NAME } from "../../utils/sliceUtil";
-import { RootState } from "../store";
-import {
-  appointmentStatus,
-  convertPaymentStatus,
-} from "../../services/commonFunctions";
-import { dateFormatter } from "../../utils/Date";
-import { IMedicine } from "../../interfaces/medication";
 import {
   APPOINTMENT,
   DATE_FORMAT,
@@ -40,6 +34,9 @@ import {
   SERVICE_CATEGORY,
   SERVICE_TABS,
 } from "../../utils/AppConstants";
+import { dateFormatter } from "../../utils/Date";
+import { SLICE_NAME } from "../../utils/sliceUtil";
+import { RootState } from "../store";
 interface IServiceHistorySlice {
   immunizations: ImmunizationData;
   serviceHistory: IServiceHistoryData;
@@ -167,7 +164,7 @@ const appointmentToService = (data: any) => {
     id: data?.id || "",
     status: appointmentStatus(data?.end || ""),
     type: APPOINTMENT,
-    paymentStatus: convertPaymentStatus(data?.payment_status),
+    paymentStatus: data?.payment_status || "-",
   };
   return service;
 };
@@ -282,6 +279,7 @@ function transformSingleTest(data: any): ILabTest {
     return {} as ILabTest;
   }
   const test: ILabTest = {
+    category: data?.serviceCategory?.[0]?.coding?.[0]?.display || "",
     testName: data?.code?.coding?.[0]?.display ?? "",
     dateOfTest:
       (data?.effectiveDateTime &&

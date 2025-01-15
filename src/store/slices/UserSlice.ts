@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { SLICE_NAME } from "../../utils/sliceUtil";
+import { SLICE_NAME, THUNK_NAME } from "../../utils/sliceUtil";
 import { getUserDetails } from "../../services/user.service";
 import { isAxiosError } from "axios";
 import { ErrorResponse } from "../../interfaces/common";
@@ -19,7 +19,7 @@ const initialState: IProfileSlice = {
 };
 
 export const getUserProfileThunk = createAsyncThunk(
-  "patinet/get",
+  THUNK_NAME.getUserProfile,
   async (_, { rejectWithValue }) => {
     try {
       const userResponse = await getUserDetails();

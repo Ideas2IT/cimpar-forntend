@@ -86,3 +86,8 @@ export interface ILabTestService {
   service_type: string;
   currency_symbol: string;
 }
+
+export interface IBooking {
+  id: string;
+  displayName: string;
+}

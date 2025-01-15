@@ -9,7 +9,10 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { Sidebar } from "primereact/sidebar";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../../assets/icons/filter.svg?react";
-import { getRowClasses } from "../../services/commonFunctions";
+import {
+  generateTimeSlots,
+  getRowClasses,
+} from "../../services/commonFunctions";
 import { selectIsAdmin } from "../../store/slices/loginSlice";
 import {
   DATE_FORMAT,

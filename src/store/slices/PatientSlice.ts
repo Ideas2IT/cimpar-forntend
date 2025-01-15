@@ -51,8 +51,9 @@ import {
   updatePatientProfile,
   updateVisitHistory,
 } from "../../services/patient.service";
-import { SLICE_NAME } from "../../utils/sliceUtil";
+import { SLICE_NAME, THUNK_NAME } from "../../utils/sliceUtil";
 import { RootState } from "../store";
+import { CONDITIONS_AND_ALLERGIER } from "../../utils/AppConstants";
 interface IPatientResponse {
   name: string;
   selectedPatient: IPatient;
@@ -177,8 +178,8 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
       const resource = entity?.resource;
       if (resource?.note?.length) {
         const noteText = resource.note[0].text;
-        switch (noteText) {
-          case "Family":
+        switch (noteText?.toLowerCase()) {
+          case CONDITIONS_AND_ALLERGIER.FAMILY:
             const fmc = resource?.code.coding.map((item: any) => {
               const temp: IMedicine = {
                 code: item.code || "",
@@ -190,7 +191,7 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
             conditionsAndAllergies.familyMedicalConditions = [...fmc];
             conditionsAndAllergies.family_condition_id = resource?.id || "";
             break;
-          case "Current":
+          case CONDITIONS_AND_ALLERGIER.CURRENT:
             const cmc = resource?.code.coding.map((item: any) => {
               const temp: IMedicine = {
                 code: item.code || "",
@@ -202,7 +203,7 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
             conditionsAndAllergies.medicalConditions = [...cmc];
             conditionsAndAllergies.current_condition_id = resource?.id || "";
             break;
-          case "Other":
+          case CONDITIONS_AND_ALLERGIER.OTHER:
             const omc: IMedicine[] = resource?.code.coding.map((item: any) => {
               const temp: IMedicine = {
                 code: item.code || "",
@@ -226,7 +227,7 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
       if (resource?.note?.length) {
         const noteText = resource.note[0].text;
         switch (noteText?.toLowerCase()) {
-          case "current":
+          case CONDITIONS_AND_ALLERGIER.CURRENT:
             const allergies: IMedicine[] = resource?.code?.coding?.map(
               (item: any) => {
                 const temp: IMedicine = {
@@ -240,7 +241,7 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
             conditionsAndAllergies.allergies = [...allergies];
             conditionsAndAllergies.current_allergy_id = resource?.id || "";
             break;
-          case "other":
+          case CONDITIONS_AND_ALLERGIER.OTHER:
             const otherAllergies: IMedicine[] = resource?.code.coding.map(
               (item: any) => {
                 const temp: IMedicine = {
@@ -277,7 +278,7 @@ const transformSingleInsurance = (data: any) => {
   return insurance;
 };
 export const getPatientDetailsThunk = createAsyncThunk(
-  "patient/get",
+  THUNK_NAME.getPatientDetails,
   async (id: string, { rejectWithValue }) => {
     try {
       const userResponse = await getPatientDetails(id);
@@ -296,7 +297,7 @@ export const getPatientDetailsThunk = createAsyncThunk(
 );
 
 export const updatePatientProfileThunk = createAsyncThunk(
-  "patient/update",
+  THUNK_NAME.updatePatientProfile,
   async (payload: IUpdatePatientPayload, { rejectWithValue }) => {
     try {
       const userResponse = await updatePatientProfile(payload);
@@ -323,7 +324,7 @@ export const updatePatientProfileThunk = createAsyncThunk(
 );
 
 export const getPatientMedicationThunk = createAsyncThunk(
-  "medication/get",
+  THUNK_NAME.getMedication,
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await getPatientMedication(id);

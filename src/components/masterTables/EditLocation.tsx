@@ -2,13 +2,16 @@ import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { IOptionValue } from "../../interfaces/common";
+import { IBooking, IOptionValue } from "../../interfaces/common";
 import { ILocation } from "../../interfaces/location";
 import { PATTERN } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import DaysSelector from "./DaySelector";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import { getBookingNamesThunk } from "../../store/slices/masterTableSlice";
 
 const EditLocation = ({
   selectedLocation,
@@ -31,6 +34,16 @@ const EditLocation = ({
   } = useForm({
     defaultValues: {} as ILocation,
   });
+
+  const [bookingNames, setBookingNames] = useState<IBooking[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(getBookingNamesThunk()).then((response) => {
+      const _response = response.payload as IBooking[];
+      setBookingNames(_response);
+    });
+  }, []);
 
   useEffect(() => {
     if (selectedLocation && Object?.keys(selectedLocation)?.length) {
@@ -362,6 +375,35 @@ const EditLocation = ({
           />
           {errors.status && (
             <ErrorMessage message={errors.status.message}></ErrorMessage>
+          )}
+        </span>
+        <span className="relative">
+          <label className="input-label block" htmlFor="booingName">
+            Booking Name*
+          </label>
+          <Controller
+            control={control}
+            name="bookingName"
+            rules={{
+              required: "State is required",
+            }}
+            render={({ field }) => (
+              <Dropdown
+                {...field}
+                onChange={(option) => {
+                  option?.value && setValue("bookingName", option?.value);
+                  trigger("bookingName");
+                }}
+                inputId="bookingName"
+                options={bookingNames}
+                optionLabel="displayName"
+                className="input-field test-dropdown"
+                placeholder="Booking Name"
+              />
+            )}
+          />
+          {errors.state && (
+            <ErrorMessage message={errors.state.message}></ErrorMessage>
           )}
         </span>
         <span className="relative">

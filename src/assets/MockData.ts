@@ -101,4 +101,44 @@ export const visitHistory: IVisitHistory[] = [
   },
 ];
 
+export const bookingNames = [
+  {
+    id: "CIMPARSELFSCHEDULING@cimpar.com",
+    displayName: "CIMPAR SELF SCHEDULING",
+  },
+  {
+    id: "CIMPAR1@cimpar.com",
+    displayName: "CIMPAR: IT Teams Interview",
+  },
+  {
+    id: "CIMPARVaccinationServiceChicago@cimpar.com",
+    displayName: "Chicago LTC - CIMPAR Vaccination Service",
+  },
+  {
+    id: "CIMPAR@cimpar.com",
+    displayName: "COVID19 ONSITE VACCINATION CLINIC SCHEDULING",
+  },
+  {
+    id: "PASOCIMPARCOVID19VACCINATION@cimpar.com",
+    displayName: "P.A.S.O- CIMPAR COVID19 VACCINATION",
+  },
+  {
+    id: "COVID193RDVACCINEBOOSTER@cimpar.com",
+    displayName: "CIMPAR Vaccination Service",
+  },
+  {
+    id: "ReyaGo@cimpar.com",
+    displayName: "ReyaGo Medical Transportation",
+  },
+  {
+    id: "MonoclonalAntibodyTreatment@cimpar.com",
+    displayName:
+      "Test- To- Treat: Testing Monoclonal Antibodies and Oral Antiviral",
+  },
+  {
+    id: "ReyaLabs@cimpar.com",
+    displayName: "Reya Labs",
+  },
+];
+
 export const tests = [{ display: "" }];

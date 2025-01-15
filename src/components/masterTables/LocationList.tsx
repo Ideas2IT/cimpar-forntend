@@ -1,17 +1,13 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import BackButton from "../backButton/BackButton";
-import SearchInput, { SearchInputHandle } from "../SearchInput";
 import { Button } from "primereact/button";
-import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import {
-  capitalizeFirstLetter,
-  cleanString,
-  getRowClasses,
-} from "../../services/commonFunctions";
+import { DataTable } from "primereact/datatable";
+import { InputSwitch } from "primereact/inputswitch";
 import { Sidebar } from "primereact/sidebar";
-import CustomModal from "../customModal/CustomModal";
-import EditLocation from "./EditLocation";
+import { Toast } from "primereact/toast";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import HeaderContext from "../../context/HeaderContext";
+import { ErrorResponse, IBooking, IOptionValue } from "../../interfaces/common";
 import {
   ICreateLocationPayload,
   IGetLocationPayload,
@@ -19,9 +15,7 @@ import {
   ILocationResponse,
   IToggleLocationStatusPayload,
 } from "../../interfaces/location";
-import { InputSwitch } from "primereact/inputswitch";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
+import { cleanString, getRowClasses } from "../../services/commonFunctions";
 import {
   createLocationThunk,
   getLocationsThunk,
@@ -30,20 +24,23 @@ import {
   toggleLocationStatusThunk,
   updateLocationThunk,
 } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
 import {
   DATE_FORMAT,
   HEADER_TITLE,
   PAGE_LIMIT,
+  PATH_NAME,
   RESPONSE,
   TABLE,
 } from "../../utils/AppConstants";
-import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
-import { ErrorResponse, IOptionValue } from "../../interfaces/common";
-import CustomPaginator from "../customPagenator/CustomPaginator";
 import { dateFormatter } from "../../utils/Date";
+import BackButton from "../backButton/BackButton";
+import CustomModal from "../customModal/CustomModal";
+import CustomPaginator from "../customPagenator/CustomPaginator";
+import SearchInput, { SearchInputHandle } from "../SearchInput";
 import CustomServiceDropDown from "../serviceFilter/CustomServiceDropdown";
-import HeaderContext from "../../context/HeaderContext";
+import useToast from "../useToast/UseToast";
+import EditLocation from "./EditLocation";
 
 interface IRegion {
   state: string[];
@@ -257,6 +254,7 @@ const LocationList = () => {
       const updatePayload: ILocation = {
         ...payload,
         id: selectedLocation.id,
+        bookingName: {} as IBooking,
       };
       dispatch(updateLocationThunk(updatePayload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
@@ -296,9 +294,9 @@ const LocationList = () => {
 
   return (
     <div className="px-6">
-      <div className="flex w-full justify-between">
+      <div className="flex w-full justify-between min-w-[60rem] overflow-x-auto">
         <BackButton
-          backLink="/master-tabs"
+          backLink={PATH_NAME.MASTER_TABLES}
           currentPage="Locations"
           previousPage="Masters"
         />

@@ -83,7 +83,7 @@
 }
 
 .p-multiselect-items-wrapper {
-  max-height: calc(100vh - 375px) !important;
+  max-height: calc(100vh - 400px) !important;
 }
 
 .test-dropdown .p-dropdown-label.p-placeholder {

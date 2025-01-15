@@ -1,4 +1,4 @@
-import { isBefore, parseISO } from "date-fns";
+import { addMinutes, format, isBefore, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { KeyboardEvent } from "react";
 import { IItem } from "../components/appointmentForm/AppointmentForm";
@@ -12,6 +12,8 @@ import {
   SYSTEM,
 } from "../utils/AppConstants";
 import { dateFormatter } from "../utils/Date";
+import { isAxiosError } from "axios";
+import { ErrorResponse } from "../interfaces/common";
 
 export const getStatusColors = (status = "") => {
   switch (status.toLowerCase()) {
@@ -378,3 +380,56 @@ export function capitalizeFirstLetter(
 
   return "-";
 }
+
+type Slot = {
+  start: string;
+  end: string;
+};
+
+export const generateTimeSlots = (
+  startDate: Date,
+  endDate: Date,
+  duration: number
+): Slot[] => {
+  if (!startDate || !endDate || duration <= 0) {
+    throw new Error(
+      "Invalid input. Please provide valid startDate, endDate, and duration."
+    );
+  }
+
+  if (startDate >= endDate) {
+    throw new Error("startDate must be before endDate.");
+  }
+
+  const slots: Slot[] = [];
+  let currentStart = startDate;
+
+  while (currentStart < endDate) {
+    const currentEnd = addMinutes(currentStart, duration);
+
+    if (currentEnd > endDate) break;
+
+    slots.push({
+      start: format(currentStart, "yyyy-MM-dd HH:mm"),
+      end: format(currentEnd, "yyyy-MM-dd HH:mm"),
+    });
+
+    currentStart = currentEnd;
+  }
+
+  return slots;
+};
+
+export const handleAxiosError = (error: any): ErrorResponse => {
+  if (isAxiosError(error)) {
+    const errorMessage = error.response?.data?.error || "Unknown Error";
+    return {
+      message: errorMessage,
+      response: error.message,
+    } as ErrorResponse;
+  }
+  return {
+    message: "An unexpected error occurred.",
+    response: error.message || "",
+  } as ErrorResponse;
+};

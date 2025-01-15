@@ -1,8 +1,8 @@
 import { Dropdown } from "primereact/dropdown";
 import { useRef } from "react";
 import { Fragment } from "react/jsx-runtime";
-import "./AppointmentPage.css";
 import { ILocation } from "../../interfaces/location";
+import "./AppointmentPage.css";
 
 interface LocationProps {
   options: ILocation[];
@@ -21,7 +21,7 @@ export default function LocationDropDown(props: LocationProps) {
     return (
       <div
         title={value.center_name + value.address_line1 + value.city}
-        className="!max-w-[20rem] px-1 text-wrap break-all text-ellipsis"
+        className="!max-w-[20rem] px-1 text-wrap text-ellipsis"
       >
         {`${value.center_name}, ${value.address_line1}, ${value.city} ${value.state}`}
       </div>
@@ -35,7 +35,7 @@ export default function LocationDropDown(props: LocationProps) {
   return (
     <Fragment>
       <label className="input-label block" htmlFor="location">
-        Select your preferred service centre*
+        Select your preferred service center*
       </label>
       <div
         className={`relative w-full flex items-center rounded-lg border border-gray-300 ${props.disabled && "cursor-not-allowed opacity-50"}`}

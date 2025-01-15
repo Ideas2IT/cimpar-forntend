@@ -139,16 +139,10 @@ const LoginForm = () => {
             </label>
           </Link>
           <div className="col-span-2 flex justify-end items-center pt-2">
-            {/* <label className="text-sm pe-3">
-              Don't have an account?
-              <Link to={PATH_NAME.SIGNUP} className="text-purple-800 ps-1">
-                Signup
-              </Link>
-            </label> */}
             <Button
               disabled={isSubmitting}
               type="submit"
-              className="bg-purple-800 text-white px-8 py-2 rounded-full font-primary"
+              className="bg-customPurple text-white px-8 py-2 rounded-full font-primary"
               label="Login"
             />
           </div>

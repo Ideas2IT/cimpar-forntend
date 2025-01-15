@@ -152,6 +152,7 @@ const ServiceHistory = ({
             setSelectedService(row);
             const appointment = response?.payload as IDetailedAppointment;
             const appointmentDate: ISidebarAppointment = {
+              category: appointment.category || "-",
               allergies: appointment?.currentAllergies || "",
               conditions: appointment?.currentConditions || "",
               dateOfTest:
@@ -189,7 +190,9 @@ const ServiceHistory = ({
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
     };
-    return selectedService?.category?.toLowerCase() === "immunization" ? (
+
+    return selectedService?.category?.toLowerCase() ===
+      SERVICE_CATEGORY.IMMUNIZATION ? (
       <div>
         <label className="pe-3">Immunization Details</label>
         <span
@@ -203,7 +206,7 @@ const ServiceHistory = ({
     ) : (
       <div className="flex items-center justify-between w-full">
         <div className="capitalize">
-          <span className="pe-3">Lab Result</span>
+          <span className="pe-3">{selectedService?.category || ""}</span>
           <span
             className={`${getStatusColors(selectedTest?.status)} py-2 capitalize px-3 rounded-full text-sm font-tertiary`}
           >
@@ -231,9 +234,10 @@ const ServiceHistory = ({
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
     };
+
     return (
       <div>
-        <label className="pe-3">Lab Test</label>
+        <label className="pe-3">{selectedAppointment.category || "-"}</label>
         <span
           className={`sidebar-header ms-4 ${getStatusColors(selectedAppointment.status)}`}
         >

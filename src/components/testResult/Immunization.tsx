@@ -52,7 +52,7 @@ const Immunization = ({
       <div>
         <label className="pe-3">Immunization Details</label>
         <span
-          className={`sidebar-header ${getStatusColor(selectedImmunization.status)}`}
+          className={`sidebar-header font-primary ${getStatusColor(selectedImmunization.status)}`}
         >
           {selectedImmunization.status}
         </span>
@@ -108,7 +108,7 @@ const Immunization = ({
             headerClassName="text-sm font-secondary py-1 border-b bg-white"
             body={(rowData) => (
               <span
-                className={`sidebar-header ${getStatusColor(rowData.status)}`}
+                className={`sidebar-header font-tertiary ${getStatusColor(rowData.status)}`}
               >
                 {rowData.status || "-"}
               </span>

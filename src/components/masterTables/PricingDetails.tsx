@@ -244,7 +244,7 @@ const PricingData = ({
     {
       header: "action",
       field: "",
-      headerClassName: "justify-items-center",
+      headerClassName: "justify-items-center custom-header",
       body: (rowData: ILabTestService) => (
         <i
           className="pi pi-pen-to-square w-full text-center text-purple-800"

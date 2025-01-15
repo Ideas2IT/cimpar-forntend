@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import telehealth from "../assets/icons/Telehealth.svg";
-import car from "../assets/icons/car.svg";
+import car from "../assets/icons/handshake.png";
 import healthRecordIcon from "../assets/icons/healthRecordIcon.svg";
 import imagingIcon from "../assets/icons/imagingicon.svg";
 import laboratoryIcon from "../assets/icons/laboratoryIcon.svg";
@@ -52,6 +52,14 @@ const ServiceMaster = () => {
       link: `${PATH_NAME.SERVICE_MASTER}/${SERVICE_MENU.IMAGING}`,
     },
     {
+      id: 7,
+      title: "Partner Services",
+      icon: car,
+      color: "bg-[#E7E0EF]",
+      disabled: false,
+      link: `${PATH_NAME.TRANSPORATION_LIST}`,
+    },
+    {
       id: 4,
       title: "Vaccination",
       icon: vaccinationIcon,
@@ -75,14 +83,6 @@ const ServiceMaster = () => {
       disabled: true,
       link: "",
     },
-    {
-      id: 7,
-      title: "Transportation",
-      icon: car,
-      color: "bg-[#E7E0EF]",
-      disabled: true,
-      link: "",
-    },
   ];
   return (
     <>
@@ -94,8 +94,8 @@ const ServiceMaster = () => {
             previousPage="Masters"
           />
         </div>
-        <div className="">
-          <div className="w-full grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 mt-4 flex w-full bg-white p-6 rounded-xl">
+        <div>
+          <div className="w-full grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 mt-4 flex w-full bg-white p-6 rounded-xl h-[calc(100vh-175px)] overflow-auto">
             {cards.map((card: ICard) => {
               return <Card card={card} key={card.id} />;
             })}

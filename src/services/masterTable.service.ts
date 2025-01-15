@@ -1,3 +1,4 @@
+import { bookingNames } from "../assets/MockData";
 import {
   IAllTestspayload,
   IGetPatientServicesPayload,
@@ -12,6 +13,7 @@ import {
 } from "../interfaces/location";
 import {
   ICreateLabTest,
+  IMasterUrl,
   IUpdatePricingPayload,
 } from "../interfaces/masterTable";
 import { API_URL } from "../utils/aapiURL";
@@ -177,23 +179,37 @@ const fetchServiceCategories = () => {
   return http.get(`${API_URL.masterTable}/filtered_service_type`);
 };
 
+const getUrlByCategory = (category: string) => {
+  return http.get(`${API_URL.registry}?category=${category}`);
+};
+const updateUrlById = (payload: IMasterUrl) => {
+  return http.put(`${API_URL.registry}?resource_id=${payload.id}`, payload);
+};
+
+const getBookingNames = () => {
+  return { data: bookingNames };
+};
+
 export {
   addMasterRecord,
   createLocation,
+  fetchAllServicesWithoutPagnation,
+  fetchServiceCategories,
+  fetchServiceRegions,
   getAllergiesByQuery,
   getAllTests,
   getInputData,
   getLabTestsWithoutPagination,
+  getLocationsWithoutPagination,
   getLocationsWithPagination,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
+  getUrlByCategory,
   toggleLocaitonStatus,
   toggleRecordStatus,
+  updateLocation,
   updateMasterRecord,
   updatePricing,
-  updateLocation,
-  fetchServiceRegions,
-  fetchAllServicesWithoutPagnation,
-  fetchServiceCategories,
-  getLocationsWithoutPagination,
+  updateUrlById,
+  getBookingNames,
 };
