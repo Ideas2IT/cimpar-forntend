@@ -95,7 +95,7 @@ const ServiceMaster = () => {
           />
         </div>
         <div>
-          <div className="w-full grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 mt-4 flex w-full bg-white p-6 rounded-xl h-[calc(100vh-175px)] overflow-auto">
+          <div className="w-full grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 mt-4 flex w-full bg-white p-6 rounded-xl max-h-[calc(100vh-175px)] overflow-auto">
             {cards.map((card: ICard) => {
               return <Card card={card} key={card.id} />;
             })}

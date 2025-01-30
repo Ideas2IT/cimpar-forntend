@@ -7,7 +7,7 @@ import { Toast } from "primereact/toast";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import HeaderContext from "../../context/HeaderContext";
-import { ErrorResponse, IBooking, IOptionValue } from "../../interfaces/common";
+import { ErrorResponse, IOptionValue } from "../../interfaces/common";
 import {
   ICreateLocationPayload,
   IGetLocationPayload,
@@ -228,15 +228,16 @@ const LocationList = () => {
       zip_code: cleanString(data.zip_code),
       center_name: cleanString(data.center_name),
       state: data.state,
-      closing_time: dateFormatter(data.closing_time, DATE_FORMAT.HH_MM_SS),
+      closing_time: dateFormatter(new Date(), DATE_FORMAT.HH_MM_SS),
       contact_email: data.contact_email,
       contact_person: data.contact_person,
       contact_phone: data.contact_phone,
       country: data.country,
-      opening_time: dateFormatter(data.opening_time, DATE_FORMAT.HH_MM_SS),
+      opening_time: dateFormatter(new Date(), DATE_FORMAT.HH_MM_SS),
       status: data.status,
-      working_days: data.working_days,
+      working_days: ["mon", "tue", "wed"],
       holiday: "",
+      azure_booking_id: data.azureBooking?.id || "",
     };
     if (!Object.keys(selectedLocation)?.length) {
       dispatch(createLocationThunk(payload)).then((response) => {
@@ -254,7 +255,7 @@ const LocationList = () => {
       const updatePayload: ILocation = {
         ...payload,
         id: selectedLocation.id,
-        bookingName: {} as IBooking,
+        azure_booking_id: data?.azure_booking_id || "",
       };
       dispatch(updateLocationThunk(updatePayload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
@@ -300,7 +301,7 @@ const LocationList = () => {
           currentPage="Locations"
           previousPage="Masters"
         />
-        <div className="grid grid-cols-3 min-w-[68%] justify-items-end gap-3">
+        <div className="flex justify-items-end gap-3">
           <CustomServiceDropDown
             key="cities"
             onApplyFilter={(newCities) =>
@@ -453,15 +454,6 @@ const DetailedLocationView = ({ location }: { location: ILocation }) => {
       styleClasses: "capitalize",
     },
     {
-      header: "OPENING TIME",
-      value: location?.opening_time || "-",
-    },
-    {
-      header: "CLOSING TIME",
-      value: location?.closing_time || "-",
-    },
-
-    {
       header: "CONTACT PERSON",
       value: location?.contact_person || "-",
       styleClasses: "col-span-2 capitalize",
@@ -474,12 +466,6 @@ const DetailedLocationView = ({ location }: { location: ILocation }) => {
       header: "EMAIL",
       value: location?.contact_email || "-",
       styleClasses: "col-span-2",
-    },
-    {
-      header: "WORKING DAYS",
-      value: location.working_days?.length
-        ? location?.working_days.join(", ")
-        : "-",
     },
   ];
 

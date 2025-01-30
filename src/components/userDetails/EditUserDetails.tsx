@@ -169,19 +169,29 @@ const EditUserDetails = () => {
             }
           );
           setRace(updatedResponse);
+        } else {
+          setRace([]);
         }
       }
     });
     dispatch(getOptionValuesThunk(TABLE.STATE)).then((response) => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
         const _response = response.payload as IOptionValue[];
-        setStates(_response);
+        if (_response?.length) {
+          setStates(_response);
+        } else {
+          setStates([]);
+        }
       }
     });
     dispatch(getOptionValuesThunk(TABLE.ETHNICITY)).then((response) => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
         const _response = response.payload as IOptionValue[];
-        setEthnicities(_response);
+        if (_response.length) {
+          setEthnicities(_response);
+        } else {
+          setEthnicities([]);
+        }
       }
     });
   };

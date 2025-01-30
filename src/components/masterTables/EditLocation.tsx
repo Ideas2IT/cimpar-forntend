@@ -1,17 +1,16 @@
 import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
+import { Tooltip } from "primereact/tooltip";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import { IBooking, IOptionValue } from "../../interfaces/common";
 import { ILocation } from "../../interfaces/location";
+import { getBookingNamesThunk } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
 import { PATTERN } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import DaysSelector from "./DaySelector";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import { getBookingNamesThunk } from "../../store/slices/masterTableSlice";
 
 const EditLocation = ({
   selectedLocation,
@@ -40,25 +39,19 @@ const EditLocation = ({
 
   useEffect(() => {
     dispatch(getBookingNamesThunk()).then((response) => {
-      const _response = response.payload as IBooking[];
-      setBookingNames(_response);
+      const _response = (response?.payload?.data?.value as IBooking[]) || [];
+      if (_response?.length > 0) {
+        setBookingNames(_response);
+      } else {
+        setBookingNames([]);
+      }
     });
   }, []);
 
   useEffect(() => {
     if (selectedLocation && Object?.keys(selectedLocation)?.length) {
-      const [openingHours, openingMinutes, openingSeconds] =
-        selectedLocation.opening_time.split(":")?.map(Number);
-      const [closingHours, closingMinutes, closingSeconds] =
-        selectedLocation.closing_time.split(":")?.map(Number);
-      const opening_time = new Date();
-      opening_time.setHours(openingHours, openingMinutes, openingSeconds, 0);
-      const closing_time = new Date();
-      closing_time.setHours(closingHours, closingMinutes, closingSeconds, 0);
       const location = {
         ...selectedLocation,
-        opening_time: opening_time.toString(),
-        closing_time: closing_time.toString(),
       };
       reset({ ...location });
     }
@@ -68,16 +61,23 @@ const EditLocation = ({
     handleSubmitForm(data);
   };
 
-  const validateWorkingDays = (workingDays: string[]) => {
-    return workingDays?.length
-      ? true
-      : "A Location must have at least one working day";
-  };
-
   const valueTemplate = (item: string) => {
     return (
       <span className={`${item && "text-black font-normal"}`}>
         {item ? item : "State"}
+      </span>
+    );
+  };
+
+  const itemTemplate = (item: IBooking) => {
+    return (
+      <span
+        className="capitalize itemTemplate"
+        data-pr-tooltip={item.description || ""}
+        data-pr-position="top"
+      >
+        {item.displayName}
+        <Tooltip target=".itemTemplate" />
       </span>
     );
   };
@@ -105,7 +105,7 @@ const EditLocation = ({
             )}
           />
           {errors.center_name && (
-            <ErrorMessage message={errors.center_name.message}></ErrorMessage>
+            <ErrorMessage message={errors.center_name.message} />
           )}
         </span>
         <span className="relative">
@@ -128,7 +128,7 @@ const EditLocation = ({
             )}
           />
           {errors.address_line1 && (
-            <ErrorMessage message={errors.address_line1.message}></ErrorMessage>
+            <ErrorMessage message={errors.address_line1.message} />
           )}
         </span>
         <span className="relative">
@@ -170,9 +170,7 @@ const EditLocation = ({
               />
             )}
           />
-          {errors.city && (
-            <ErrorMessage message={errors.city.message}></ErrorMessage>
-          )}
+          {errors.city && <ErrorMessage message={errors.city.message} />}
         </span>
         <span className="relative">
           <label className="input-label block" htmlFor="state">
@@ -201,13 +199,11 @@ const EditLocation = ({
               />
             )}
           />
-          {errors.state && (
-            <ErrorMessage message={errors.state.message}></ErrorMessage>
-          )}
+          {errors.state && <ErrorMessage message={errors.state.message} />}
         </span>
         <span className="relative">
           <label className="input-label block" htmlFor="zipCode">
-            Zip_Code*
+            Zip Code*
           </label>
           <Controller
             control={control}
@@ -257,9 +253,7 @@ const EditLocation = ({
               />
             )}
           />
-          {errors.country && (
-            <ErrorMessage message={errors.country.message}></ErrorMessage>
-          )}
+          {errors.country && <ErrorMessage message={errors.country.message} />}
         </span>
         <span className="relative">
           <label className="input-label block" htmlFor="contactPerson">
@@ -285,9 +279,7 @@ const EditLocation = ({
             )}
           />
           {errors.contact_person && (
-            <ErrorMessage
-              message={errors.contact_person.message}
-            ></ErrorMessage>
+            <ErrorMessage message={errors.contact_person.message} />
           )}
         </span>
         <span className="relative">
@@ -315,7 +307,7 @@ const EditLocation = ({
             )}
           />
           {errors.contact_email && (
-            <ErrorMessage message={errors.contact_email.message}></ErrorMessage>
+            <ErrorMessage message={errors.contact_email.message} />
           )}
         </span>
         <span className="relative">
@@ -343,7 +335,7 @@ const EditLocation = ({
             )}
           />
           {errors.contact_phone && (
-            <ErrorMessage message={errors.contact_phone.message}></ErrorMessage>
+            <ErrorMessage message={errors.contact_phone.message} />
           )}
         </span>
         <span className="relative">
@@ -373,134 +365,37 @@ const EditLocation = ({
               />
             )}
           />
-          {errors.status && (
-            <ErrorMessage message={errors.status.message}></ErrorMessage>
-          )}
+          {errors.status && <ErrorMessage message={errors.status.message} />}
         </span>
         <span className="relative">
           <label className="input-label block" htmlFor="booingName">
-            Booking Name*
+            Microsoft Calendar Name*
           </label>
           <Controller
             control={control}
-            name="bookingName"
+            name="azure_booking_id"
             rules={{
-              required: "State is required",
+              required: "Microsoft Calendar Name is Required",
             }}
             render={({ field }) => (
               <Dropdown
                 {...field}
                 onChange={(option) => {
-                  option?.value && setValue("bookingName", option?.value);
-                  trigger("bookingName");
+                  option?.value && setValue("azure_booking_id", option?.value);
+                  trigger("azure_booking_id");
                 }}
                 inputId="bookingName"
                 options={bookingNames}
                 optionLabel="displayName"
+                optionValue="id"
+                itemTemplate={(item: IBooking) => itemTemplate(item)}
                 className="input-field test-dropdown"
-                placeholder="Booking Name"
+                placeholder="Microsoft Calendar Name"
               />
             )}
           />
-          {errors.state && (
-            <ErrorMessage message={errors.state.message}></ErrorMessage>
-          )}
-        </span>
-        <span className="relative">
-          <label className="input-label block" htmlFor="openingTime">
-            Opening Time*
-          </label>
-          <Controller
-            control={control}
-            name="opening_time"
-            rules={{
-              required: "Opening Time is required",
-            }}
-            defaultValue={new Date().toString()}
-            render={({ field }) => (
-              <Calendar
-                {...field}
-                inputId="openingTime"
-                onChange={(e) => {
-                  if (e.target?.value) {
-                    const h = e.target.value.getHours();
-                    const m = e.target.value.getMinutes();
-                    if (!isNaN(h) && !isNaN(m)) {
-                      const newDate = new Date();
-                      newDate.setHours(h, m, 0, 0);
-                      setValue("opening_time", newDate.toString());
-                    }
-                  }
-                }}
-                className="input-field w-full p-1"
-                value={field.value ? new Date(field.value) : new Date()}
-                timeOnly
-                showTime
-                showIcon
-                hourFormat="24"
-                panelClassName="!min-w-[15rem]"
-                icon="pi pi-clock"
-              />
-            )}
-          />
-          {errors.opening_time && (
-            <ErrorMessage message={errors.opening_time.message}></ErrorMessage>
-          )}
-        </span>
-        <span className="relative">
-          <label className="input-label block" htmlFor="closingTime">
-            Closing Time*
-          </label>
-          <Controller
-            control={control}
-            defaultValue={new Date().toString()}
-            name="closing_time"
-            rules={{
-              required: "Closing Time is required",
-            }}
-            render={({ field }) => (
-              <Calendar
-                {...field}
-                inputId="closingTime"
-                value={field.value ? new Date(field.value) : new Date()}
-                className="input-field w-full p-1"
-                onChange={(e) => {
-                  e.target?.value &&
-                    setValue("closing_time", e?.target.value?.toString());
-                }}
-                timeOnly
-                hourFormat="24"
-                showIcon
-                icon="pi pi-clock"
-              />
-            )}
-          />
-          {errors.closing_time && (
-            <ErrorMessage message={errors.closing_time.message}></ErrorMessage>
-          )}
-        </span>
-        <span className="col-span-2 relative">
-          <label className="input-label block py-1">Working Days</label>
-          <Controller
-            name="working_days"
-            control={control}
-            rules={{
-              validate: (days) => validateWorkingDays(days),
-            }}
-            render={({ field }) => (
-              <DaysSelector
-                {...field}
-                workingDays={field.value}
-                onDaysChange={(days) => {
-                  days?.length
-                    ? setValue("working_days", days)
-                    : setValue("working_days", [] as string[]);
-                }}
-              />
-            )}
-          />
-          {errors.working_days && (
-            <ErrorMessage message={errors?.working_days?.message} />
+          {errors.azure_booking_id && (
+            <ErrorMessage message={errors.azure_booking_id.message} />
           )}
         </span>
         <span className="lg:col-span-2 text-right font-primary relative">

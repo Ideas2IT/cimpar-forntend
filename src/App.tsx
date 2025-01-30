@@ -9,7 +9,6 @@ import { AppDispatch } from "./store/store.ts";
 import { logoutThunk } from "./store/slices/loginSlice.ts";
 import localStorageService from "./services/localStorageService.ts";
 import { LOGOUT, OFFLINE, ONLINE, PATH_NAME } from "./utils/AppConstants.ts";
-import packageJson from "../package.json";
 
 function App() {
   const isLoading = useSelector(selectLoading);
@@ -17,13 +16,6 @@ function App() {
 
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
-    console.log(
-      "Application Name:" +
-        packageJson.name +
-        "\n" +
-        "Version:" +
-        packageJson.version
-    );
     const syncLogout = (event: StorageEvent) => {
       if (event.key === LOGOUT) {
         localStorageService.logout();

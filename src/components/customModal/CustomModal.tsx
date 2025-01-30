@@ -12,6 +12,7 @@ const CustomModal = ({
   closeButtonTitle,
   isDismissable,
   contentStyle,
+  maximize,
 }: IModalProps) => {
   return (
     <>
@@ -35,6 +36,7 @@ const CustomModal = ({
         contentClassName={`${contentStyle ? contentStyle : "pb-1 bg-white"}`}
         headerClassName={`p-2 ${header ? "border-b" : "border-none"}`}
         onHide={() => handleClose()}
+        maximizable={maximize || false}
       >
         {children}
       </Dialog>
@@ -53,5 +55,6 @@ interface IModalProps {
   closeButtonTitle?: string;
   isDismissable?: "yes" | "no";
   contentStyle?: string;
+  maximize?: boolean;
 }
 export default CustomModal;

@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
@@ -12,6 +11,7 @@ import {
 } from "../../services/commonFunctions";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
 import { DATE_FORMAT, NONE, SERVICE_LOCATION } from "../../utils/AppConstants";
+import { dateFormatter } from "../../utils/Date";
 import { IFormData } from "../appointmentForm/AppointmentForm";
 import { LargeDataField } from "../medication/Medication";
 import { PatientDetails } from "../userDetails/UserDetails";
@@ -56,11 +56,11 @@ const PreviewAppointment = ({
     },
     {
       header: "DATE OF TEST",
-      value: format(details.dateOfAppointment, DATE_FORMAT.DD_MMM_YYYY),
+      value: dateFormatter(details.dateOfAppointment, DATE_FORMAT.DD_MMM_YYYY),
     },
     {
       header: "TIME OF TEST",
-      value: format(details.scheduledTime, DATE_FORMAT.HH_MM_A),
+      value: dateFormatter(details.scheduledTime, DATE_FORMAT.HH_MM_A),
     },
     {
       header: "REASON FOR TEST",
@@ -197,7 +197,7 @@ const TestDetailsTable = ({
           ) : (
             <span>&nbsp;</span>
           )}
-          {rowData.display} $
+          {rowData.display || ""}
         </span>
       ),
     },

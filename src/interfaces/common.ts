@@ -90,4 +90,10 @@ export interface ILabTestService {
 export interface IBooking {
   id: string;
   displayName: string;
+  description?: string;
+}
+
+export interface ITimeSlotPayload {
+  category: string;
+  bookingId: string;
 }

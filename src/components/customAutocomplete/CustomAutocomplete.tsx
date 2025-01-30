@@ -63,7 +63,7 @@ export const CustomAutoComplete = ({
         panelStyle={{
           paddingTop: "40px",
         }}
-        inputClassName="w-full"
+        inputClassName="w-full outline-none"
         loadingIcon={<></>}
       />
       {Boolean(selectedItems?.length) && (

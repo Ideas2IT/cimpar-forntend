@@ -24,7 +24,7 @@ const TestDetailsTable = ({
     return (
       <div className="flex w-full justify-between">
         <span>TOTAL PRICE</span>
-        <span>${totalCost}</span>
+        <span>${Number(totalCost).toFixed(2) || "0.00"}</span>
       </div>
     );
   };

@@ -1,7 +1,7 @@
-import { bookingNames } from "../assets/MockData";
 import {
   IAllTestspayload,
   IGetPatientServicesPayload,
+  ITimeSlotPayload,
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
 } from "../interfaces/common";
@@ -187,7 +187,17 @@ const updateUrlById = (payload: IMasterUrl) => {
 };
 
 const getBookingNames = () => {
-  return { data: bookingNames };
+  return http.get(`${API_URL.microsoft}/booking`);
+};
+
+const getTimeSlotsByBookingIdAndCategory = (payload: ITimeSlotPayload) => {
+  return http.get(
+    `${API_URL.microsoft}/${API_URL.booking}/${API_URL.services}/${payload.bookingId}?service_category=${payload.category}`
+  );
+};
+
+const getTimeSlotsForHome = () => {
+  return http.get(`${API_URL.microsoft}/${API_URL.booking}/home`);
 };
 
 export {
@@ -198,12 +208,15 @@ export {
   fetchServiceRegions,
   getAllergiesByQuery,
   getAllTests,
+  getBookingNames,
   getInputData,
   getLabTestsWithoutPagination,
   getLocationsWithoutPagination,
   getLocationsWithPagination,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
+  getTimeSlotsByBookingIdAndCategory,
+  getTimeSlotsForHome,
   getUrlByCategory,
   toggleLocaitonStatus,
   toggleRecordStatus,
@@ -211,5 +224,4 @@ export {
   updateMasterRecord,
   updatePricing,
   updateUrlById,
-  getBookingNames,
 };

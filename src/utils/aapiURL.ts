@@ -30,4 +30,7 @@ export const API_URL = {
   transaction: "transaction",
   download_csv: "download_pdf",
   registry: "endpoint-registry",
+  microsoft: "microsoft",
+  booking: "booking",
+  services: "services",
 };

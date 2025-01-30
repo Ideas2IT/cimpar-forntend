@@ -73,6 +73,14 @@ const DetailedAppointmentView = ({
     },
   ];
 
+  function getTestReason() {
+    console.log(selectedAppointment?.reasonForTest);
+    if (selectedAppointment.reasonForTest === "Other") {
+      return selectedAppointment.other_reason;
+    }
+    return selectedAppointment.reasonForTest || "";
+  }
+
   const appointmentFields = [
     {
       label: "TEST TO BE TAKEN AT",
@@ -104,7 +112,7 @@ const DetailedAppointmentView = ({
     },
     {
       label: "REASON FOR TEST",
-      value: selectedAppointment?.reasonForTest || "",
+      value: getTestReason(),
       full: false,
     },
   ];

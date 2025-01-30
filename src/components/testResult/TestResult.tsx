@@ -97,6 +97,7 @@ const TestResult = ({
             takeTestAt: appointment?.takeTestAt,
             paymentStatus: appointment?.paymentStatus,
             reasonForTest: appointment?.reasonForTest,
+            otherReasonForTest: appointment?.other_reason || "",
           };
           setSelectedAppointment(appointmentDate);
         } else {

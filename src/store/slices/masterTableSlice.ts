@@ -5,6 +5,7 @@ import {
   IAllTestspayload,
   IGetPatientServicesPayload,
   ILabTestService,
+  ITimeSlotPayload,
   IToggleRecordStatusPayload,
   IUpdateMasterRecordPayload,
 } from "../../interfaces/common";
@@ -37,6 +38,8 @@ import {
   getLocationsWithPagination,
   getMedicalConditionsByQuery,
   getMedicationByQuery,
+  getTimeSlotsByBookingIdAndCategory,
+  getTimeSlotsForHome,
   getUrlByCategory,
   toggleLocaitonStatus,
   toggleRecordStatus,
@@ -106,6 +109,7 @@ const transformLocations = (data: any) => {
         closing_time: resource?.hoursOfOperation?.[0]?.closingTime || "",
         working_days: resource?.hoursOfOperation?.[0]?.daysOfWeek || [],
         holiday: resource?.description || "",
+        azure_booking_id: resource?.availabilityExceptions || "",
       };
     });
     locationData.data = locations;
@@ -609,6 +613,44 @@ export const getBookingNamesThunk = createAsyncThunk(
       if (isAxiosError(error)) {
         const errorMessage =
           error?.response?.data?.error || "Failed to update URL";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getTimeSlotsByBookingIdAndCategoryThunk = createAsyncThunk(
+  "timeslots/get-by-id-and-category",
+  async (payload: ITimeSlotPayload, { rejectWithValue }) => {
+    try {
+      const response = await getTimeSlotsByBookingIdAndCategory(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to fetch booking slots";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getTimeSlotsForHomeThunk = createAsyncThunk(
+  "timeslots/get-by-service",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getTimeSlotsForHome();
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Failed to fetch booking slots";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,

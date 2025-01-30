@@ -144,18 +144,20 @@ export default function PricingDetails() {
               currentPage="Pricing"
               previousPage="Masters"
             />
-            <div className="flex w-[40%] gap-3">
-              <CustomServiceDropDown
-                onApplyFilter={(value) => {
-                  setFetchPayload({
-                    ...fetchPayload,
-                    page: 1,
-                    service_type: value.join(","),
-                  });
-                }}
-                options={serviceCategories}
-                label="Service Types"
-              />
+            <div className="flex w-[40%] justify-end gap-3">
+              <div className="w-[50%]">
+                <CustomServiceDropDown
+                  onApplyFilter={(value) => {
+                    setFetchPayload({
+                      ...fetchPayload,
+                      page: 1,
+                      service_type: value.join(","),
+                    });
+                  }}
+                  options={serviceCategories}
+                  label="Service Types"
+                />
+              </div>
               <SearchInput
                 handleSearch={handleSearch}
                 placeholder="Search for Test"

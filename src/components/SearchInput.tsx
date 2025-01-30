@@ -30,7 +30,7 @@ const SearchInput = forwardRef<SearchInputHandle, SearchInputProps>(
 
     return (
       <div
-        className="relative h-[2.5rem] w-[15rem] rounded-full border bg-white border-gray-300 font-tertiary cursor-pointer"
+        className="relative h-[2.5rem] min-w-[15rem] rounded-full border bg-white border-gray-300 font-tertiary text-start cursor-pointer"
         onClick={setFocus}
       >
         <InputText
@@ -41,7 +41,7 @@ const SearchInput = forwardRef<SearchInputHandle, SearchInputProps>(
           ref={searchRef}
           placeholder={placeholder ? placeholder : "Search"}
           style={{ paddingInlineStart: "1rem" }}
-          className="h-full rounded- rounded-full"
+          className="h-full w-[calc(100%-40px)] rounded rounded-full"
         />
         <i className="pi pi-search absolute right-[1rem] top-[.8rem] h-[1rem] text-purple-900" />
       </div>

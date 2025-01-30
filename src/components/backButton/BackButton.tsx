@@ -34,6 +34,7 @@ const BackButton = ({
       rejectClassName: "hidden",
       acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
       acceptLabel: "Continue",
+      draggable: false,
       accept,
     });
   };
@@ -56,7 +57,7 @@ const BackButton = ({
         >
           <i className="pi pi-arrow-left color-primary" />
         </PrimeButton>
-        <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer capitalize px-1">
+        <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer capitalize ps-1">
           {previousPage || "back"}
         </label>
       </div>

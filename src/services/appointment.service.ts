@@ -1,4 +1,5 @@
 import {
+  IBookedSlotsPayload,
   ICreateAppointmentPayload,
   IDownloadCsvPayload,
   IGetAppointmentByIdPayload,
@@ -6,7 +7,6 @@ import {
   ITransactionPayload,
 } from "../interfaces/appointment";
 import { API_URL } from "../utils/aapiURL";
-import { dateFormatter } from "../utils/Date";
 import http from "./common.services";
 
 const createAppointment = (payload: ICreateAppointmentPayload) => {
@@ -42,7 +42,7 @@ const getAllTransactions = (payload: ITransactionPayload) => {
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== "") {
       if (key === "start_date" || key === "end_date") {
-        params[key] = dateFormatter(value, "yyyy-MM-dd");
+        params[key] = value;
       } else {
         params[key] = value;
       }
@@ -65,11 +65,26 @@ const downloadTransactionsInCsv = (payload: IDownloadCsvPayload) => {
   );
 };
 
+const getBookedSlotsByServiceCenter = (payload: IBookedSlotsPayload) => {
+  return http.get(
+    `${API_URL.microsoft}/${API_URL.booking}/${API_URL.services}/appointment/${payload.booking_id}?start_date=${payload.start_date}&end_date=${payload.end_date}&service_category=${payload.service_category}`
+  );
+};
+
+const getBookedSlotsForHomeService = (payload: IBookedSlotsPayload) => {
+  return http.get(
+    `${API_URL.microsoft}/${API_URL.booking}/home/appointment?start_date=${payload.start_date}&end_date=${payload.end_date}`
+  );
+};
+
 export {
   confirmPayment,
   createAppointment,
+  downloadTransactionsInCsv,
   getAllTransactions,
   getAppointments,
   getApppointmentById,
-  downloadTransactionsInCsv,
+  getBookedSlotsByServiceCenter,
+  getBookedSlotsForHomeService
 };
+

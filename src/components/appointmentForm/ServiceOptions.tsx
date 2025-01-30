@@ -15,6 +15,7 @@ export default function ({
         <div className="flex gap-1 items-center">
           <RadioButton
             value={true}
+            className=" aspect-square !w-7 !h-7 flex  items-center"
             checked={value === SERVICE_LOCATION.HOME}
             inputId={SERVICE_LOCATION.HOME}
             onChange={() => onChange(SERVICE_LOCATION.HOME)}
@@ -26,9 +27,9 @@ export default function ({
             Home
           </label>
         </div>
-        <div className="flex gap-1 items-center justifify-center">
+        <div className="flex gap-1 items-center">
           <RadioButton
-            className=" aspect-square !w-5 !h-5"
+            className=" aspect-square !w-7 !h-7 flex  items-center"
             checked={value === "service_center"}
             onChange={() => onChange(SERVICE_LOCATION.CENTER)}
             inputId="serviceCenter"

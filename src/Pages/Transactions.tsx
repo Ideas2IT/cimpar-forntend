@@ -69,20 +69,34 @@ const transaction = () => {
     dataTableRef?.current && dataTableRef.current.resetScroll();
   }, [transactionPayload]);
 
+  function convertStartToUTC(date: Date): string {
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    const utcDate = new Date(date.getTime() + timezoneOffset);
+    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
+  }
+
+  function convertEndToUTC(date: Date): string {
+    date && date.setHours(23, 59, 59, 999);
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    const utcDate = new Date(date.getTime() + timezoneOffset);
+    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
+  }
+
   useEffect(() => {
     if (dateFilter?.length && dateFilter[0]) {
       setTransactionPayload({
         ...transactionPayload,
         page: 1,
-        start_date: dateFilter[0]?.toString(),
-        end_date: dateFilter[0]?.toString(),
+        start_date: convertStartToUTC(dateFilter[0]),
+        end_date: "",
+        // end_date: convertEndToUTC(dateFilter[0]),
       });
       if (dateFilter[1]) {
         setTransactionPayload({
           ...transactionPayload,
           page: 1,
-          start_date: dateFilter[0]?.toString(),
-          end_date: dateFilter[1].toString(),
+          start_date: convertStartToUTC(dateFilter[0]),
+          end_date: convertEndToUTC(dateFilter[1]),
         });
       }
     } else {
@@ -561,7 +575,6 @@ const TransactionDetailedView = ({
 
   return (
     <div className="px-3 py-4">
-      <span className="font-primary text-xl">Transaction details</span>
       <div className="grid md:grid-cols-2 grid-cols-1 gap-3">
         {transactionFields.map((field) => {
           return (

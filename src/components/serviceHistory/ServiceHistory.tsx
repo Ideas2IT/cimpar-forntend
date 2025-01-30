@@ -152,7 +152,7 @@ const ServiceHistory = ({
             setSelectedService(row);
             const appointment = response?.payload as IDetailedAppointment;
             const appointmentDate: ISidebarAppointment = {
-              category: appointment.category || "-",
+              category: appointment.category || "",
               allergies: appointment?.currentAllergies || "",
               conditions: appointment?.currentConditions || "",
               dateOfTest:
@@ -167,10 +167,11 @@ const ServiceHistory = ({
               status: appointmentStatus(appointment?.appointmentDate),
               testDetails: appointment?.testDetails,
               totalCost: appointment?.totalCost,
-              centerLocation: appointment?.centerLocation || "-",
-              takeTestAt: appointment?.takeTestAt || "-",
+              centerLocation: appointment?.centerLocation || "",
+              takeTestAt: appointment?.takeTestAt || "",
               paymentStatus: appointment.paymentStatus,
               reasonForTest: appointment?.reason_for_test,
+              otherReasonForTest: appointment?.other_reason || "",
             };
             setSelectedAppointment(appointmentDate);
           }
@@ -479,6 +480,13 @@ export const AppointentView = ({
     { key: "OTHER ALLERGIES", wrap: true },
   ];
 
+  function getReasonForTest() {
+    if (appointment.reasonForTest === "Other") {
+      return appointment.otherReasonForTest;
+    }
+    return appointment.reasonForTest;
+  }
+
   const getValue = (title: string | undefined) => {
     if (title) {
       switch (title) {
@@ -487,7 +495,7 @@ export const AppointentView = ({
         case "DATE & TIME OF TEST":
           return appointment.dateOfTest;
         case "REASON FOR TEST":
-          return appointment.reasonForTest;
+          return getReasonForTest();
         case "MEDICAL CONDITIONS":
           return appointment.conditions;
         case "OTHER MEDICAL CONDITIONS":

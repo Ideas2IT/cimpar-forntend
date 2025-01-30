@@ -1,7 +1,5 @@
-import { addMinutes } from "date-fns";
 import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
 import { Button as PrimeButton } from "primereact/button";
-import { Calendar } from "primereact/calendar";
 import { Chips } from "primereact/chips";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
@@ -16,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import "react-time-picker/dist/TimePicker.css";
 import {
+  IAzureBookingData,
   ICreateAppointmentPayload,
   ICreateAppointmentResponse,
 } from "../../interfaces/appointment";
@@ -23,6 +22,7 @@ import {
   ErrorResponse,
   IGetPatientServicesPayload,
   ILabTestService,
+  ITimeSlotPayload,
 } from "../../interfaces/common";
 import {
   ILocation,
@@ -47,6 +47,8 @@ import {
   getLabTestsForPatientThunk,
   getLocationsWithoutPaginationThunk,
   getMedicalConditionsByQueryThunk,
+  getTimeSlotsByBookingIdAndCategoryThunk,
+  getTimeSlotsForHomeThunk,
   selectAllergies,
   selectConditions,
 } from "../../store/slices/masterTableSlice";
@@ -64,8 +66,20 @@ import {
   SYSTEM,
   TABLE,
 } from "../../utils/AppConstants";
+import {
+  combineDateAndTimeToUTC,
+  OutputTimeSlot,
+  ServiceTimeSlotsDetail,
+  transformAzureServiceSlotsResponse,
+} from "../../utils/BookingSlotUtils";
+import {
+  combineDateToUTc,
+  dateFormatter,
+  formatUTCToLocalTime,
+} from "../../utils/Date";
 import Button from "../Button";
 import BackButton from "../backButton/BackButton";
+import MicrosoftBookingModal from "../bokingmodal/MicrosoftBookingModal";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import CustomModal from "../customModal/CustomModal";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -77,6 +91,7 @@ import AppointmentStatus from "./AppointmentStatusModal";
 import LocationDropDown from "./LocationDropDown";
 import ServiceOptions from "./ServiceOptions";
 import TestPricing from "./TestPricing";
+import { addDays } from "date-fns";
 
 export interface IItem {
   id: number;
@@ -122,8 +137,6 @@ const AppointmentForm = () => {
   });
 
   const multiSelectRef = useRef<MultiSelect>(null);
-  const timerRef = useRef<Calendar>(null);
-
   const dispatch = useDispatch<AppDispatch>();
 
   const patient = useSelector(selectSelectedPatient);
@@ -141,12 +154,22 @@ const AppointmentForm = () => {
   const [appointmentResponse, setAppointmentResponse] = useState(
     {} as ICreateAppointmentResponse
   );
+  const [isOpenBooking, setIsOpenBooking] = useState(false);
+  const [bookingId, setBookingId] = useState("");
+
+  const [timeSlotDetail, setTimeSlotDetail] =
+    useState<ServiceTimeSlotsDetail>();
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<OutputTimeSlot>(
+    {} as OutputTimeSlot
+  );
   const { service } = useParams();
 
   const reasonForTest = watch("testReason");
   const appointmentDate = watch("dateOfAppointment");
+  const appointmentTime = watch("scheduledTime");
   const selectedTests = watch("testToTake");
   const selectedServiceType = watch("serviceType");
+  const selectedLocation = watch("location");
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -160,6 +183,7 @@ const AppointmentForm = () => {
 
   useEffect(() => {
     loadInputData();
+    handleServiceLocationChange(SERVICE_LOCATION.HOME);
   }, [patient?.basicDetails?.id]);
 
   const loadInputData = () => {
@@ -181,7 +205,9 @@ const AppointmentForm = () => {
     });
     dispatch(getLocationsWithoutPaginationThunk()).then((response) => {
       const locations = response.payload as ILocationResponse;
-      setLocations(locations.data);
+      if (locations?.data?.length > 0) {
+        setLocations(locations.data);
+      }
     });
     if (patient?.basicDetails?.id) {
       dispatch(getPatientInsuranceThunk(patient?.basicDetails?.id)).then(
@@ -309,6 +335,7 @@ const AppointmentForm = () => {
       rejectClassName: "hidden",
       acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
       acceptLabel: "Continue",
+      draggable: false,
       accept,
     });
   };
@@ -323,6 +350,7 @@ const AppointmentForm = () => {
       rejectClassName: "hidden",
       acceptClassName: "py-2 px-5 bg-purple-900 text-white rounded-lg",
       acceptLabel: "Continue",
+      draggable: false,
       accept() {
         goBack();
       },
@@ -342,11 +370,32 @@ const AppointmentForm = () => {
   const handleConfirmation = (value: boolean) => {
     setShowConfirmDialog(false);
     if (value) {
-      const dateOfAppointment = formData.dateOfAppointment;
-      const hours = formData.scheduledTime.getHours();
-      const minutes = formData.scheduledTime.getMinutes();
-      dateOfAppointment.setHours(hours);
-      dateOfAppointment.setMinutes(minutes);
+      let azureBookingData: IAzureBookingData = {
+        startDateTime: {
+          dateTime: combineDateAndTimeToUTC(
+            formData.dateOfAppointment,
+            selectedTimeSlot.start
+          ),
+          timeZone: "UTC",
+        },
+        endDateTime: {
+          dateTime: combineDateAndTimeToUTC(
+            formData.dateOfAppointment,
+            selectedTimeSlot.end
+          ),
+          timeZone: "UTC",
+        },
+        serviceId: timeSlotDetail?.serviceId || "",
+        staffMemberIds: timeSlotDetail?.staffMemberIds || [],
+
+        customers: [
+          {
+            "@odata.type": "#microsoft.graph.bookingCustomerInformation",
+            name: `${patient?.basicDetails?.firstName || ""} ${patient?.basicDetails?.middleName || ""} ${patient?.basicDetails?.lastName || ""}`,
+            emailAddress: patient.basicDetails.email,
+          },
+        ],
+      };
       const payload: ICreateAppointmentPayload = {
         current_condition_id:
           patient?.medicalConditionsAndAllergies?.current_condition_id || "",
@@ -358,7 +407,11 @@ const AppointmentForm = () => {
           patient?.medicalConditionsAndAllergies?.additional_allergy_id || "",
         current_allergy: formData.allergies,
         current_medical_condition: formData?.medicalConditions,
-        date_of_appointment: dateOfAppointment.toISOString(),
+        date_of_appointment:
+          combineDateAndTimeToUTC(
+            formData.dateOfAppointment,
+            selectedTimeSlot.start
+          ) || "",
         other_medical_condition: formData?.otherAllergies?.length
           ? formData?.otherMedicalConditions?.map((condition) => {
               return { system: SYSTEM, code: CODE, display: condition };
@@ -367,7 +420,11 @@ const AppointmentForm = () => {
         other_reason: formData.otherReasonForTest,
         patientid: patient?.basicDetails?.id,
         reason_for_test: formData?.testReason?.name,
-        schedule_time: formData?.scheduledTime.toISOString(),
+        schedule_time:
+          combineDateAndTimeToUTC(
+            formData.dateOfAppointment,
+            selectedTimeSlot.start
+          ) || "",
         test_to_take: formData?.testToTake,
         other_allergy: formData?.otherAllergies?.length
           ? formData?.otherAllergies?.map((allergy) => {
@@ -379,7 +436,9 @@ const AppointmentForm = () => {
         total_cost: totalCost,
         telehealth_required: true,
         test_location: formData?.serviceType,
-        user_email: patient?.basicDetails?.email || "",
+        user_email: patient?.basicDetails?.email,
+        azure_booking_data: azureBookingData,
+        azure_booking_id: selectedLocation?.azure_booking_id || "",
       };
       dispatch(createAppointmentThunk(payload)).then((response) => {
         if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
@@ -394,19 +453,6 @@ const AppointmentForm = () => {
     }
     setShowConfirmDialog(false);
   };
-  const validateScheduledTime = (appointmentTime: Date) => {
-    const currentDate = new Date();
-    const hours = appointmentTime.getHours();
-    const minutes = appointmentTime.getMinutes();
-    const selectedDateTime = new Date(appointmentDate);
-    selectedDateTime.setHours(hours);
-    selectedDateTime.setMinutes(minutes);
-    if (selectedDateTime < currentDate) {
-      return "Scheduled time must be in the future.";
-    } else {
-      return true;
-    }
-  };
 
   const getNameAndGender = () => {
     const firstName = patient?.basicDetails?.firstName || "-";
@@ -417,12 +463,12 @@ const AppointmentForm = () => {
   };
 
   const validateLocation = (value: ILocation) => {
-    if (!value && selectedServiceType === SERVICE_LOCATION.CENTER) {
-      return "Location is required.";
-    } else {
-      return true;
+    if (selectedServiceType === SERVICE_LOCATION.CENTER) {
+      return value && Object.keys(value).length ? true : "Location is required";
     }
+    return true;
   };
+
   const filteredOptions = tests.filter((option) =>
     option.display.toLowerCase().includes(filterValue.toLowerCase())
   );
@@ -482,9 +528,6 @@ const AppointmentForm = () => {
         <div className="w-[10%] text-center">
           {value.currency_symbol + Number(value?.home_price)?.toFixed(2) || "0"}
         </div>
-        {/* <div className="w-[20%] text-center capitalize">
-          {value?.is_telehealth_required ? "Yes" : "No"}
-        </div> */}
       </div>
     );
   };
@@ -495,6 +538,75 @@ const AppointmentForm = () => {
     }
     setShowPaymentModal(false);
     setShowStatusDialog(true);
+  };
+
+  const loadSlots = (bookingId: string, category: string) => {
+    if (!bookingId || !category) {
+      return;
+    }
+    setBookingId(bookingId);
+    dispatch(
+      getTimeSlotsByBookingIdAndCategoryThunk({
+        bookingId: bookingId,
+        category: category,
+      } as ITimeSlotPayload)
+    ).then((response) => {
+      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+        let timeSlotData: ServiceTimeSlotsDetail | undefined =
+          transformAzureServiceSlotsResponse(response.payload.data);
+        setTimeSlotDetail(timeSlotData);
+      } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
+        const errorResponse = response.payload as ErrorResponse;
+        errorToast("Failed to load slot details", errorResponse?.message);
+      }
+    });
+  };
+
+  const handleChangeLocation = (locationValue: ILocation) => {
+    setSelectedTimeSlot({} as OutputTimeSlot);
+    setValue("location", locationValue);
+    setValue("dateOfAppointment", addDays(new Date(), 1));
+    trigger("location");
+    loadSlots(locationValue.azure_booking_id, getServiceCategory());
+  };
+
+  const handleBookSlot = (date: Date, timeSlot: OutputTimeSlot) => {
+    setIsOpenBooking(false);
+    setValue(
+      "dateOfAppointment",
+      new Date(combineDateToUTc(date, timeSlot.start))
+    );
+    setValue("scheduledTime", new Date(combineDateToUTc(date, timeSlot.start)));
+    setSelectedTimeSlot(timeSlot);
+  };
+
+  const handleServiceLocationChange = (value: TServiceLocationType) => {
+    setSelectedTimeSlot({} as OutputTimeSlot);
+    setValue("dateOfAppointment", addDays(new Date(), 1));
+    setValue("serviceType", value);
+    setValue("location", {} as ILocation);
+    if (value === SERVICE_LOCATION.HOME) {
+      setBookingId("");
+      dispatch(getTimeSlotsForHomeThunk()).then((response) => {
+        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+          let timeSlotData: ServiceTimeSlotsDetail | undefined =
+            transformAzureServiceSlotsResponse(response.payload.data);
+          setTimeSlotDetail(timeSlotData);
+        } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
+          const errorResponse = response.payload as ErrorResponse;
+          errorToast("Failed to load slot details", errorResponse?.message);
+        }
+      });
+    } else {
+      setTimeSlotDetail({} as ServiceTimeSlotsDetail);
+    }
+  };
+
+  const validateDate = () => {
+    if (!Object.keys(selectedTimeSlot)?.length) {
+      return "Time Slot is required";
+    }
+    return true;
   };
 
   return (
@@ -509,7 +621,7 @@ const AppointmentForm = () => {
         <div className="flex mx-4 justify-between items-center bg-gray-100">
           <BackButton
             showConfirmDialog={true}
-            previousPage={service}
+            previousPage={getServiceCategory() || ""}
             currentPage="Make Appointment"
             backLink={PATH_NAME.HOME}
           />
@@ -607,13 +719,13 @@ const AppointmentForm = () => {
               <Controller
                 control={control}
                 name="serviceType"
-                defaultValue={SERVICE_LOCATION.CENTER}
+                defaultValue={SERVICE_LOCATION.HOME}
                 render={({ field }) => (
                   <ServiceOptions
                     value={field.value}
-                    onChange={(value: TServiceLocationType) => {
-                      setValue("serviceType", value);
-                    }}
+                    onChange={(value: TServiceLocationType) =>
+                      handleServiceLocationChange(value)
+                    }
                   />
                 )}
               />
@@ -629,7 +741,7 @@ const AppointmentForm = () => {
                   <LocationDropDown
                     disabled={selectedServiceType === SERVICE_LOCATION.HOME}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={handleChangeLocation}
                     options={locations}
                   />
                 )}
@@ -638,84 +750,64 @@ const AppointmentForm = () => {
                 <ErrorMessage message={errors.location?.message} />
               )}
             </div>
-            <div className="xl:col-span-1 lg:col-span-2 col-span-4 relative">
-              <label htmlFor="appointmentDate" className="block input-label">
-                Date of appointment for test*
-              </label>
-              <div className="relative">
-                <Controller
-                  name="dateOfAppointment"
-                  control={control}
-                  rules={{
-                    required: "Date of appointment is required",
-                  }}
-                  render={({ field }) => (
-                    <Calendar
-                      {...field}
-                      onChange={(e) => {
-                        e?.target?.value &&
-                          setValue("dateOfAppointment", e.target.value);
-                        setValue(
-                          "scheduledTime",
-                          e?.target?.value || new Date()
-                        );
-                        trigger("scheduledTime");
-                      }}
-                      inputId="appointmentDate"
-                      placeholder="Please pick the date of appointment"
-                      aria-label="Please pick the date of appointment"
-                      inputClassName="rounded-lg"
-                      dateFormat={DATE_FORMAT.DD_MM_YY}
-                      className="input-field"
-                      icon="pi pi-calendar-minus"
-                      inputStyle={{ borderRadius: "16px" }}
-                      showIcon={true}
-                      minDate={new Date()}
-                    />
-                  )}
-                />
-              </div>
-            </div>
-            <div className="xl:col-span-1 lg:col-span-2 col-span-4 relative">
-              <label htmlFor="scheduleTime" className="block input-label">
-                Scheduled Time*
-              </label>
-              <div className="relative">
-                <Controller
-                  name="scheduledTime"
-                  control={control}
-                  rules={{
-                    validate: (value) => validateScheduledTime(value),
-                    required: "Scheduled time is required",
-                  }}
-                  defaultValue={addMinutes(new Date(), +1)}
-                  render={({ field }) => (
-                    <Calendar
-                      {...field}
-                      onChange={(e) => {
-                        e?.target?.value &&
-                          setValue("scheduledTime", e.target.value);
-                        trigger("scheduledTime");
-                      }}
-                      ref={timerRef}
-                      inputId="scheduleTime"
-                      showIcon={true}
-                      placeholder="Pick the appointment time"
-                      icon="pi pi-clock"
-                      hourFormat="12"
-                      className="input-field"
-                      inputClassName="rounded-lg"
-                      inputStyle={{ borderRadius: "16px" }}
-                      timeOnly
-                      showTime
-                    />
-                  )}
-                />
-                {errors.scheduledTime && (
-                  <ErrorMessage message={errors.scheduledTime.message} />
+            {!Object.keys(selectedTimeSlot).length ? (
+              <Controller
+                control={control}
+                name="dateOfAppointment"
+                rules={{
+                  validate: () => validateDate(),
+                  required: "Date of appointment is required",
+                }}
+                render={() => (
+                  <div
+                    className="relative lg:col-span-2 col-span-4"
+                    onChange={() => trigger("dateOfAppointment")}
+                  >
+                    <div className="flex items-center h-[5rem]">
+                      <i className="pi pi-calendar text-purple-900 pe-1" />
+                      <span
+                        className="text-purple-900 font-primary hover:underline"
+                        onClick={() => setIsOpenBooking(true)}
+                      >
+                        Book Your Slot Here
+                      </span>
+                    </div>
+                    {errors.dateOfAppointment && (
+                      <span className="absolute bottom-0">
+                        <ErrorMessage
+                          message={errors.dateOfAppointment.message}
+                        />
+                      </span>
+                    )}
+                  </div>
                 )}
+              />
+            ) : (
+              <div className="border-b lg:col-span-2 col-span-4 grid grid-cols-3">
+                <div className="flex justify-evenly flex-col">
+                  <label className="input-label block">
+                    Date Of Appointment
+                  </label>
+                  <label className="font-primary">
+                    {dateFormatter(appointmentDate, DATE_FORMAT.DD_MMMM_YYYY) ||
+                      "-"}
+                  </label>
+                </div>
+                <div className="flex justify-evenly flex-col">
+                  <label className="input-label block">Scheduled Time</label>
+                  <label className="font-primary">
+                    {formatUTCToLocalTime(appointmentTime?.toISOString())}
+                  </label>
+                </div>
+                <div
+                  onClick={() => setIsOpenBooking(true)}
+                  className="flex items-center text-purple-900 font-primary cursor-pointer"
+                >
+                  <i className="pi pe-1 pi-sync" />
+                  Change Your Slot
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4 py-3 mt-2">
             <div className="xl:col-span-1 col-span-2">
@@ -737,9 +829,9 @@ const AppointmentForm = () => {
                         setValue("testReason", event.value);
                         if (event.value.name !== "Other") {
                           setValue("otherReasonForTest", "");
-                          trigger("testReason");
-                          trigger("otherReasonForTest");
                         }
+                        trigger("testReason");
+                        trigger("otherReasonForTest");
                       }}
                       inputId="testReason"
                       options={reasonsForTest}
@@ -974,7 +1066,7 @@ const AppointmentForm = () => {
           handleClose={handleClosePaymentModal}
           closeButtonTitle=""
           showCloseButton={true}
-          styleClass="h-[100vh]"
+          styleClass=""
           header={<span className="ps-4">Payment</span>}
         >
           <div className="py-2">
@@ -1000,6 +1092,24 @@ const AppointmentForm = () => {
             onRetry={() => {
               setShowStatusDialog(false);
             }}
+          />
+        </CustomModal>
+      )}
+      {isOpenBooking && (
+        <CustomModal
+          showCloseButton={true}
+          header={<span className="ps-3">Book Your Appointment</span>}
+          handleClose={() => setIsOpenBooking(false)}
+          styleClass="w-[50rem] h-[35rem]"
+        >
+          <MicrosoftBookingModal
+            selectedSlotTime={selectedTimeSlot}
+            selectedSlotDate={appointmentDate}
+            timeSlotDetails={timeSlotDetail}
+            handleBookSlot={(date, time) => handleBookSlot(date, time)}
+            handleCancel={() => setIsOpenBooking(false)}
+            bookingId={bookingId}
+            category={getServiceCategory()}
           />
         </CustomModal>
       )}

@@ -82,7 +82,7 @@ const HomePage = () => {
     <>
       <div className="px-6 color-primary font-primary text-xl">
         {title}
-        <div className="mt-4 flex grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl h-[calc(100vh-175px)] overflow-auto">
+        <div className="mt-4 flex grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4 bg-white p-6 rounded-xl max-h-[calc(100vh-175px)] overflow-auto">
           {cards.map((card: ICard) => {
             return <Card card={card} key={card.id} />;
           })}

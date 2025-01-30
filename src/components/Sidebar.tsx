@@ -31,18 +31,21 @@ const Sidebar = () => {
         key: "home",
         icon: <Home />,
         routerLink: PATH_NAME.HOME,
+        title: "Home",
       },
       {
         header: HEADER_TITLE.HEALTH_RECORD,
         key: "labTestResults",
         icon: <AddRecord />,
         routerLink: PATH_NAME.HEALTH_RECORDS,
+        title: "Health Record",
       },
       {
         header: HEADER_TITLE.PROFILE,
         key: "profile",
         icon: <Profile />,
         routerLink: PATH_NAME.PROFILE,
+        title: "Profile",
       },
     ],
     admin: [
@@ -51,18 +54,21 @@ const Sidebar = () => {
         key: "appointment",
         icon: <i className="pi pi-calendar-minus text-2xl" />,
         routerLink: PATH_NAME.APPOINTMENTS,
+        title: "Appointments",
       },
       {
         header: HEADER_TITLE.MASTER,
         key: "master",
         icon: <i className="pi pi-wallet text-2xl" />,
         routerLink: PATH_NAME.MASTER_TABLES,
+        title: "Master",
       },
       {
         header: HEADER_TITLE.TRANSACTION,
         key: "transaction",
         icon: <i className="pi pi-clock text-2xl" />,
         routerLink: PATH_NAME.TRANSACTIONS,
+        title: "Transactions",
       },
     ],
     other: [],
@@ -127,7 +133,7 @@ const Sidebar = () => {
       </div>
       <div className="flex-grow md:m-3">
         {tabs[role]?.map((tab) => (
-          <NavLink to={tab.routerLink} key={tab?.key}>
+          <NavLink to={tab.routerLink} title={tab.title} key={tab?.key}>
             <button
               key={tab?.key}
               className={`flex justify-center items-center h-12 rounded-lg md:w-14 w-7 mb-4 text-sm ${selectedTab?.key === tab?.key ? "bg-purple-800" : ""}`}

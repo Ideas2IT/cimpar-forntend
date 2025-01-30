@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import {
   IAppointmentList,
   IAppointmentMeta,
+  IBookedSlotsPayload,
   ICreateAppointmentPayload,
   IDetailedAppointment,
   IDownloadCsvPayload,
@@ -20,6 +21,8 @@ import {
   getAllTransactions,
   getAppointments,
   getApppointmentById,
+  getBookedSlotsByServiceCenter,
+  getBookedSlotsForHomeService,
 } from "../../services/appointment.service";
 import { getAgeFromDob } from "../../services/commonFunctions";
 import {
@@ -150,7 +153,7 @@ const transformSingleAppointment = (data: any) => {
       appointmentTime:
         dateFormatter(appointmentCopy?.end, DATE_FORMAT.HH_MM_A) || "",
       appointmentFor: appointmentCopy?.appointmentFor || "",
-      reasonForTest: appointmentCopy?.reason_for_test ?? "-",
+      reasonForTest: appointmentCopy?.reason_for_test ?? "",
       currentConditions: appointmentCopy?.condition?.conditions.length
         ? transformConditionsAndAllergies(
             appointmentCopy?.condition?.conditions,
@@ -189,8 +192,9 @@ const transformSingleAppointment = (data: any) => {
       totalCost: appointmentCopy?.total_cost || 0,
       centerLocation: appointmentCopy?.service_center_location || NONE,
       takeTestAt: appointmentCopy?.test_location || NONE,
-      paymentStatus: appointmentCopy?.payment_status || "-",
-      reason_for_test: appointmentCopy?.reason_for_test || "-",
+      paymentStatus: appointmentCopy?.payment_status || "",
+      reason_for_test: appointmentCopy?.reason_for_test || "",
+      other_reason: appointmentCopy?.other_reason || "",
     };
     return _appointment;
   }
@@ -287,6 +291,44 @@ export const downloadtransactionsThunk = createAsyncThunk(
         const errorMessage =
           error?.response?.data?.error ||
           "Failed to load translations csv file";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getBookedSlotsForServiceCenterThunk = createAsyncThunk(
+  "bookedSlots/get-by-service-center",
+  async (payload: IBookedSlotsPayload, { rejectWithValue }) => {
+    try {
+      const response = await getBookedSlotsByServiceCenter(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Unable to Load Booked slots";
+        return rejectWithValue({
+          message: errorMessage,
+          response: error?.message,
+        } as ErrorResponse);
+      }
+    }
+  }
+);
+
+export const getBookedSlotsForHomeServiceThunk = createAsyncThunk(
+  "bookedSlots/get-by-service-center",
+  async (payload: IBookedSlotsPayload, { rejectWithValue }) => {
+    try {
+      const response = await getBookedSlotsForHomeService(payload);
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorMessage =
+          error?.response?.data?.error || "Unable to Load Booked slots";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,

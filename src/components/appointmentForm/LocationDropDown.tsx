@@ -45,10 +45,10 @@ export default function LocationDropDown(props: LocationProps) {
           className="pi pi-map-marker text-gray-400 text-md text-lg absolute top-[0.4rem] z-10 left-1"
         />
         <Dropdown
+          ref={dropdownRef}
           disabled={props.disabled}
           value={value && value}
           onChange={(e) => onChange(e?.target?.value)}
-          ref={dropdownRef}
           id="location"
           optionLabel="center_name"
           valueTemplate={valueTemplate}

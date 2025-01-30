@@ -36,7 +36,13 @@ const Transportation = () => {
         />
       </div>
       <div className="w-full bg-white h-full py-4 px-6 rounded-lg">
-        <UrlTile link={transportationUrl} />
+        {Object.keys(transportationUrl).length ? (
+          <UrlTile link={transportationUrl} />
+        ) : (
+          <div className="text-center bg-gray-300">
+            Transportation link is not available
+          </div>
+        )}
       </div>
     </>
   );
@@ -60,6 +66,7 @@ export const UrlTile = ({ link }: { link: IMasterUrl }) => {
       </span>
       {isOpenModal && (
         <CustomModal
+          maximize={true}
           showCloseButton={true}
           handleClose={() => setIsOpenModal(false)}
           styleClass="lg:w-[90vw] w-full h-full"

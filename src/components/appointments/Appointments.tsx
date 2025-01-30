@@ -5,27 +5,12 @@ import SearchInput from "../SearchInput";
 import ServiceFilterPanel from "./ServiceFilterPanel";
 
 import { Button } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Sidebar } from "primereact/sidebar";
+import { Toast } from "primereact/toast";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../../assets/icons/filter.svg?react";
-import {
-  generateTimeSlots,
-  getRowClasses,
-} from "../../services/commonFunctions";
-import { selectIsAdmin } from "../../store/slices/loginSlice";
-import {
-  DATE_FORMAT,
-  PAGE_LIMIT,
-  PATH_NAME,
-  RESPONSE,
-  TABS,
-} from "../../utils/AppConstants";
-import BackButton from "../backButton/BackButton";
-import DualCalendar from "../dualCalendar/DualCalendar";
-import Unauthorized from "../Unauthorised";
-import { Checkbox } from "primereact/checkbox";
-import { Toast } from "primereact/toast";
 import {
   IAppointmentList,
   IGetAppointmentPayload,
@@ -33,24 +18,36 @@ import {
 import { ErrorResponse } from "../../interfaces/common";
 import { IServiceHistoryPayload } from "../../interfaces/immunization";
 import Tab from "../../interfaces/Tab";
+import { getRowClasses } from "../../services/commonFunctions";
 import {
   getAllAppointmentsThunk,
   getTotalAppointment,
   selectAppointments,
 } from "../../store/slices/appointmentSlice";
+import { selectIsAdmin } from "../../store/slices/loginSlice";
 import {
   getPatientDetailsThunk,
   selectSelectedPatient,
 } from "../../store/slices/PatientSlice";
 import { getServiceHistoryThunk } from "../../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../../store/store";
+import {
+  DATE_FORMAT,
+  PAGE_LIMIT,
+  PATH_NAME,
+  RESPONSE,
+  TABS,
+} from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import { IItem } from "../appointmentForm/AppointmentForm";
+import BackButton from "../backButton/BackButton";
 import CustomPaginator from "../customPagenator/CustomPaginator";
+import DualCalendar from "../dualCalendar/DualCalendar";
 import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
 import MedicalConditionDetails from "../medicalDetails/MedicalConditionDetails";
 import Medication from "../medication/Medication";
 import ServiceHistory from "../serviceHistory/ServiceHistory";
+import Unauthorized from "../Unauthorised";
 import UserDetails from "../userDetails/UserDetails";
 import useToast from "../useToast/UseToast";
 import VerticalTabView from "../VerticalTabView";
@@ -585,7 +582,7 @@ const Appointments = () => {
           </div>
           <div className="bg-white rounded-xl mt-2">
             {!showPatientDetails ? (
-              <div ref={divRef} className="h-[calc(100vh-150px)] overflow-auto">
+              <div ref={divRef} className="h-[calc(100vh-175px)] overflow-auto">
                 <DataTable
                   value={appointments}
                   emptyMessage={
@@ -630,7 +627,7 @@ const Appointments = () => {
                 )}
               </div>
             ) : (
-              <div className="flex h-full bg-white flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">
+              <div className="flex h-[calc(100vh-175px)] bg-white flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">
                 <VerticalTabView
                   tabs={tabs}
                   changeTab={(tab) => {

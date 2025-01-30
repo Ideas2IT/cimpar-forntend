@@ -22,6 +22,8 @@ export interface ICreateAppointmentPayload {
   service_type: string;
   telehealth_required: boolean;
   user_email: string;
+  azure_booking_data: IAzureBookingData;
+  azure_booking_id: string | undefined;
 }
 
 export interface IAppointment {
@@ -107,6 +109,7 @@ export interface IDetailedAppointment {
   centerLocation: string;
   paymentStatus: string;
   reason_for_test: string;
+  other_reason: string;
 }
 
 export interface ISidebarAppointment {
@@ -125,6 +128,7 @@ export interface ISidebarAppointment {
   centerLocation: string;
   paymentStatus: string;
   reasonForTest: string;
+  otherReasonForTest: string;
 }
 
 export interface ITransaction {
@@ -180,3 +184,43 @@ export type TAppointmentStatus =
   | "pending"
   | "failed"
   | "paid";
+
+export interface IAzureBookingData {
+  startDateTime: {
+    dateTime: string;
+    timeZone: "UTC";
+  };
+  endDateTime: {
+    dateTime: string;
+    timeZone: "UTC";
+  };
+  serviceId: string;
+  staffMemberIds: unknown[];
+
+  customers: [
+    {
+      "@odata.type": "#microsoft.graph.bookingCustomerInformation";
+      name: string;
+      emailAddress: string;
+    },
+  ];
+}
+
+export interface IBookedSlotsPayload {
+  service_category: string;
+  start_date: string;
+  end_date: string;
+  booking_id: string;
+}
+
+export interface ITimeSlot {
+  startDateTime: {
+    dateTime: string;
+    timeZone: string;
+  };
+  endDateTime: {
+    dateTime: string;
+    timeZone: string;
+  };
+  serviceName: string;
+}

@@ -232,6 +232,7 @@ export const DATE_FORMAT = {
   YYYY_MM_DD_HH_MM_SS_Z: "yyyy-MM-dd'T'HH:mm:ss'Z'",
   MM_DD_YYYY: "MM/dd/yyyy",
   DD_MM_YYYY: "dd/MM/yyyy",
+  MMMM_DD_YYYY: "MMMM dd yyyy",
 };
 
 export const TRNASACTION_STATUS = {

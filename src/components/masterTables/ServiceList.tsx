@@ -4,13 +4,12 @@ import { DataTable } from "primereact/datatable";
 import { Dropdown } from "primereact/dropdown";
 import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
 import { RadioButton } from "primereact/radiobutton";
 import { Toast } from "primereact/toast";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   ErrorResponse,
   IAllTestspayload,
@@ -36,7 +35,7 @@ import {
   PATTERN,
   RESPONSE,
   SERVICE_MENU,
-  TABLE
+  TABLE,
 } from "../../utils/AppConstants";
 import SearchInput, { SearchInputHandle } from "../SearchInput";
 import BackButton from "../backButton/BackButton";
@@ -234,8 +233,7 @@ const ServiceList = () => {
     },
     {
       header: "telehealth required",
-      headerClassName:
-        "custom-header justify-items-center !align-middle",
+      headerClassName: "custom-header justify-items-center !align-middle",
       body: (row: ILabTestService) => (
         <div className="font-tertiary text-center justify-items-center">
           {row.is_telehealth_required ? "Yes" : "No"}
@@ -389,10 +387,36 @@ export const AddMasterModal = ({
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
-    defaultValues: selectedItem,
+    defaultValues: {} as ILabTestService,
   });
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (selectedItem) {
+      reset({ ...selectedItem, service_type: getServiceCategory() });
+    } else {
+      reset({ service_type: getServiceCategory() });
+    }
+  }, [selectedItem]);
+
+  function getServiceCategory() {
+    const serviceCategory = location.pathname.split("/")[2];
+    switch (serviceCategory) {
+      case SERVICE_MENU.LABORATORY:
+        return LAB_SERVICES.CLINICAL_LABORATORY;
+      case SERVICE_MENU.IMAGING:
+        return LAB_SERVICES.IMAGING;
+      case SERVICE_MENU.HOME_CARE:
+        return LAB_SERVICES.HOME_CARE;
+      default:
+        return LAB_SERVICES.CLINICAL_LABORATORY;
+    }
+  }
+
   const handleUpdate = (data: ILabTestService) => {
     const cleanInput: ILabTestService = {
       ...data,
@@ -454,19 +478,19 @@ export const AddMasterModal = ({
           </div>
           <div className="relative">
             <label className="input-label font-secondary" htmlFor="display">
-              Description*
+              Test Name*
             </label>
             <Controller
               name="display"
               control={control}
               rules={{
-                validate: (value) => validateField(value, "Description"),
+                validate: (value) => validateField(value, "Test Name"),
               }}
               render={({ field }) => (
-                <InputTextarea
+                <InputText
                   {...field}
                   id="display"
-                  placeholder="Description"
+                  placeholder="Test Name"
                   className="w-full cimpar-input h-[2.5rem]"
                 />
               )}
@@ -475,7 +499,7 @@ export const AddMasterModal = ({
               <ErrorMessage message={errors.display?.message} />
             )}
           </div>
-          <div className="relative">
+          <div className="relative cursor-not-allowed">
             <label
               className="input-label block font-secondary"
               htmlFor="serviceType"
@@ -485,6 +509,9 @@ export const AddMasterModal = ({
             <Controller
               name="service_type"
               control={control}
+              defaultValue={
+                selectedItem ? selectedItem.service_type : getServiceCategory()
+              }
               rules={{
                 validate: (value) => validateField(value, "Service Category"),
               }}
@@ -492,6 +519,7 @@ export const AddMasterModal = ({
                 <Dropdown
                   {...field}
                   options={serviceDropdownOptions}
+                  disabled
                   inputId="serviceType"
                   placeholder="Service Category"
                   className="w-full cimpar-input h-[2.5rem] test-dropdown !ps-0"

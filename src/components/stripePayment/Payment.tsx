@@ -17,10 +17,9 @@ import CustomModal from "../customModal/CustomModal";
 import useToast from "../useToast/UseToast";
 import CheckoutForm from "./CheckoutForm";
 import "./payment.css";
+import { publishableKey } from "../../config";
 
-const stripePromise = loadStripe(
-  import.meta.env.VITE_APP_STRIPE_PUBLISHABLE_KEY
-);
+const stripePromise = loadStripe(publishableKey);
 
 const Payment = ({
   clientSecretKey,

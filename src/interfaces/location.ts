@@ -17,11 +17,12 @@ export interface ICreateLocationPayload {
   closing_time: string;
   working_days: string[];
   holiday: string;
+  azure_booking_id: string;
 }
 
 export interface ILocation extends ICreateLocationPayload {
   id: string;
-  bookingName: IBooking;
+  azureBooking?: IBooking;
 }
 
 export interface IGetLocationPayload {

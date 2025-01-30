@@ -53,7 +53,7 @@ const CustomServiceDropDown = ({
 
   return (
     <>
-      <div className="h-full !min-h-[2.5rem] w-full relative">
+      <div className="h-full !min-h-[2.5rem] min-w-[17rem] relative">
         <div
           onClick={(e) => {
             op?.current?.toggle(e);
@@ -79,11 +79,11 @@ const CustomServiceDropDown = ({
         </div>
         <OverlayPanel
           ref={op}
-          className="w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
+          className="min-w-[20rem] max-w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
           onHide={() => setIsOpen(false)}
         >
           <div className="flex flex-col max-h-[20rem] relative">
-            <div className="flex-1 overflow-y-scroll">
+            <div className="flex-1 overflow-y-auto">
               {!!options?.length &&
                 options.map((option) => (
                   <div

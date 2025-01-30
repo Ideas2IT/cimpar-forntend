@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Toast } from "primereact/toast";
-import {  useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../assets/icons/filter.svg?react";
 import SlideBack from "../assets/icons/slideback.svg?react";
@@ -155,7 +155,7 @@ const LabTestResults = () => {
         service_type: services
           .filter((obj) => selectedServices.includes(obj.id))
           .map((obj) => obj.value)
-          .join(", "),
+          .join(","),
       };
       dispatch(getServiceHistoryThunk(payload)).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.REJECTED) {

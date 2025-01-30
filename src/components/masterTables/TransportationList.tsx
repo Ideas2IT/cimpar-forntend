@@ -57,7 +57,7 @@ const TransportationForm = () => {
   const handleFormSubmit = (data: any) => {
     dispatch(updateUrlByIdThunk(data)).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        successToast("Updated successfully", "URL updated successfully");
+        successToast("Updated successfully", "Data updated successfully");
         setTimeout(() => {
           navigate(PATH_NAME.SERVICE_MASTER);
         }, 2000);

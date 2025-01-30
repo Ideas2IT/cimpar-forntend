@@ -302,7 +302,7 @@ const EditInsurance = () => {
                         INSURANCE_TYPE.PRIMARY
                       )}
                       inputId="insuranceTypeSelector"
-                      className="me-2"
+                      className="me-2 w-7 h-7 flex items-center justify-center"
                       value={INSURANCE_TYPE.PRIMARY}
                       inputRef={field.ref}
                       checked={
@@ -320,7 +320,7 @@ const EditInsurance = () => {
                       disabled={disabledOptions.includes(
                         INSURANCE_TYPE.SECONDARY
                       )}
-                      className="me-2 h-full w-full"
+                      className="me-2 w-7 h-7 flex items-center justify-center"
                       inputRef={field.ref}
                       value={INSURANCE_TYPE.SECONDARY}
                       checked={
@@ -337,7 +337,7 @@ const EditInsurance = () => {
                       disabled={disabledOptions.includes(
                         INSURANCE_TYPE.TERTIARY
                       )}
-                      className="me-2"
+                      className="me-2 w-7 h-7 flex items-center justify-center"
                       inputRef={field.ref}
                       value={INSURANCE_TYPE.TERTIARY}
                       checked={
