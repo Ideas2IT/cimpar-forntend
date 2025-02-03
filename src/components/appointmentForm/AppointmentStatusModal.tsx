@@ -89,8 +89,7 @@ export const AppointmentStatus = ({
               className="font-primary w-[7rem] justify-center focus:border bg-white focus:border-purple-900 "
               style="outline"
             >
-              <i className="pi pi-times pe-2" />
-              Cancel
+              <i className="pi pi-times pe-2" />Cancel
             </Button>
 
             <Button
@@ -98,23 +97,21 @@ export const AppointmentStatus = ({
               style="outline"
               onClick={() => onRetry && onRetry()}
             >
-              <i className="stroke-purple-900 pe-2 pi pi-sync" />
-              Retry Payment
+              <i className="stroke-purple-900 pe-2 pi pi-sync" />Retry Payment
             </Button>
           </>
         )}
         {status === TRNASACTION_STATUS.PENDING && (
-          <>
-            <Button
-              setFocus={true}
-              onClick={() => navigate(PATH_NAME.HEALTH_RECORDS)}
-              className="font-primary w-full h-[2.5rem] justify-center focus:border bg-white focus:border-purple-900 "
-              style="outline"
-            >
-              <i className="pi pi-home pe-2" />
-              Go to Health Records
-            </Button>
-          </>
+
+          <Button
+            setFocus={true}
+            onClick={() => navigate(PATH_NAME.HEALTH_RECORDS)}
+            className="font-primary w-full h-[2.5rem] justify-center focus:border bg-white focus:border-purple-900 "
+            style="outline"
+          >
+            <i className="pi pi-home pe-2" />Go to Health Records
+          </Button>
+
         )}
       </div>
     </div>

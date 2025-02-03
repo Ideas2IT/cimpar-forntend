@@ -66,15 +66,14 @@ const DetailedAppointmentView = ({
       label: "INSURANCE PROVIDER & NUMBER",
       value: selectedAppointment?.insuranceProvider
         ? selectedAppointment?.insuranceProvider +
-          "-" +
-          obfuscateAccountNumber(selectedAppointment?.insuraceNumber)
+        "-" +
+        obfuscateAccountNumber(selectedAppointment?.insuraceNumber)
         : "-",
       full: true,
     },
   ];
 
   function getTestReason() {
-    console.log(selectedAppointment?.reasonForTest);
     if (selectedAppointment.reasonForTest === "Other") {
       return selectedAppointment.other_reason;
     }
@@ -101,9 +100,9 @@ const DetailedAppointmentView = ({
       label: "DATE OF APPOINTMENT FOR TEST",
       value: selectedAppointment?.appointmentDate
         ? dateFormatter(
-            selectedAppointment?.appointmentDate,
-            DATE_FORMAT.DD_MMM_YYYY
-          )
+          selectedAppointment?.appointmentDate,
+          DATE_FORMAT.DD_MMM_YYYY
+        )
         : "-",
     },
     {
@@ -142,9 +141,9 @@ const DetailedAppointmentView = ({
   return (
     <div className="pt-4">
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
-        {personalFields?.map((field, index) => {
+        {personalFields?.map((field) => {
           return (
-            <div key={index} className={`${field.full && "col-span-2"}`}>
+            <div key={field.label} className={`${field.full && "col-span-2"}`}>
               <LargeDataField
                 label={field.label || "-"}
                 value={field.value || "-"}
@@ -153,9 +152,9 @@ const DetailedAppointmentView = ({
           );
         })}
       </div>
-      <label className="font-primary text-xl pt-6 pb-3 block">
+      <p className="font-primary text-xl pt-6 pb-3 block">
         Appointment
-      </label>
+      </p>
       <TestDetailsTable
         testDetails={selectedAppointment.testDetails}
         totalCost={selectedAppointment.totalCost}
@@ -163,21 +162,21 @@ const DetailedAppointmentView = ({
         key="apppointment"
       />
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
-        {appointmentFields?.map((field, index) => {
+        {appointmentFields?.map((field) => {
           return (
-            <div key={index} className={`${field.full && "col-span-2"}`}>
+            <div key={field.label} className={`${field.full && "col-span-2"}`}>
               <PatientDetails label={field.label} value={field.value} />
             </div>
           );
         })}
       </div>
-      <label className="font-primary text-xl pt-6 block">Remarks</label>
-      {remarks?.map((item, index) => {
+      <p className="font-primary text-xl pt-6">Remarks</p>
+      {remarks?.map((item) => {
         return (
           <PatientDetails
-            key={index}
+            key={item.Label}
             label={item.Label}
-            value={item.value || ""}
+            value={item.value ?? ""}
           />
         );
       })}

@@ -1,23 +1,23 @@
-import { InputText } from "primereact/inputtext";
-import BackButton from "../backButton/BackButton";
-import { Dropdown } from "primereact/dropdown";
-import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { PATH_NAME, RESPONSE, URL_CATEGORIES } from "../../utils/AppConstants";
-import { Controller, useForm } from "react-hook-form";
-import ErrorMessage from "../errorMessage/ErrorMessage";
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import {
-  getUrlByCategoryThunk,
-  updateUrlByIdThunk,
-} from "../../store/slices/masterTableSlice";
-import { IMasterUrl } from "../../interfaces/masterTable";
-import useToast from "../useToast/UseToast";
+import { Dropdown } from "primereact/dropdown";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
 import { Toast } from "primereact/toast";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { ErrorResponse } from "../../interfaces/common";
-import { Navigate, useNavigate } from "react-router-dom";
+import { IMasterUrl } from "../../interfaces/masterTable";
+import { getUrlByCategoryThunk, updateUrlByIdThunk, } from "../../store/slices/masterTableSlice";
+import { AppDispatch } from "../../store/store";
+import { PATH_NAME, RESPONSE, URL_CATEGORIES } from "../../utils/AppConstants";
+import BackButton from "../backButton/BackButton";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import useToast from "../useToast/UseToast";
+import { cleanString } from "../../services/commonFunctions";
+
+
 const TransportationList = () => {
   return (
     <div className="h-full w-full">
@@ -47,26 +47,17 @@ const TransportationForm = () => {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
-    defaultValues: selectedUrl as IMasterUrl,
+    defaultValues: selectedUrl,
   });
 
   const navigate = useNavigate();
 
-  const handleFormSubmit = (data: any) => {
-    dispatch(updateUrlByIdThunk(data)).then((response) => {
-      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-        successToast("Updated successfully", "Data updated successfully");
-        setTimeout(() => {
-          navigate(PATH_NAME.SERVICE_MASTER);
-        }, 2000);
-      } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
-        const errorResponse = response.payload as ErrorResponse;
-        errorToast("Update Failed", errorResponse.message);
-      }
-    });
-  };
+  const description = watch('description')
+
+  
 
   useEffect(() => {
     dispatch(getUrlByCategoryThunk(selectedCategory)).then((response) => {
@@ -83,6 +74,43 @@ const TransportationForm = () => {
     reset({ ...selectedUrl });
   }, [selectedUrl]);
 
+  const handleFormSubmit = (data: IMasterUrl) => {
+    const payload: IMasterUrl = {
+      ...data,
+      description: cleanString(data.description),
+      url: cleanString(data.url),
+      name: cleanString(data.name)
+    };
+
+    dispatch(updateUrlByIdThunk(payload)).then((response) => {
+      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+        successToast("Updated successfully", "Data updated successfully");
+        setTimeout(() => {
+          navigate(PATH_NAME.SERVICE_MASTER);
+        }, 2000);
+      } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
+        const errorResponse = response.payload as ErrorResponse;
+        errorToast("Update Failed", errorResponse.message);
+      }
+    });
+  };
+
+  const validateRequiredField = (value: string, field: string) => {
+    if (value?.trim()) {
+      return true;
+    } else {
+      return `${field} is required`;
+    }
+  };
+
+  const itemTemplate = (item: string) => {
+    return <span className="capitalize">{item}</span>
+  }
+
+  const valueTemplate = (selectedCategory: string) => {
+    return < span className="capitalize">{selectedCategory}</span>
+  }
+
   return (
     <>
       <form
@@ -91,30 +119,27 @@ const TransportationForm = () => {
       >
         <div className="grid lg:grid-cols-2 w-full gap-x-10 gap-y-2">
           <div className="relative col-span-2 lg:col-span-1">
-            <label className="font-primary capitalize input-label pb-2 block">
+            <label htmlFor="category" className="font-primary capitalize input-label pb-2 block">
               Service Category*
             </label>
             <Controller
               name="category"
               control={control}
               rules={{
-                required: "Service Category is required",
+                validate: (value) => validateRequiredField(value, "Service Category"),
               }}
               defaultValue={selectedCategory}
               render={({ field }) => (
                 <Dropdown
                   {...field}
+                  id="category"
                   onChange={(event) => {
                     setValue("category", event.value);
                     setSelectedCategory(event.value);
                   }}
                   className="input-field w-full"
-                  itemTemplate={(item) => (
-                    <span className="capitalize">{item}</span>
-                  )}
-                  valueTemplate={(selectedItem) => (
-                    <span className="capitalize">{selectedItem}</span>
-                  )}
+                  itemTemplate={(item) => itemTemplate(item)}
+                  valueTemplate={(selectedCategory) => valueTemplate(selectedCategory)}
                   options={["Vaccination", "Transportation"]}
                 />
               )}
@@ -124,57 +149,55 @@ const TransportationForm = () => {
             )}
           </div>
           <div className="relative col-span-2 lg:col-span-1">
-            <label className="font-primary capitalize input-label pb-2 block">
+            <label htmlFor="linkText" className="font-primary capitalize input-label pb-2 block">
               Hyperlink Text*
             </label>
             <Controller
               name="name"
               control={control}
-              rules={{
-                required: "Name is required",
-              }}
+              rules={{ validate: (value) => validateRequiredField(value, 'Hyperlink Text') }}
               render={({ field }) => (
-                <InputText {...field} className="input-field w-full" />
+                <InputText {...field} id="linkText" className="input-field w-full" />
               )}
             />
             {errors.name && <ErrorMessage message={errors.name.message} />}
           </div>
 
           <span className="col-span-2 relative">
-            <label className="font-primary capitalize input-label pb-2 block">
+            <label htmlFor="description" className="font-primary capitalize input-label pb-2 block">
               Description*
             </label>
             <Controller
               name="description"
               control={control}
               rules={{
-                required: "Description is required",
+                validate: (value) => validateRequiredField(value, "Description"),
               }}
               render={({ field }) => (
                 <InputTextarea
                   {...field}
+                  id="description"
                   maxLength={1000}
                   className="rounded-lg w-full min-h-[4rem] border"
                 />
               )}
             />
+            <span className="absolute input-label -bottom-3 right-0">{description?.length || 0}/1000</span>
             {errors.description && (
               <ErrorMessage message={errors.description.message} />
             )}
           </span>
 
           <span className="col-span-2">
-            <label className="font-primary capitalize input-label pb-2 block">
+            <label htmlFor="url" className="font-primary capitalize input-label pb-2 block">
               Landing Page URL*
             </label>
             <Controller
               name="url"
               control={control}
-              rules={{
-                required: "Landing Page URL is required",
-              }}
+              rules={{ validate: (value) => validateRequiredField(value, "Landing Page URL"), }}
               render={({ field }) => (
-                <InputText {...field} className="input-field w-full" />
+                <InputText {...field} id='url' className="input-field w-full" />
               )}
             />
             {errors.url && <ErrorMessage message={errors.url.message} />}

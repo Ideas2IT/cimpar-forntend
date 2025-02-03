@@ -1,4 +1,4 @@
-import { format, isToday } from "date-fns";
+import { format, isToday, addDays } from "date-fns";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { useEffect, useState } from "react";
@@ -8,7 +8,6 @@ import {
   ServiceTimeSlotsDetail,
   TIME_SLOT_DAYS,
 } from "../../utils/BookingSlotUtils";
-import { addDays } from "date-fns";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
 import {
@@ -173,16 +172,14 @@ const MicrosoftBookingModal = ({
           onClick={handleCancel}
           className="text-purple-900 font-bold justify-center px-6 py-2 w-[45%] border border-purple-900 rounded-full"
         >
-          <i className="pi pe-3 pi-times" />
-          Cancel
+          <i className="pi pe-3 pi-times" />Cancel
         </Button>
         <Button
           onClick={bookSlot}
           disabled={!selectedDate || !Object?.keys(selectedSlot)?.length}
           className="text-purple-900 font-bold  justify-center px-6 py-2 w-[45%] border border-purple-900 bg-purple-100 rounded-full"
         >
-          <i className="pi pe-3 pi-calendar" />
-          Book Now
+          <i className="pi pe-3 pi-calendar" />Book Now
         </Button>
       </div>
       <Toast ref={toast} />

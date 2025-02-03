@@ -37,6 +37,11 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
+  const handleSuccess = () => {
+    handleClose();
+    navigate(PATH_NAME.HOME);
+  };
+
   const handlePasswordChange = (data: IChangePassword) => {
     if (
       data.oldPassword &&
@@ -66,10 +71,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
             "Your password has been changed successfully. Login with new credentials"
           );
           setTimeout(() => {
-            dispatch(logoutThunk()).then(() => {
-              navigate(PATH_NAME.HOME);
-              handleClose();
-            });
+            dispatch(logoutThunk()).then(handleSuccess);
           }, 1000);
         } else {
           const errorResponse = response.payload as ErrorResponse;
@@ -82,7 +84,7 @@ const ChangePassword = ({ handleClose }: { handleClose: () => void }) => {
   return (
     <div className="relative h-full">
       <form onSubmit={handleSubmit((data) => handlePasswordChange(data))}>
-        <label className="font-primary text-2xl">Change Password</label>
+        <p className="font-primary text-2xl">Change Password</p>
         <div className="w-full relative py-3">
           <label className="input-label" htmlFor="oldPassword">
             Enter Current Password*

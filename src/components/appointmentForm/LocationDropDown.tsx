@@ -10,7 +10,7 @@ interface LocationProps {
   value: ILocation;
   disabled?: boolean;
 }
-export default function LocationDropDown(props: LocationProps) {
+export default function LocationDropDown(props: Readonly<LocationProps>) {
   const { options, onChange, value } = props;
   const dropdownRef = useRef<Dropdown>(null);
   const setFocus = () => {
@@ -40,14 +40,13 @@ export default function LocationDropDown(props: LocationProps) {
       <div
         className={`relative w-full flex items-center rounded-lg border border-gray-300 ${props.disabled && "cursor-not-allowed opacity-50"}`}
       >
-        <i
-          onClick={() => !props.disabled && setFocus()}
+        <button type="button" onClick={() => !props.disabled && setFocus()}
           className="pi pi-map-marker text-gray-400 text-md text-lg absolute top-[0.4rem] z-10 left-1"
         />
         <Dropdown
           ref={dropdownRef}
           disabled={props.disabled}
-          value={value && value}
+          value={value}
           onChange={(e) => onChange(e?.target?.value)}
           id="location"
           optionLabel="center_name"

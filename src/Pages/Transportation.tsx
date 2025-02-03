@@ -52,7 +52,7 @@ export const UrlTile = ({ link }: { link: IMasterUrl }) => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   return (
     <>
-      <span
+      <button type="button"
         onClick={() => setIsOpenModal(true)}
         title={link.description}
         className="flex w-full items-center gap-2 cursor-pointer"
@@ -60,10 +60,10 @@ export const UrlTile = ({ link }: { link: IMasterUrl }) => {
         <div className="flex group items-center text-purple-900 gap-2 bg-purple-100 h-[8rem] w-[15rem] rounded-lg p-4">
           <i className="pi pi-external-link" />
           <div className="text-xl font-primary text-purple-900 group-hover:underline">
-            {link.name}
+            {link.name || 'Click Here to book your servie'}
           </div>
         </div>
-      </span>
+      </button>
       {isOpenModal && (
         <CustomModal
           maximize={true}
@@ -71,7 +71,7 @@ export const UrlTile = ({ link }: { link: IMasterUrl }) => {
           handleClose={() => setIsOpenModal(false)}
           styleClass="lg:w-[90vw] w-full h-full"
         >
-          <iframe className="w-full h-full" src={link.url} />
+          <iframe className="w-full h-full" title={link.description} src={link.url} />
         </CustomModal>
       )}
     </>

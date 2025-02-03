@@ -8,31 +8,11 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import HeaderContext from "../../context/HeaderContext";
 import { ErrorResponse, IOptionValue } from "../../interfaces/common";
-import {
-  ICreateLocationPayload,
-  IGetLocationPayload,
-  ILocation,
-  ILocationResponse,
-  IToggleLocationStatusPayload,
-} from "../../interfaces/location";
+import { ICreateLocationPayload, IGetLocationPayload, ILocation, ILocationResponse, IToggleLocationStatusPayload } from "../../interfaces/location";
 import { cleanString, getRowClasses } from "../../services/commonFunctions";
-import {
-  createLocationThunk,
-  getLocationsThunk,
-  getOptionValuesThunk,
-  getServiceRegionsThunk,
-  toggleLocationStatusThunk,
-  updateLocationThunk,
-} from "../../store/slices/masterTableSlice";
+import { createLocationThunk, getLocationsThunk, getOptionValuesThunk, getServiceRegionsThunk, toggleLocationStatusThunk, updateLocationThunk } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  DATE_FORMAT,
-  HEADER_TITLE,
-  PAGE_LIMIT,
-  PATH_NAME,
-  RESPONSE,
-  TABLE,
-} from "../../utils/AppConstants";
+import { DATE_FORMAT, HEADER_TITLE, PAGE_LIMIT, PATH_NAME, RESPONSE, TABLE } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import BackButton from "../backButton/BackButton";
 import CustomModal from "../customModal/CustomModal";
@@ -47,15 +27,22 @@ interface IRegion {
   city: string[];
 }
 const LocationList = () => {
+
+  const dispatch = useDispatch<AppDispatch>();
+
   const searchInputRef = useRef<SearchInputHandle>(null);
+  const tableRef = useRef<DataTable<any>>(null);
+
+  const { toast, errorToast, successToast } = useToast();
+  const { updateHeaderTitle } = useContext(HeaderContext);
+
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
-  const [locations, setLocations] = useState<ILocationResponse>(
-    {} as ILocationResponse
-  );
+  const [locations, setLocations] = useState<ILocationResponse>({} as ILocationResponse);
   const [initLoad, setInitLoad] = useState(true);
-  const [regions, setReagons] = useState<IRegion>({} as IRegion);
-
+  const [regions, setRegions] = useState<IRegion>({} as IRegion);
+  const [states, setStates] = useState<IOptionValue[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<ILocation>({} as ILocation);
   const [locationPayload, setLocationPayload] = useState<IGetLocationPayload>({
     page: 1,
     page_size: PAGE_LIMIT,
@@ -64,38 +51,7 @@ const LocationList = () => {
     states: [],
     searchValue: "",
   } as IGetLocationPayload);
-  const [states, setStates] = useState<IOptionValue[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<ILocation>(
-    {} as ILocation
-  );
 
-  const tableRef = useRef<DataTable<any>>(null);
-
-  const { toast, errorToast, successToast } = useToast();
-  const { updateHeaderTitle } = useContext(HeaderContext);
-
-  const dispatch = useDispatch<AppDispatch>();
-
-  const showModal = () => {
-    setIsOpenModal(true);
-  };
-
-  const showDetailedLocation = (location: ILocation) => {
-    setSelectedLocation(location);
-    setIsOpenSidebar(true);
-  };
-
-  const SidebarHeader = () => {
-    return (
-      <div className="flex w-full justify-between py-2">
-        <h3 className="text-lg font-semibold">Location Details</h3>
-      </div>
-    );
-  };
-
-  const handleSearch = (value: string) => {
-    setLocationPayload({ ...locationPayload, searchValue: value, page: 1 });
-  };
 
   useEffect(() => {
     fetchStates();
@@ -110,40 +66,6 @@ const LocationList = () => {
     setInitLoad(false);
   }, [locationPayload]);
 
-  const fetchAllLocations = () => {
-    tableRef?.current && tableRef.current?.resetScroll();
-    dispatch(getLocationsThunk(locationPayload)).then((response) => {
-      const locations = response.payload as ILocationResponse;
-      setLocations(locations);
-    });
-  };
-
-  const getCitiesAndStatesForDropdown = () => {
-    dispatch(getServiceRegionsThunk()).then((response) => {
-      const regions = response.payload.data as any;
-      setReagons(regions[0]);
-    });
-  };
-
-  const fetchStates = () => {
-    dispatch(getOptionValuesThunk(TABLE.STATE)).then((response) => {
-      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
-        const _response = response.payload as IOptionValue[];
-        setStates(_response);
-      }
-    });
-  };
-
-  const editLocation = (location: ILocation) => {
-    setSelectedLocation(location);
-    setIsOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsOpenModal(false);
-    setSelectedLocation({} as ILocation);
-  };
-
   const handleToggleStatus = (value: boolean, id: string) => {
     const payload: IToggleLocationStatusPayload = {
       resourceId: id,
@@ -151,7 +73,7 @@ const LocationList = () => {
     };
     dispatch(toggleLocationStatusThunk(payload)).then((response) => {
       if (response?.meta.requestStatus === RESPONSE.FULFILLED) {
-        const _locations: ILocation[] = locations.data.map((loc: ILocation) => {
+        const _locations: ILocation[] = locations?.data?.map((loc: ILocation) => {
           if (loc.id === id) {
             return { ...loc, status: value ? "active" : "inactive" };
           } else {
@@ -166,16 +88,96 @@ const LocationList = () => {
     });
   };
 
+  const getCitiesAndStatesForDropdown = () => {
+    dispatch(getServiceRegionsThunk()).then((response) => {
+      const regions = response.payload.data;
+      setRegions(regions[0]);
+    });
+  };
+
+  const fetchStates = () => {
+    dispatch(getOptionValuesThunk(TABLE.STATE)).then((response) => {
+      if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+        const _response = response.payload as IOptionValue[];
+        setStates(_response);
+      }
+    });
+  };
+
+  const fetchAllLocations = () => {
+    tableRef?.current && tableRef.current?.resetScroll();
+    dispatch(getLocationsThunk(locationPayload)).then((response) => {
+      const locations = response.payload as ILocationResponse;
+      setLocations(locations);
+    });
+  };
+
+
+
+  const showModal = () => {
+    setIsOpenModal(true);
+  };
+
+  const showDetailedLocation = (location: ILocation) => {
+    setSelectedLocation(location);
+    setIsOpenSidebar(true);
+  };
+
+  const handleSearch = (value: string) => {
+    setLocationPayload({ ...locationPayload, searchValue: value, page: 1 });
+  };
+
+  const editLocation = (location: ILocation) => {
+    setSelectedLocation(location);
+    setIsOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsOpenModal(false);
+    setSelectedLocation({} as ILocation);
+  };
+
+  const getSerialNumber = (rowIndex: number) => {
+    return <>
+      {(locations?.pagination?.current_page - 1) * PAGE_LIMIT +
+        rowIndex +
+        1}
+    </>
+  }
+
+  const getAddress = (rowData: ILocation) => {
+    return <div>{`${rowData?.address_line1 || ""}, ${(rowData?.address_line2 && rowData?.address_line2 + ",") || ""} ${rowData?.city || ""}, ${rowData?.state || ""}, ${rowData?.zip_code || ""}`}</div>
+  }
+
+  const getStatus = (rowData: ILocation) => {
+    return <div className="font-tertiary">
+      <label className="block ps-2">
+        {rowData?.status === "active" ? "Yes" : "No"}
+      </label>
+      <InputSwitch
+        checked={rowData?.status === "active"}
+        onChange={(e) => handleToggleStatus(e.value, rowData.id)}
+      />
+    </div>
+  }
+
+  const getActionColumn = (rowData: ILocation) => {
+    return <div className="flex">
+      <button type="button"
+        className="pi pi-eye min-w-[2rem] text-purple-900 cursor-pointer text-xl font-bold"
+        onClick={() => showDetailedLocation(rowData)}
+      />
+      <button type="button"
+        className="pi pi-pen-to-square min-w-[2rem] text-purple-900 cursor-pointer text-xl font-bold"
+        onClick={() => editLocation(rowData)}
+      />
+    </div>
+  }
+
   const locationColumns = [
     {
       header: "S.NO",
-      body: (_: ILocation, options: { rowIndex: number }) => (
-        <>
-          {(locations?.pagination?.current_page - 1) * PAGE_LIMIT +
-            options.rowIndex +
-            1}
-        </>
-      ),
+      body: (_: ILocation, options: { rowIndex: number }) => getSerialNumber(options.rowIndex)
     },
     {
       field: "center_name",
@@ -183,61 +185,38 @@ const LocationList = () => {
     },
     {
       header: "Address",
-      body: (rowData: ILocation) => (
-        <div>{`${rowData?.address_line1 || ""}, ${(rowData?.address_line2 && rowData?.address_line2 + ",") || ""} ${rowData?.city || ""}, ${rowData?.state || ""}, ${rowData?.zip_code || ""}`}</div>
-      ),
+      body: (rowData: ILocation) => getAddress(rowData)
     },
     { header: "Contact", field: "contact_phone" },
     {
       field: "is_active",
       header: "ACTIVE",
-      body: (rowData: ILocation) => (
-        <div className="font-tertiary">
-          <label className="block ps-2">
-            {rowData?.status === "active" ? "Yes" : "No"}
-          </label>
-          <InputSwitch
-            checked={rowData?.status === "active"}
-            onChange={(e) => handleToggleStatus(e.value, rowData.id)}
-          />
-        </div>
-      ),
+      body: (rowData: ILocation) => getStatus(rowData)
     },
     {
       header: "Action",
-      body: (rowData: ILocation) => (
-        <div className="flex">
-          <i
-            className="pi pi-eye min-w-[2rem] text-purple-900 cursor-pointer text-xl font-bold"
-            onClick={() => showDetailedLocation(rowData)}
-          />
-          <i
-            className="pi pi-pen-to-square min-w-[2rem] text-purple-900 cursor-pointer text-xl font-bold"
-            onClick={() => editLocation(rowData)}
-          />
-        </div>
-      ),
+      body: (rowData: ILocation) => getActionColumn(rowData)
     },
   ];
 
   const handleSubmitForm = (data: ILocation) => {
     const payload: ICreateLocationPayload = {
-      address_line1: cleanString(data.address_line1) || "",
-      address_line2: cleanString(data.address_line2),
-      city: cleanString(data.city),
-      zip_code: cleanString(data.zip_code),
-      center_name: cleanString(data.center_name),
-      state: data.state,
+      address_line1: cleanString(data?.address_line1 ?? ''),
+      address_line2: cleanString(data?.address_line2 ?? ''),
+      city: cleanString(data?.city ?? ''),
+      zip_code: cleanString(data?.zip_code ?? ''),
+      center_name: cleanString(data?.center_name ?? ''),
+      state: data.state ?? '',
       closing_time: dateFormatter(new Date(), DATE_FORMAT.HH_MM_SS),
-      contact_email: data.contact_email,
-      contact_person: data.contact_person,
-      contact_phone: data.contact_phone,
-      country: data.country,
+      contact_email: data?.contact_email ?? '',
+      contact_person: data?.contact_person ?? '',
+      contact_phone: data?.contact_phone ?? '',
+      country: data?.country ?? '',
       opening_time: dateFormatter(new Date(), DATE_FORMAT.HH_MM_SS),
-      status: data.status,
+      status: data?.status ?? '',
       working_days: ["mon", "tue", "wed"],
       holiday: "",
-      azure_booking_id: data.azureBooking?.id || "",
+      azure_booking_id: data.azureBooking?.id ?? "",
     };
     if (!Object.keys(selectedLocation)?.length) {
       dispatch(createLocationThunk(payload)).then((response) => {
@@ -281,11 +260,19 @@ const LocationList = () => {
     setLocations({ ...locations, data: _locations });
   };
 
-  const ModalHeader = () => {
+  const sidebarHeader = () => {
+    return (
+      <div className="flex w-full justify-between py-2">
+        <h3 className="text-lg font-semibold">Location Details</h3>
+      </div>
+    );
+  };
+
+  const modalHeader = () => {
     return (
       <div className="flex w-full justify-between py-2 ps-4">
         <h3 className="text-lg font-semibold">
-          {Object.keys(selectedLocation).length
+          {Object?.keys(selectedLocation)?.length
             ? "Edit Location"
             : "Add Location"}
         </h3>
@@ -357,9 +344,9 @@ const LocationList = () => {
             </div>
           }
         >
-          {locationColumns.map((column, index) => (
+          {locationColumns.map((column) => (
             <Column
-              key={index}
+              key={column.header}
               header={column?.header}
               field={column?.field}
               body={column?.body}
@@ -371,7 +358,7 @@ const LocationList = () => {
         {!!Object.keys(selectedLocation)?.length && isOpenSidebar && (
           <Sidebar
             className="detailed-view w-[30rem]"
-            header={<SidebarHeader />}
+            header={sidebarHeader}
             visible={isOpenSidebar}
             position="right"
             onHide={() => {
@@ -385,8 +372,7 @@ const LocationList = () => {
       </div>
       {isOpenModal && (
         <CustomModal
-          closeButton={true}
-          header={<ModalHeader />}
+          header={modalHeader()}
           handleClose={handleCloseModal}
           showCloseButton={true}
           styleClass="h-[90vh] lg:w-[80vw] w-[100vw]"
@@ -471,9 +457,9 @@ const DetailedLocationView = ({ location }: { location: ILocation }) => {
 
   return (
     <div className="grid md:grid-cols-2 gap-3 grid-cols-1">
-      {locationsFields.map((field, index) => (
+      {locationsFields.map((field) => (
         <FieldDetails
-          key={index}
+          key={field.header}
           label={field.header}
           value={field.value}
           styleClasses={field.styleClasses}
@@ -495,13 +481,13 @@ export const FieldDetails = ({
   return (
     <div className={`border-b border-gray-100 ${styleClasses}`}>
       <div className="font-secondary text-sm text-[#283956] opacity-65 py-2 max-w-[100%] text-ellipsis overflow-hidden">
-        {label ? label : "-"}
+        {label || "-"}
       </div>
       <div
         title={value}
         className="font-primary pb-2 text-[#283956] truncate max-w-[90%]"
       >
-        {value ? value : "-"}
+        {value || "-"}
       </div>
     </div>
   );

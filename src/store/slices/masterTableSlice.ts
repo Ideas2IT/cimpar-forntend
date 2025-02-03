@@ -498,11 +498,11 @@ export const getServiceRegionsThunk = createAsyncThunk(
 );
 
 export const toggleLocationStatusThunk = createAsyncThunk(
-  "location/delete",
+  "location/toggel_status",
   async (payload: IToggleLocationStatusPayload, { rejectWithValue }) => {
     try {
       const response = await toggleLocaitonStatus(payload);
-      return response;
+      return response.data;
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =

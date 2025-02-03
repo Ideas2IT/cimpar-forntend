@@ -28,7 +28,7 @@ const BackButton = ({
     confirmDialog({
       header: "Confirmation",
       className: "max-w-[50vw]",
-      message: popupText ? popupText : "Are you sure you want to go back?",
+      message: popupText ?? "Are you sure you want to go back?",
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       rejectClassName: "hidden",
@@ -45,9 +45,9 @@ const BackButton = ({
 
   return (
     <div className="flex justify-between items-center lg:flex-row whitespace-nowrap overflow-hidden text-ellipsis">
-      <div
+      <button type="button"
         onClick={handleBackLink}
-        className="flex align-items-center item-center"
+        className="flex align-items-center items-center"
       >
         <PrimeButton
           type="button"
@@ -58,9 +58,9 @@ const BackButton = ({
           <i className="pi pi-arrow-left color-primary" />
         </PrimeButton>
         <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer capitalize ps-1">
-          {previousPage || "back"}
+          {previousPage ?? "back"}
         </label>
-      </div>
+      </button>
       <label
         title={currentPage}
         className="lg:show hidden color-primary font-primary md:block lg:text-xl md:text-md sm:text-sm capitalize"

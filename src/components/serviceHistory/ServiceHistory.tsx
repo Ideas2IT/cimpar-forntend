@@ -446,10 +446,10 @@ export const AppointentView = ({
       className={`'border-b pb-1 max-w-[100%]' ${wrap ? "" : "truncate"}`}
     >
       <div className="text-gray-500 font-secondary text-sm pt-4">
-        {label ? label : "-"}
+        {label ?? "-"}
       </div>
       <label className={`${highlight && "text-red-600"} font-primary`}>
-        {value ? value : "-"}
+        {value ?? "-"}
       </label>
     </div>
   );

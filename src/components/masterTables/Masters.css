@@ -25,6 +25,7 @@
 .tile-title {
   @apply ml-2 h-[50%] font-primary text-xl w-full text-start flex items-end;
 }
+
 .tile-icon-container:hover .tile-title {
   @apply text-white;
 }

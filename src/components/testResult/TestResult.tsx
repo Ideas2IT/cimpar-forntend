@@ -7,31 +7,15 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Download from "../../assets/icons/download.svg?react";
 import Eye from "../../assets/icons/eye.svg?react";
-import {
-  IDetailedAppointment,
-  IGetAppointmentByIdPayload,
-  ISidebarAppointment,
-} from "../../interfaces/appointment";
+import { IDetailedAppointment, IGetAppointmentByIdPayload, ISidebarAppointment } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
 import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
-import {
-  appointmentStatus,
-  getRowClasses,
-  getStatusColors,
-} from "../../services/commonFunctions";
+import { appointmentStatus, getRowClasses, getStatusColors } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
-import {
-  getLabTestByIdThunk,
-  selectLabTests,
-} from "../../store/slices/serviceHistorySlice";
+import { getLabTestByIdThunk, selectLabTests } from "../../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../../store/store";
-import {
-  DATE_FORMAT,
-  NORMAL,
-  RESPONSE,
-  RESULT_STATUS,
-} from "../../utils/AppConstants";
+import { DATE_FORMAT, NORMAL, RESPONSE, RESULT_STATUS } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { AppointentView } from "../serviceHistory/ServiceHistory";
@@ -190,11 +174,6 @@ const TestResult = ({
       header: "ORDER ID",
       body: (rowData: ILabTest) => <TestDetails value={rowData.orderId} />,
     },
-    // {
-    //   field: "testedAt",
-    //   header: "TESTED AT",
-    //   body: (rowData: ILabTest) => <TestDetails value={rowData.testedAt} />,
-    // },
     {
       field: "dateOfTest",
       header: "DATE OF TEST",
@@ -233,10 +212,10 @@ const TestResult = ({
           className="mt-2 rowHoverable"
           rowClassName={() => getRowClasses("h-10 border-b")}
         >
-          {resultColumns.map((column, index) => {
+          {resultColumns.map((column) => {
             return (
               <Column
-                key={index}
+                key={column.header}
                 headerClassName={columnHeaderStyle}
                 bodyClassName="py-4 text-ellipsis text-wrap max-w-[12rem]"
                 field={column.field}
@@ -391,13 +370,13 @@ export const TestDetailedView = ({ test }: { test: ILabTest }) => {
   const columnKeys =
     test?.status?.toLowerCase() !== RESULT_STATUS.UPCOMING_APPOINTMENT
       ? [
-          "ORDER ID",
-          "DATE OF TEST",
-          "SPECIMEN USED",
-          "TESTED AT",
-          "DATE/TIME COLLECTED",
-          "DATE/TIME REPORTED",
-        ]
+        "ORDER ID",
+        "DATE OF TEST",
+        "SPECIMEN USED",
+        "TESTED AT",
+        "DATE/TIME COLLECTED",
+        "DATE/TIME REPORTED",
+      ]
       : ["ORDER ID", "DATE OF TEST"];
 
   const getValue = (title: string | undefined) => {
@@ -443,21 +422,13 @@ export const TestDetailedView = ({ test }: { test: ILabTest }) => {
         <>
           <div className="font-primary text-primary flex justify-between py-6 mt-6 text-xl">
             Test Results
-            {/* {test.status?.toLowerCase() === RESULT_STATUS.AVAILABLE && (
-              <div
-                className="flex flex-row items-center justify-center text-purple-800 cursor-pointer"
-                onClick={() => {}}
-              >
-                <Eye className="stroke-purple-800 me-2" /> Preview
-              </div>
-            )} */}
           </div>
           {test?.status?.toLowerCase() === RESULT_STATUS.AVAILABLE ? (
             <Result />
           ) : (
-            <label className="text:sm py-6">
+            <p className="text:sm py-6">
               Results will be displayed here once physician uploaded it.
-            </label>
+            </p>
           )}
           <div className="font-primary text-primary py-6 text-xl">
             Ordering Physician details

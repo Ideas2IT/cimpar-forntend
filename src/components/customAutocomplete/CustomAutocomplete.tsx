@@ -1,9 +1,5 @@
-import {
-  AutoComplete,
-  AutoCompleteChangeEvent,
-  AutoCompleteCompleteEvent,
-} from "primereact/autocomplete";
-import { useRef, useState } from "react";
+import { AutoComplete, AutoCompleteChangeEvent, AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import { useRef } from "react";
 import plus from "../../assets/icons/plus.svg";
 import "../../components/appointmentForm/AppointmentPage.css";
 import { IMedicine } from "../../interfaces/medication";
@@ -21,15 +17,10 @@ export const CustomAutoComplete = ({
   inputId: string;
   handleSearch: (event: AutoCompleteCompleteEvent) => void;
 }) => {
-  const handleValueSelect = (event: AutoCompleteChangeEvent) => {
-    if (event.value) {
-      handleSelection(event.value);
-    } else {
-      handleSelection([]);
-    }
-  };
+
   const autoRef = useRef<AutoComplete>(null);
   const inputReferences = useRef<HTMLInputElement>(null);
+
   const getTitle = () => {
     if (selectedItems?.length) {
       const title = selectedItems?.map((item) => item.display).join(", ");
@@ -37,6 +28,27 @@ export const CustomAutoComplete = ({
     }
     return "";
   };
+
+  const handleValueSelect = (event: AutoCompleteChangeEvent) => {
+    if (event.value) {
+      handleSelection(event.value);
+    } else {
+      handleSelection([]);
+    }
+  };
+
+  const itemTemplate = (item: IMedicine) => {
+    return (
+      <div className="group flex items-center h-full py-4 justify-between hover:text-cyan-800">
+        <button key={item.display} className="flex items-center text-start capitalize font-secondary text-wrap">
+          {item.display}
+        </button>
+        <img className="pe-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" src={plus} alt="Add" />
+      </div>
+    );
+  };
+
+
   return (
     <div className="custom-autocomplete" title={getTitle()}>
       <AutoComplete
@@ -51,7 +63,7 @@ export const CustomAutoComplete = ({
         suggestions={items}
         onChange={(event) => handleValueSelect(event)}
         completeMethod={handleSearch}
-        itemTemplate={(option) => <ItemTemplate item={option} />}
+        itemTemplate={(option) => itemTemplate(option)}
         placeholder={
           !selectedItems?.length ? "Enter at least 3 characters" : ""
         }
@@ -67,7 +79,7 @@ export const CustomAutoComplete = ({
         loadingIcon={<></>}
       />
       {Boolean(selectedItems?.length) && (
-        <span
+        <button type="button"
           className="px-2 text-red-500 text-sm font-tertiary cursor-pointer min-w-[5rem]"
           onClick={() => {
             handleValueSelect({ value: [] } as AutoCompleteChangeEvent);
@@ -77,23 +89,10 @@ export const CustomAutoComplete = ({
           }}
         >
           Clear all
-        </span>
+        </button>
       )}
     </div>
   );
 };
 
-const ItemTemplate = ({ item }: { item: IMedicine }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <div
-      key={item.display}
-      className="flex align-items-center hover:text-cyan-800 h-full py-4 justify-between"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="capitalize font-secondary text-wrap">{item.display}</div>
-      {isHovered && <img className="pe-1" src={plus} />}
-    </div>
-  );
-};
+

@@ -179,42 +179,45 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
       if (resource?.note?.length) {
         const noteText = resource.note[0].text;
         switch (noteText?.toLowerCase()) {
-          case CONDITIONS_AND_ALLERGIER.FAMILY:
-            const fmc = resource?.code.coding.map((item: any) => {
+          case CONDITIONS_AND_ALLERGIER.FAMILY: {
+            const fmc = resource?.code?.coding?.map((item: any) => {
               const temp: IMedicine = {
-                code: item.code || "",
-                display: item.display || "",
-                system: item.system || "",
+                code: item.code ?? "",
+                display: item.display ?? "",
+                system: item.system ?? "",
               };
               return temp;
             });
             conditionsAndAllergies.familyMedicalConditions = [...fmc];
             conditionsAndAllergies.family_condition_id = resource?.id || "";
             break;
-          case CONDITIONS_AND_ALLERGIER.CURRENT:
+          }
+          case CONDITIONS_AND_ALLERGIER.CURRENT: {
             const cmc = resource?.code.coding.map((item: any) => {
               const temp: IMedicine = {
-                code: item.code || "",
-                display: item.display || "",
-                system: item.system || "",
+                code: item.code ?? "",
+                display: item.display ?? "",
+                system: item.system ?? "",
               };
               return temp;
             });
             conditionsAndAllergies.medicalConditions = [...cmc];
             conditionsAndAllergies.current_condition_id = resource?.id || "";
             break;
-          case CONDITIONS_AND_ALLERGIER.OTHER:
+          }
+          case CONDITIONS_AND_ALLERGIER.OTHER: {
             const omc: IMedicine[] = resource?.code.coding.map((item: any) => {
               const temp: IMedicine = {
-                code: item.code || "",
-                display: item.display || "",
-                system: item.system || "",
+                code: item.code ?? "",
+                display: item.display ?? "",
+                system: item.system ?? "",
               };
               return temp;
             });
             conditionsAndAllergies.otherMedicalConditions = [...omc];
             conditionsAndAllergies.additional_condition_id = resource?.id || "";
             break;
+          }
         }
       }
     });
@@ -227,13 +230,13 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
       if (resource?.note?.length) {
         const noteText = resource.note[0].text;
         switch (noteText?.toLowerCase()) {
-          case CONDITIONS_AND_ALLERGIER.CURRENT:
+          case CONDITIONS_AND_ALLERGIER.CURRENT: {
             const allergies: IMedicine[] = resource?.code?.coding?.map(
               (item: any) => {
                 const temp: IMedicine = {
-                  code: item.code || "",
-                  display: item.display || "",
-                  system: item.system || "",
+                  code: item?.code ?? "",
+                  display: item?.display ?? "",
+                  system: item?.system ?? "",
                 };
                 return temp;
               }
@@ -241,13 +244,14 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
             conditionsAndAllergies.allergies = [...allergies];
             conditionsAndAllergies.current_allergy_id = resource?.id || "";
             break;
-          case CONDITIONS_AND_ALLERGIER.OTHER:
+          }
+          case CONDITIONS_AND_ALLERGIER.OTHER: {
             const otherAllergies: IMedicine[] = resource?.code.coding.map(
               (item: any) => {
                 const temp: IMedicine = {
-                  code: item.code || "",
-                  display: item.display || "",
-                  system: item.system || "",
+                  code: item.code ?? "",
+                  display: item.display ?? "",
+                  system: item.system ?? "",
                 };
                 return temp;
               }
@@ -255,6 +259,7 @@ function transformMedicalConditions(data: any): AllergiesAndCondtions {
             conditionsAndAllergies.otherAllergies = [...otherAllergies];
             conditionsAndAllergies.additional_allergy_id = resource?.id || "";
             break;
+          }
         }
       }
     });
@@ -425,7 +430,7 @@ export const getPatientInsuranceThunk = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await getPatientInsurance(id);
-      const _response = await transformCoverageData(response.data);
+      const _response = transformCoverageData(response.data);
       return _response;
     } catch (error) {
       if (isAxiosError(error)) {
@@ -560,7 +565,7 @@ export const createMedicalConditionsThunk = createAsyncThunk(
   "condition_allergies/post",
   async (paylaod: ICreateMedicalCondtionPayload, { rejectWithValue }) => {
     try {
-      const response = await createMedicalConditions(paylaod);
+      const response = createMedicalConditions(paylaod);
       return response;
     } catch (error) {
       if (isAxiosError(error)) {

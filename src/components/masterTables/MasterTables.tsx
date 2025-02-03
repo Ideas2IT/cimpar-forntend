@@ -34,13 +34,13 @@ const MasterTables = () => {
 
   return (
     <div className="tile-wrapper">
-      {tables.map((table, index) => {
+      {tables.map((table) => {
         return (
           <Tile
             icon={table.icon}
             title={table.title}
             route={table.routeLink}
-            key={index}
+            key={table.title}
           />
         );
       })}
@@ -59,15 +59,15 @@ const Tile = ({
 }) => {
   const navigate = useNavigate();
   return (
-    <div
+    <button type="button"
       onClick={() => navigate(route)}
       className="tile-icon-container corsor-pointer"
     >
       <div className="flex w-full h-[50%] justify-start">
-        <img src={icon} className="tile-img" />
+        <img src={icon} className="tile-img" alt="icon" />
       </div>
       <div className="tile-title">{title}</div>
-    </div>
+    </button>
   );
 };
 

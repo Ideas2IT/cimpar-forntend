@@ -42,13 +42,6 @@
   font-size: 14px;
 }
 
-/* .p-autocomplete
-  .p-autocomplete-multiple-container
-  .p-autocomplete-input-token
-  input {
-  @apply min-w-[17rem] max-w-[17rem] overflow-auto;
-} */
-
 .p-multiselect-item .p-checkbox {
   order: 2;
 }

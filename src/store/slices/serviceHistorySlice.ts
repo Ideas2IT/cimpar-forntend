@@ -113,8 +113,6 @@ function transformSingleImmunization(data: any) {
   };
 
   return selectedImmunization;
-
-  return selectedImmunization;
 }
 
 export const getStringValuesFromObjectArray = (
@@ -261,7 +259,7 @@ function transformLabTests(data: any) {
             ? resource?.interpretation?.[0]?.coding?.[0]?.display ?? ""
             : "",
           status: RESULT_STATUS.AVAILABLE,
-          fileUrl: resource?.file_url ? resource?.file_url : "",
+          fileUrl: resource?.file_url || "",
         } as ILabTest;
       } else if (
         resource?.record_type?.toLowerCase() === RECORD_TYPE.APPOINTMENT
@@ -453,7 +451,7 @@ const serviceHistorySlice = createSlice({
           payload &&
           payload.selectedTab?.toLowerCase() === SERVICE_TABS.SERVICE_HISTORY
         ) {
-          if (payload && payload?.data) {
+          if (payload?.data) {
             const serviceHistoryData =
               payload?.data?.data?.filter(isIServiceHistory);
             state.serviceHistory.data = serviceHistoryData;
@@ -492,7 +490,7 @@ const serviceHistorySlice = createSlice({
       })
       .addCase(getLabTestsThunk.fulfilled, (state, { payload }) => {
         if (payload) {
-          state.labTests.data = [...payload?.data];
+          state.labTests.data = [...(payload?.data || [])];
           state.labTests.pagination = payload.pagination;
         } else {
           state.labTests = {} as ILabTestData;

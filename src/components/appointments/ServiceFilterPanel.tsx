@@ -53,12 +53,13 @@ const ServiceFilterPanel = ({
 
   return (
     <div className="h-full !min-h-[2.5rem] w-full relative">
-      <div
+      <button
+        type="button"
         onClick={(e) => {
           op?.current?.toggle(e);
           setIsOpen(true);
         }}
-        className={`relative rounded-full h-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
+        className={`relative rounded-full w-full h-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
       >
         <Button
           type="button"
@@ -75,7 +76,7 @@ const ServiceFilterPanel = ({
         <span
           className={`absolute right-[1rem] top-[.7rem] pi ${isOpen ? "pi-chevron-up" : "pi-chevron-down"}`}
         />
-      </div>
+      </button>
       <OverlayPanel
         ref={op}
         className="w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
@@ -85,7 +86,7 @@ const ServiceFilterPanel = ({
           <div className="flex-1 overflow-y-scroll">
             {!!serviceCategories?.length &&
               serviceCategories.map((service) => (
-                <div
+                <button
                   key={service}
                   onClick={() => toggleService(service)}
                   className="w-full flex justify-between min-h-[2.5rem] pe-1 border-b items-center cursor-pointer"
@@ -96,7 +97,7 @@ const ServiceFilterPanel = ({
                     value={service}
                     checked={selectedServices.includes(service)}
                   />
-                </div>
+                </button>
               ))}
             <Divider />
           </div>

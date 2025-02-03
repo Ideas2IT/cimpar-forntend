@@ -1,43 +1,24 @@
-import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
-import { useEffect, useRef, useState } from "react";
-import SearchInput from "../SearchInput";
-import ServiceFilterPanel from "./ServiceFilterPanel";
-
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Sidebar } from "primereact/sidebar";
 import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import FilterIcon from "../../assets/icons/filter.svg?react";
-import {
-  IAppointmentList,
-  IGetAppointmentPayload,
-} from "../../interfaces/appointment";
+import { IAppointmentList, IGetAppointmentPayload } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
 import { IServiceHistoryPayload } from "../../interfaces/immunization";
 import Tab from "../../interfaces/Tab";
 import { getRowClasses } from "../../services/commonFunctions";
-import {
-  getAllAppointmentsThunk,
-  getTotalAppointment,
-  selectAppointments,
-} from "../../store/slices/appointmentSlice";
+import { getAllAppointmentsThunk, getTotalAppointment, selectAppointments } from "../../store/slices/appointmentSlice";
 import { selectIsAdmin } from "../../store/slices/loginSlice";
-import {
-  getPatientDetailsThunk,
-  selectSelectedPatient,
-} from "../../store/slices/PatientSlice";
+import { getPatientDetailsThunk, selectSelectedPatient } from "../../store/slices/PatientSlice";
 import { getServiceHistoryThunk } from "../../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../../store/store";
-import {
-  DATE_FORMAT,
-  PAGE_LIMIT,
-  PATH_NAME,
-  RESPONSE,
-  TABS,
-} from "../../utils/AppConstants";
+import { DATE_FORMAT, PAGE_LIMIT, PATH_NAME, RESPONSE, TABS } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import { IItem } from "../appointmentForm/AppointmentForm";
 import BackButton from "../backButton/BackButton";
@@ -46,6 +27,7 @@ import DualCalendar from "../dualCalendar/DualCalendar";
 import InsuranceDetails from "../insuranceDetails/InsuranceDetails";
 import MedicalConditionDetails from "../medicalDetails/MedicalConditionDetails";
 import Medication from "../medication/Medication";
+import SearchInput from "../SearchInput";
 import ServiceHistory from "../serviceHistory/ServiceHistory";
 import Unauthorized from "../Unauthorised";
 import UserDetails from "../userDetails/UserDetails";
@@ -53,6 +35,8 @@ import useToast from "../useToast/UseToast";
 import VerticalTabView from "../VerticalTabView";
 import VisitHistory from "../visitHistory/VisitHistory";
 import DetailedAppointmentView from "./DetailedApppointmentView";
+import ServiceFilterPanel from "./ServiceFilterPanel";
+
 interface IHandlers {
   viewAppointment: () => void;
   viewPatient: (value: boolean, appoinement: IAppointmentList) => void;
@@ -65,6 +49,7 @@ export interface IDualCalendarReponse {
 }
 
 const Appointments = () => {
+
   const [serviceHistoryPayload, setServiceHistoryPayload] =
     useState<IServiceHistoryPayload>({
       page_size: PAGE_LIMIT,
@@ -146,9 +131,7 @@ const Appointments = () => {
     },
   ];
 
-  const [selectedAppoinement, setSelectedAppointment] = useState(
-    {} as IAppointmentList
-  );
+  const [selectedAppointment, setSelectedAppointment] = useState({} as IAppointmentList);
   const [showPatientDetails, setShowPatientDetails] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOpenCalendar, setIsOpenCalendar] = useState(false);
@@ -204,20 +187,6 @@ const Appointments = () => {
     }));
   };
 
-  const handleFilter = () => {
-    const serviceType = selectedServices.includes(1)
-      ? ""
-      : selectedServices.includes(2)
-        ? "lab_result"
-        : selectedServices.includes(3)
-          ? "immunization"
-          : "";
-    setServiceHistoryPayload({
-      ...serviceHistoryPayload,
-      service_type: serviceType,
-    });
-  };
-
   function convertStartToUTC(date: Date): string {
     const timezoneOffset = date.getTimezoneOffset() * 60000;
     const utcDate = new Date(date.getTime() + timezoneOffset);
@@ -225,7 +194,7 @@ const Appointments = () => {
   }
 
   function convertEndToUTC(date: Date): string {
-    date && date.setHours(23, 59, 59, 999);
+    date?.setHours(23, 59, 59, 999);
     const timezoneOffset = date.getTimezoneOffset() * 60000;
     const utcDate = new Date(date.getTime() + timezoneOffset);
     return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
@@ -270,7 +239,7 @@ const Appointments = () => {
   }) => {
     return (
       <div
-        className={`text-[16px] font-tertiary capitalize ${styleClass && styleClass}`}
+        className={`text-[16px] font-tertiary capitalize ${styleClass}`}
       >
         {value}
       </div>
@@ -282,7 +251,8 @@ const Appointments = () => {
       field: "patientName",
       header: "PATIENT NAME",
       body: (rowData: IAppointmentList) => (
-        <div
+        <button type="button"
+          className="text-start"
           onClick={() => {
             handlers.viewAppointment();
             handlers.viewPatient(false, rowData);
@@ -292,7 +262,7 @@ const Appointments = () => {
             styleClass="text-purple-900 hover:underline"
             value={rowData.patientName}
           />
-        </div>
+        </button>
       ),
     },
     {
@@ -369,11 +339,12 @@ const Appointments = () => {
     }
   }, [serviceHistoryPayload, patientId]);
 
-  const AppointmentHeader = () => {
+  const appointmentHeader = () => {
     return (
       <div className="flex justify-between w-full pe-4 items-center">
-        <label>Appointment Details</label>
+        <label htmlFor="appointmentDetails">Appointment Details</label>
         <Button
+          id="appointmentDetails"
           onClick={() => {
             setShowPatientDetails(true);
             setIsSidebarOpen(false);
@@ -443,13 +414,22 @@ const Appointments = () => {
     }
   }, [showPatientDetails]);
 
+  const getServiceLabel = () => {
+    if (selectedServices.includes(1) || selectedServices.length === 0) {
+      return "All Services";
+    } else if (selectedServices.includes(2)) {
+      return "Lab Results";
+    }
+    return "Immunization";
+  };
+
   return (
     <div className="h-[98%] mx-6">
       {isAdmin ? (
         <>
           <div className="flex justify-between">
             {showPatientDetails ? (
-              <div
+              <button type="button"
                 onClick={() => {
                   setShowPatientDetails(false);
                   setSelectedAppointment({} as IAppointmentList);
@@ -458,19 +438,19 @@ const Appointments = () => {
                 <BackButton
                   previousPage="Upcoming"
                   currentPage={
-                    selectedAppoinement?.patientName + "'s " + "Appointment"
+                    selectedAppointment?.patientName + "'s " + "Appointment"
                   }
                   backLink={PATH_NAME.APPOINTMENTS}
                 />
-              </div>
+              </button>
             ) : (
-              <label className="color-primary font-primary text-xl">
+              <p className="color-primary font-primary text-xl">
                 Upcoming
-              </label>
+              </p>
             )}
             {!showPatientDetails && (
               <div className="flex gap-2">
-                <div
+                <button type="button"
                   className={`md:w-[20rem] cursor-pointer border-primary max-h-[2.5rem] flex  items-center justify-between px-4 rounded-full ${isOpenCalendar ? "bg-primary text-white" : "color-primary bg-white"}`}
                   onClick={(e) => {
                     op?.current?.toggle(e);
@@ -484,7 +464,7 @@ const Appointments = () => {
                   ) : (
                     <i className="pi pi-chevron-down" />
                   )}
-                </div>
+                </button>
                 <span className="h-full w-[20rem]">
                   <ServiceFilterPanel onApplyFilter={handleTestFilter} />
                 </span>
@@ -497,7 +477,7 @@ const Appointments = () => {
             {showPatientDetails && selectedTab === TABS.SERVICE_HISTORY && (
               <div className="flex items-center">
                 <div className="flex items-center">
-                  <div
+                  <button
                     className={`${selectedTab === "Service History" ? "rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center bg-white cursor-pointer" : "hidden"}`}
                     onClick={(event) => {
                       opService.current?.toggle(event);
@@ -506,17 +486,12 @@ const Appointments = () => {
                   >
                     <FilterIcon className="mx-3 color-primary" />
                     <span className="color-primary">
-                      {selectedServices.includes(1) ||
-                      selectedServices.length === 0
-                        ? "All Services"
-                        : selectedServices.includes(2)
-                          ? "Lab Results"
-                          : "Immunization"}
+                      {getServiceLabel()}
                     </span>
                     <span
                       className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
                     />
-                  </div>
+                  </button>
                   <OverlayPanel
                     unstyled
                     className="bg-white py-2 mt-5 shadow-md rounded-lg"
@@ -525,10 +500,10 @@ const Appointments = () => {
                   >
                     <div className="w-[20rem] min-h-[12rem] p-4 pb-1">
                       {!!services?.length &&
-                        services.map((option, index) => {
+                        services.map((option) => {
                           return (
-                            <div
-                              key={index}
+                            <button type="button"
+                              key={option.name}
                               className="border-b py-1 cursor-pointer"
                               onClick={() => handleServiceFilter(option)}
                             >
@@ -541,7 +516,7 @@ const Appointments = () => {
                                   checked={selectedServices.includes(option.id)}
                                 />
                               </div>
-                            </div>
+                            </button>
                           );
                         })}
                       <div className="flex justify-end mt-3">
@@ -645,13 +620,13 @@ const Appointments = () => {
                 setIsSidebarOpen(false);
               }}
               className="detailed-view w-[35rem]"
-              header={<AppointmentHeader />}
+              header={appointmentHeader()}
               visible={isSidebarOpen}
               position="right"
             >
               <DetailedAppointmentView
-                appointmentId={selectedAppoinement?.id}
-                patientId={selectedAppoinement?.patientId}
+                appointmentId={selectedAppointment?.id}
+                patientId={selectedAppointment?.patientId}
               />
             </Sidebar>
           )}
@@ -680,7 +655,7 @@ const ViewAppointment = ({
 }) => {
   return (
     <div className="flex w-full justify-center gap-4 items-center text-purple-900">
-      <i
+      <button type="button"
         aria-label="View Appointment"
         className="pi pi-calendar-minus"
         title="View Appointment"
@@ -689,7 +664,7 @@ const ViewAppointment = ({
           handlers.viewPatient(false, appoinement);
         }}
       />
-      <i
+      <button type="button"
         aria-label="View User"
         className="pi pi-user"
         title="View Profile"

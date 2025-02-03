@@ -1,59 +1,53 @@
-import {
-  PaymentElement,
-  useElements,
-  useStripe,
-} from "@stripe/react-stripe-js";
+import { PaymentElement, useElements, useStripe, } from "@stripe/react-stripe-js";
 import { Layout } from "@stripe/stripe-js";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { TAppointmentStatus } from "../../interfaces/appointment";
 import { getPaymentStatusThunk } from "../../store/slices/paymentSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  ERROR_CODES,
-  PAYMENT_RETURN_URL,
-  PAYMENT_STATUS,
-  RESPONSE,
-  TRNASACTION_STATUS,
-} from "../../utils/AppConstants";
+import { ERROR_CODES, PAYMENT_RETURN_URL, PAYMENT_STATUS, RESPONSE, TRNASACTION_STATUS } from "../../utils/AppConstants";
 
-export default function CheckoutForm({
+const CheckoutForm = ({
   showStatusDialog,
   clientSecret,
 }: {
   showStatusDialog: (value: boolean, status: TAppointmentStatus) => void;
   clientSecret: string;
-}) {
+}) => {
+
+
+  const dispatch = useDispatch<AppDispatch>();
+
   const stripe = useStripe();
   const elements = useElements();
-  const dispatch = useDispatch<AppDispatch>();
 
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+
   const checkStatus = (count: number) => {
     dispatch(getPaymentStatusThunk(clientSecret)).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         const status = response.payload.status as string;
         switch (true) {
-          case status?.toLocaleLowerCase() === PAYMENT_STATUS.PAID:
-            {
-              setIsLoading(false);
-              showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
-            }
+          case status?.toLocaleLowerCase() === PAYMENT_STATUS.PAID: {
+            setIsLoading(false);
+            showStatusDialog(true, TRNASACTION_STATUS.SUCCEEDED);
             break;
+          }
           case status?.toLocaleLowerCase() === PAYMENT_STATUS.PENDING &&
             count <= 3: {
-            setTimeout(() => {
-              checkStatus(count + 1);
-            }, count * 4000);
-            break;
-          }
+              setTimeout(() => {
+                checkStatus(count + 1);
+              }, count * 4000);
+              break;
+            }
           case status?.toLocaleLowerCase() === PAYMENT_STATUS.PENDING &&
             count >= 3: {
-            setIsLoading(false);
-            showStatusDialog(true, TRNASACTION_STATUS.PENDING);
-            break;
-          }
+              setIsLoading(false);
+              showStatusDialog(true, TRNASACTION_STATUS.PENDING);
+              break;
+            }
           case status?.toLocaleLowerCase() === PAYMENT_STATUS.FAILED:
             setIsLoading(false);
             showStatusDialog(true, TRNASACTION_STATUS.REJECTED);
@@ -86,9 +80,9 @@ export default function CheckoutForm({
         result.error?.type === ERROR_CODES.CARD_ERROR ||
         result.error?.type === ERROR_CODES.STRIPE_VALIDATION_ERROR
       ) {
-        setMessage(result?.error?.message || "");
+        setMessage(result?.error?.message ?? "");
       } else {
-        setMessage(result?.error?.message || "Unexpected error");
+        setMessage(result?.error?.message ?? "Unexpected error");
       }
       setIsLoading(false);
     } else {
@@ -126,3 +120,5 @@ export default function CheckoutForm({
     </div>
   );
 }
+
+export default CheckoutForm;

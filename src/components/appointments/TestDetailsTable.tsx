@@ -29,6 +29,15 @@ const TestDetailsTable = ({
     );
   };
 
+  const addTelehealthTag = (row: ITestDetails) => {
+    return <span>
+      {row.is_telehealth_required && (
+        <span className="text-red-500">*</span>
+      )}
+      {row.display}
+    </span>
+  }
+
   return (
     <div className="border border-gray-300 rounded-md py-2">
       {testDetails?.length ? (
@@ -49,18 +58,11 @@ const TestDetailsTable = ({
           <Column
             header="Name"
             headerClassName="border-b"
-            body={(rowData: ITestDetails) => (
-              <span>
-                {rowData.is_telehealth_required && (
-                  <span className="text-red-500">*</span>
-                )}
-                {rowData.display}
-              </span>
-            )}
+            body={(rowData: ITestDetails) => addTelehealthTag(rowData)}
           />
           <Column
             header="Price"
-            body={(dataRow: ITestDetails) => <>{calculatePrice(dataRow)}</>}
+            body={(dataRow: ITestDetails) => calculatePrice(dataRow)}
             headerClassName="justify-items-end details-header border-b"
             bodyClassName="justify-end text-end"
           />

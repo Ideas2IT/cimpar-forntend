@@ -47,10 +47,10 @@ const Immunization = ({
     setIsSidebarOpen(true);
   };
 
-  const ImmunizationHeader = () => {
+  const immunizationHeader = () => {
     return (
       <div>
-        <label className="pe-3">Immunization Details</label>
+        <p className="pe-3">Immunization Details</p>
         <span
           className={`sidebar-header font-primary ${getStatusColor(selectedImmunization.status)}`}
         >
@@ -137,7 +137,7 @@ const Immunization = ({
       )}
       <Sidebar
         className="detailed-view w-[28rem]"
-        header={<ImmunizationHeader />}
+        header={immunizationHeader()}
         visible={isSidebarOpen}
         position="right"
         onHide={() => {

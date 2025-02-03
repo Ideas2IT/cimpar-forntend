@@ -4,39 +4,30 @@ import { TabPanel, TabView } from "primereact/tabview";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DollarSign from "../../assets/icons/dollar-sign.svg?react";
-import {
-  IGetPatientServicesPayload,
-  ILabService,
-  ILabTestService,
-} from "../../interfaces/common";
-import {
-  getLabTestsForPatientThunk,
-  selectServiceCategories,
-} from "../../store/slices/masterTableSlice";
+import { IGetPatientServicesPayload, ILabService, ILabTestService } from "../../interfaces/common";
+import { getLabTestsForPatientThunk, selectServiceCategories } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  LAB_SERVICES,
-  RESPONSE,
-  SERVICE_MENU,
-  TABLE,
-} from "../../utils/AppConstants";
-import CustomModal from "../customModal/CustomModal";
-interface IPricingTableProps {
+import { LAB_SERVICES, RESPONSE, SERVICE_MENU, TABLE, } from "../../utils/AppConstants";
+import CustomModal from "../customModal/CustomModal"
+
+type IPricingTableProps = {
   tableHeader: string;
   selectedTab?: string;
   values?: ILabService[];
 }
 
 const PricingModal = (props: IPricingTableProps) => {
-  const serviceCategories = useSelector(selectServiceCategories);
   const { tableHeader, selectedTab } = props;
-  const [isOpenPricingModal, setIsOpenPricingModal] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number>(getIndex() || 0);
-  const [services, setServices] = useState<ILabService[]>([]);
+
   const dispatch = useDispatch<AppDispatch>();
 
+  const [services, setServices] = useState<ILabService[]>([]);
+  const serviceCategories = useSelector(selectServiceCategories);
+  const [isOpenPricingModal, setIsOpenPricingModal] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number>(getIndex() ?? 0);
+
   useEffect(() => {
-    isOpenPricingModal && onTabChange(getIndex() || 0);
+    isOpenPricingModal && handleTabChange(getIndex() ?? 0);
   }, [isOpenPricingModal]);
 
   function getIndex() {
@@ -56,7 +47,7 @@ const PricingModal = (props: IPricingTableProps) => {
     } else return serviceCategories[0];
   };
 
-  const onTabChange = (tabIndex: number) => {
+  const handleTabChange = (tabIndex: number) => {
     setActiveIndex(tabIndex);
     const payload: IGetPatientServicesPayload = {
       tableName: TABLE.LAB_TEST,
@@ -86,7 +77,8 @@ const PricingModal = (props: IPricingTableProps) => {
 
   return (
     <>
-      <span
+      <button
+        type="button"
         className="text-[16px] flex items-center font-primary text-purple-900 ms-3 cursor-pointer hover:border-b hover:border-purple-900"
         onClick={() => {
           setIsOpenPricingModal(true);
@@ -95,7 +87,7 @@ const PricingModal = (props: IPricingTableProps) => {
         <DollarSign className="inline h-[16px] me-2 underline" />
 
         {tableHeader}
-      </span>
+      </button>
       {isOpenPricingModal && (
         <CustomModal
           header={<span className="bg-white ps-4">Test Pricing</span>}
@@ -103,24 +95,23 @@ const PricingModal = (props: IPricingTableProps) => {
           styleClass="lg:w-[70%] w-[90%] h-[90vh]"
           showCloseButton={true}
         >
-          <>
-            <TabView
-              activeIndex={activeIndex}
-              onTabChange={(e) => onTabChange(e.index)}
-            >
-              {serviceCategories?.length &&
-                serviceCategories.map((tab) => (
-                  <TabPanel
-                    header={tab}
-                    key={tab}
-                    className="border-b w-full text-center text-sm"
-                    headerClassName="border-b"
-                  >
-                    <PricingTable tableHeader={tab} values={services} />
-                  </TabPanel>
-                ))}
-            </TabView>
-          </>
+
+          <TabView
+            activeIndex={activeIndex}
+            onTabChange={(e) => handleTabChange(e.index)}
+          >
+            {!!serviceCategories?.length &&
+              serviceCategories.map((tab) => (
+                <TabPanel
+                  header={tab}
+                  key={tab}
+                  className="border-b w-full text-center text-sm"
+                  headerClassName="border-b"
+                >
+                  <PricingTable tableHeader={tab} values={services} />
+                </TabPanel>
+              ))}
+          </TabView>
         </CustomModal>
       )}
     </>
@@ -143,23 +134,23 @@ const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
     {
       header: "service center",
       bodyClassName: " max-w-[5rem]",
-      body: (row: ILabService) => (
-        <>
-          {" "}
-          {row?.currency_symbol + Number(row?.centerPricing)?.toFixed(2) || "-"}
-        </>
-      ),
+      body: (row: ILabService) => (testPricing(row?.currency_symbol ?? '', row.centerPricing ?? '')),
     },
     {
       header: "at home",
       bodyClassName: " max-w-[5rem]",
       body: (row: ILabService) => (
-        <>
-          {row?.currency_symbol + Number(row?.homePricing)?.toFixed(2) || "-"}
-        </>
+        testPricing(row?.currency_symbol ?? '', row?.homePricing ?? '')
       ),
     },
   ];
+
+  const testPricing = (currencySymbol: string = '$', price: string = '0') => {
+    return <>
+      {currencySymbol + Number(price)?.toFixed(2) || "-"}
+    </>
+  }
+
   return (
     <div className="border border-gray-300 rounded-lg mt-3 h-[95%] overflow-auto">
       <div className="cimpar-background h-10 rounded-t-lg uppercase justify-center w-full flex items-center">
@@ -184,10 +175,9 @@ const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
               field={column.field}
               header={column.header}
               headerClassName={`
-                ${
-                  column?.headerClassName
-                    ? column.headerClassName
-                    : "uppercase border-b"
+                ${column?.headerClassName
+                  ? column.headerClassName
+                  : "uppercase border-b"
                 } font-secondary`}
               bodyClassName={`border-b text-[16px] ${column?.bodyClassName}`}
               body={column.body}
@@ -198,4 +188,5 @@ const PricingTable = ({ tableHeader, values }: IPricingTableProps) => {
     </div>
   );
 };
+
 export default PricingModal;
