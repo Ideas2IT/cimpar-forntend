@@ -14,6 +14,7 @@ import { getServiceHistoryThunk } from "../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../store/store";
 import {
   LAB_SERVICES,
+  MESSAGE,
   PAGE_LIMIT,
   RESPONSE,
   TABS,
@@ -159,7 +160,7 @@ const LabTestResults = () => {
       };
       dispatch(getServiceHistoryThunk(payload)).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.REJECTED) {
-          errorToast("Failed to load", "Failed to load service history");
+          errorToast(MESSAGE.UNABLE_TO_FETCH, "Failed to load service history");
         }
       });
     } else {
@@ -173,7 +174,7 @@ const LabTestResults = () => {
       };
       dispatch(getServiceHistoryThunk(payload)).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.REJECTED) {
-          errorToast("Failed to load", "Failed to load service history");
+          errorToast(MESSAGE.UNABLE_TO_FETCH, "Failed to load Srvice History");
         }
       });
     }

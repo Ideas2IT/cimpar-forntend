@@ -95,7 +95,7 @@ const EditMedicationDetails = () => {
             "Medication details has been updated successfully"
           );
         } else {
-          errorToast("Updation Failed", "Failed to update medication details");
+          errorToast("Unable To Update", "Unable to update Medication Details");
         }
       });
     } else {

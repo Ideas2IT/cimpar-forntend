@@ -56,6 +56,7 @@ const Appointments = () => {
       page: 1,
       searchValue: "",
     } as IServiceHistoryPayload);
+
   const appointments = useSelector(selectAppointments);
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
   const appointmentMeta = useSelector(getTotalAppointment);
@@ -565,10 +566,8 @@ const Appointments = () => {
                       No Appointments to show
                     </div>
                   }
-                  selectionMode="single"
-                  dataKey="appointmentId"
                   tableStyle={{ minWidth: "50rem" }}
-                  className="mt-2 rowHoverable px-2 py-3"
+                  className="mt-2 px-2 py-3"
                   rowClassName={() => getRowClasses("h-10 border-b")}
                 >
                   {columns.map((column) => {

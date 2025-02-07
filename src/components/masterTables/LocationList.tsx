@@ -7,10 +7,10 @@ import { Toast } from "primereact/toast";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import HeaderContext from "../../context/HeaderContext";
-import { ErrorResponse, IOptionValue } from "../../interfaces/common";
+import { ErrorResponse, IBooking, IOptionValue } from "../../interfaces/common";
 import { ICreateLocationPayload, IGetLocationPayload, ILocation, ILocationResponse, IToggleLocationStatusPayload } from "../../interfaces/location";
 import { cleanString, getRowClasses } from "../../services/commonFunctions";
-import { createLocationThunk, getLocationsThunk, getOptionValuesThunk, getServiceRegionsThunk, toggleLocationStatusThunk, updateLocationThunk } from "../../store/slices/masterTableSlice";
+import { createLocationThunk, getBookingNamesThunk, getLocationsThunk, getOptionValuesThunk, getServiceRegionsThunk, toggleLocationStatusThunk, updateLocationThunk } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
 import { DATE_FORMAT, HEADER_TITLE, PAGE_LIMIT, PATH_NAME, RESPONSE, TABLE } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
@@ -52,11 +52,15 @@ const LocationList = () => {
     searchValue: "",
   } as IGetLocationPayload);
 
+  const [bookingNames, setBookingNames] = useState<IBooking[]>([]);
+
+
 
   useEffect(() => {
     fetchStates();
     getCitiesAndStatesForDropdown();
     updateHeaderTitle(HEADER_TITLE.CENTER_LOCATION);
+    fetchBookingsCalendars();
   }, []);
 
   useEffect(() => {
@@ -111,6 +115,21 @@ const LocationList = () => {
       setLocations(locations);
     });
   };
+
+  const fetchBookingsCalendars = () => {
+    dispatch(getBookingNamesThunk()).then((response) => {
+      if (response.meta.requestStatus === RESPONSE.FULFILLED) {
+        const _response = (response?.payload?.data?.value as IBooking[]) || [];
+        if (_response?.length > 0) {
+          setBookingNames(_response);
+        } else {
+          setBookingNames([]);
+        }
+      } else {
+        errorToast('Failed To Fetch Calendars', 'Unable to fetch Microsoft Booking calendars')
+      }
+    });
+  }
 
 
 
@@ -227,7 +246,7 @@ const LocationList = () => {
           setLocationPayload({ ...locationPayload, page: 1 });
         } else {
           const _response = response.payload as ErrorResponse;
-          errorToast("Failed to create location", _response?.message);
+          errorToast("Unable To Create Location", _response?.message);
         }
       });
     } else {
@@ -249,6 +268,17 @@ const LocationList = () => {
       });
     }
   };
+
+  const getBookingName = () => {
+    const bookingId = selectedLocation?.azure_booking_id;
+    if (bookingId) {
+      const bookingDetails = bookingNames.find((b) => b.id === bookingId);
+      console.log(bookingDetails)
+      return bookingDetails?.displayName ?? "N/A";
+    }
+    return "N/A";
+  }
+
 
   const updateLocationList = (updatedLocation: ILocation) => {
     const _locations = locations.data.map((locations) => {
@@ -289,35 +319,43 @@ const LocationList = () => {
           previousPage="Masters"
         />
         <div className="flex justify-items-end gap-3">
-          <CustomServiceDropDown
-            key="cities"
-            onApplyFilter={(newCities) =>
-              setLocationPayload({
-                ...locationPayload,
-                cities: newCities,
-                page: 1,
-              })
-            }
-            label="All Cities"
-            options={regions?.city}
-          />
-          <CustomServiceDropDown
-            key="states"
-            onApplyFilter={(newStates) => {
-              setLocationPayload({
-                ...locationPayload,
-                states: newStates,
-                page: 1,
-              });
-            }}
-            label="All States"
-            options={regions?.state}
-          />
-          <SearchInput
-            ref={searchInputRef}
-            handleSearch={(value) => handleSearch(value)}
-            placeholder="Search for Center"
-          />
+          <div className="w-[17rem]">
+            <CustomServiceDropDown
+              key="cities"
+              onApplyFilter={(newCities) =>
+                setLocationPayload({
+                  ...locationPayload,
+                  cities: newCities,
+                  page: 1,
+                })
+              }
+              label="All Cities"
+              options={regions?.city}
+              popoverStyle="!w-[17rem]"
+            />
+          </div>
+          <div className="w-[17rem]">
+            <CustomServiceDropDown
+              key="states"
+              onApplyFilter={(newStates) => {
+                setLocationPayload({
+                  ...locationPayload,
+                  states: newStates,
+                  page: 1,
+                });
+              }}
+              label="All States"
+              options={regions?.state}
+              popoverStyle="!w-[17rem]"
+            />
+          </div>
+          <div className="w-[17rem]">
+            <SearchInput
+              ref={searchInputRef}
+              handleSearch={(value) => handleSearch(value)}
+              placeholder="Search for Center"
+            />
+          </div>
         </div>
       </div>
       <div className="flex w-full py-2 box-content h-[2.5rem] justify-end">
@@ -366,7 +404,7 @@ const LocationList = () => {
               setIsOpenSidebar(false);
             }}
           >
-            <DetailedLocationView location={selectedLocation} />
+            <DetailedLocationView location={selectedLocation} bookingName={getBookingName()} />
           </Sidebar>
         )}
       </div>
@@ -375,13 +413,14 @@ const LocationList = () => {
           header={modalHeader()}
           handleClose={handleCloseModal}
           showCloseButton={true}
-          styleClass="h-[90vh] lg:w-[80vw] w-[100vw]"
+          styleClass="lg:w-[80vw] w-[100vw]"
         >
           <EditLocation
             states={states}
             selectedLocation={selectedLocation}
             onClose={handleCloseModal}
             handleSubmitForm={(value) => handleSubmitForm(value)}
+            bookingNames={bookingNames}
           />
         </CustomModal>
       )}
@@ -399,7 +438,7 @@ const LocationList = () => {
   );
 };
 
-const DetailedLocationView = ({ location }: { location: ILocation }) => {
+const DetailedLocationView = ({ location, bookingName }: { location: ILocation; bookingName: string }) => {
   const locationsFields = [
     {
       header: "SERVIICE CENTER NAME",
@@ -414,6 +453,11 @@ const DetailedLocationView = ({ location }: { location: ILocation }) => {
     {
       header: "ADDRESS LINE II",
       value: location?.address_line2 || "-",
+      styleClasses: "col-span-2",
+    },
+    {
+      header: "MICROSOFT CALENDAR NAME",
+      value: bookingName || "-",
       styleClasses: "col-span-2",
     },
     {

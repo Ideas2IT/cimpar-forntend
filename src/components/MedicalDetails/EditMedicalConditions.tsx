@@ -132,7 +132,7 @@ const EditMedicalConditions = () => {
           );
         } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
           const errorResponse = response.payload as ErrorResponse;
-          errorToast("Updation Failed", errorResponse.message);
+          errorToast("Unable To Update", errorResponse.message);
         }
       });
     }

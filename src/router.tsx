@@ -22,7 +22,6 @@ import SetPassword from "./components/setPassword/SetPassword";
 import EditUserDetails from "./components/userDetails/EditUserDetails";
 import UserProfilePage from "./components/userProfilePage/UserProfilePage";
 import EditVisitHistory from "./components/visitHistory/EditVisitHistory";
-import PaymentStatus from "./Pages/PaymentStatus";
 import ServiceMaster from "./Pages/ServiceMaster";
 import Transactions from "./Pages/Transactions";
 import Transportation from "./Pages/Transportation";
@@ -229,10 +228,6 @@ const router = createBrowserRouter([
   {
     path: "*",
     element: <PageNotFound />,
-  },
-  {
-    path: `${PATH_NAME.PAYMENT_STATUS}`,
-    element: <PaymentStatus />,
   },
 ]);
 

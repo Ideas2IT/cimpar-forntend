@@ -2,24 +2,23 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Tooltip } from "primereact/tooltip";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
 import { IBooking, IOptionValue } from "../../interfaces/common";
 import { ILocation } from "../../interfaces/location";
-import { getBookingNamesThunk } from "../../store/slices/masterTableSlice";
-import { AppDispatch } from "../../store/store";
 import { PATTERN } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 
 const EditLocation = ({
   selectedLocation,
   states,
+  bookingNames,
   onClose,
   handleSubmitForm,
 }: {
   selectedLocation?: ILocation;
   states: IOptionValue[];
+  bookingNames: IBooking[];
   onClose: () => void;
   handleSubmitForm: (data: any) => void;
 }) => {
@@ -33,20 +32,6 @@ const EditLocation = ({
   } = useForm({
     defaultValues: {} as ILocation,
   });
-
-  const [bookingNames, setBookingNames] = useState<IBooking[]>([]);
-  const dispatch = useDispatch<AppDispatch>();
-
-  useEffect(() => {
-    dispatch(getBookingNamesThunk()).then((response) => {
-      const _response = (response?.payload?.data?.value as IBooking[]) || [];
-      if (_response?.length > 0) {
-        setBookingNames(_response);
-      } else {
-        setBookingNames([]);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     if (selectedLocation && Object?.keys(selectedLocation)?.length) {
@@ -64,7 +49,7 @@ const EditLocation = ({
   const valueTemplate = (item: string) => {
     return (
       <span className={`${item && "text-black font-normal"}`}>
-        {item ? item : "State"}
+        {item ?? "State"}
       </span>
     );
   };
@@ -73,7 +58,7 @@ const EditLocation = ({
     return (
       <span
         className="capitalize itemTemplate"
-        data-pr-tooltip={item.description || ""}
+        data-pr-tooltip={item.description ?? ""}
         data-pr-position="top"
       >
         {item.displayName}

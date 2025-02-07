@@ -6,6 +6,7 @@ import Button from "../Button";
 import { useNavigate } from "react-router-dom";
 import {
   DATE_FORMAT,
+  MESSAGE,
   PAGE_LIMIT,
   PATH_NAME,
   RESPONSE,
@@ -51,7 +52,7 @@ const VisitHistory = () => {
       dispatch(getVisitHistoryByPatientIdThunk(encounterPayload)).then(
         ({ meta }) => {
           if (meta.requestStatus === RESPONSE.REJECTED) {
-            errorToast("Failed to fetch", "Not able to load Visit History");
+            errorToast(MESSAGE.UNABLE_TO_FETCH, "Unable to load Visit History");
           }
         }
       );
@@ -82,7 +83,7 @@ const VisitHistory = () => {
       dispatch(deleteVisitHistoryByIdThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.REJECTED) {
           const errorResponse = response.payload as ErrorResponse;
-          errorToast("Failed to delete Visit History", errorResponse.message);
+          errorToast(MESSAGE.UNABLE_TO_DELETE, errorResponse.message);
         } else {
           successToast(
             "Deleted Visit History",
@@ -221,7 +222,7 @@ const VisitHistory = () => {
                     style="outline"
                     className="font-primary bg-white text-lg m-1"
                     onClick={() => downloadDocument(report)}
-                    // onClick={() => setSelectedReport(report)}
+                  // onClick={() => setSelectedReport(report)}
                   >
                     <>
                       <i className="pi pi-eye px-2" />
@@ -261,10 +262,8 @@ const VisitHistory = () => {
             <div className="flex justify-center">No visit history to show!</div>
           }
           value={selectedPatinet?.visitHistory?.data}
-          selectionMode="single"
-          dataKey="id"
           tableStyle={{ minWidth: "50rem" }}
-          className="mt-2 max-h-[90%] rowHoverable"
+          className="mt-2 max-h-[90%]"
           rowClassName={() => getRowClasses("h-10 border-b")}
           scrollHeight="40rem"
         >

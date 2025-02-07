@@ -24,7 +24,7 @@ import { createAppointmentThunk } from "../../store/slices/appointmentSlice";
 import { getAllergiesByQueryThunk, getLabTestsForPatientThunk, getLocationsWithoutPaginationThunk, getMedicalConditionsByQueryThunk, getTimeSlotsByBookingIdAndCategoryThunk, getTimeSlotsForHomeThunk, selectAllergies, selectConditions, } from "../../store/slices/masterTableSlice";
 import { updatePaymentStatusThunk } from "../../store/slices/paymentSlice";
 import { AppDispatch } from "../../store/store";
-import { CODE, DATE_FORMAT, DIALOG_WARNING, PATH_NAME, RESPONSE, SERVICE_CATEGORY_NAME, SERVICE_LOCATION, SERVICE_MENU, SYSTEM, TABLE } from "../../utils/AppConstants";
+import { CODE, DATE_FORMAT, DIALOG_WARNING, MESSAGE, PATH_NAME, RESPONSE, SERVICE_CATEGORY_NAME, SERVICE_LOCATION, SERVICE_MENU, SYSTEM, TABLE } from "../../utils/AppConstants";
 import { combineDateAndTimeToUTC, OutputTimeSlot, ServiceTimeSlotsDetail, transformAzureServiceSlotsResponse, } from "../../utils/BookingSlotUtils";
 import { combineDateToUTc, dateFormatter, formatUTCToLocalTime, } from "../../utils/Date";
 import Button from "../Button";
@@ -395,7 +395,7 @@ const AppointmentForm = () => {
           setShowPaymentModal(true);
         } else {
           const errorResponse = response.payload as ErrorResponse;
-          errorToast("Failed to create Appointment", errorResponse?.message);
+          errorToast(MESSAGE.UNABLE_TO_CREATE, errorResponse?.message);
         }
       });
     }
@@ -488,7 +488,7 @@ const AppointmentForm = () => {
 
   const panelHeaderTemplate = () => {
     const columnHeaders = [
-      { lable: "Available Tests", classNames: "w-[70%]" },
+      { lable: "Available Tests  [Note: * Indicates that Telehealth is required]", classNames: "w-[70%]" },
       { lable: "Service Center", classNames: "w-[20%] text-center" },
       { lable: "At Home", classNames: "w-[10%] text-center" },
     ];

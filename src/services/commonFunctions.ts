@@ -231,7 +231,7 @@ export const getStatusColor = (value: string | undefined | null) => {
     case "icare":
       return "bg-[#D3EADD]";
     default:
-      return "bg-white";
+      return "bg-gray-300";
   }
 };
 

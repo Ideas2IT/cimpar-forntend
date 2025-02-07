@@ -414,21 +414,9 @@ export const createLocationThunk = createAsyncThunk(
       return response;
     } catch (error) {
       if (isAxiosError(error)) {
-        let errorMessage = "";
-        if (
-          error?.response?.data?.error.toLowerCase() ===
-          ERROR_CODES.VALIDATION_ERROR
-        ) {
-          errorMessage =
-            error?.response?.data?.details?.[0]?.field +
-              ":" +
-              error?.response?.data?.details?.[0]?.message ||
-            "Failed to Create Location";
-        } else {
-          errorMessage =
-            error?.response?.data?.error || "Failed to Create Location";
-        }
-
+        const errorMessage =
+          error?.response?.data?.detail ||
+          "Failed to add record to master table";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,

@@ -82,6 +82,12 @@ export const MESSAGE = {
   PASSWORD_UPDATE_FAILED_TITLE: "Password Update Failed",
   PASSWORD_UPDATE_FAILED_MESSAGE:
     "New password does not match with confirm password.",
+  UNABLE_TO_UPDATE: "Unable To Update.",
+  UNABLE_TO_FETCH: "Unable To Fetch.",
+  UNABLE_TO_CREATE: "Unable To Create.",
+  UNABLE_TO_DOWNLOAD: "Unable To Download.",
+  UNABLE_TO_DELETE: "Unable To Delete.",
+  NO_DATA_FOUND: "No data found.",
 };
 
 export const INSURANCE_TYPE = {
@@ -109,9 +115,9 @@ export const SERVICE_TABS = {
 };
 export const CLIENT_ID = "cimpar-client-jwt";
 export const GRANT_TYPE = "password";
-export const SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
+export const SYSTEM = "https://terminology.hl7.org/CodeSystem/v2-0203";
 export const CODE = "1020";
-export const PAYMENT_RETURN_URL = "http://localhost:5173/payment-status";
+export const PAYMENT_RETURN_URL = "https://localhost:5173/payment-status";
 export const LOGOUT = "logout";
 export const ONLINE = "online";
 export const OFFLINE = "offline";

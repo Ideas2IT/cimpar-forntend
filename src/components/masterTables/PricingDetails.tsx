@@ -87,10 +87,10 @@ export default function PricingDetails() {
           prevTests?.map((service) =>
             data.id === service.id
               ? {
-                  ...service,
-                  center_price: Number(data.center_price)?.toFixed(2),
-                  home_price: Number(data.home_price)?.toFixed(2),
-                }
+                ...service,
+                center_price: Number(data.center_price)?.toFixed(2),
+                home_price: Number(data.home_price)?.toFixed(2),
+              }
               : service
           )
         );
@@ -144,8 +144,8 @@ export default function PricingDetails() {
               currentPage="Pricing"
               previousPage="Masters"
             />
-            <div className="flex w-[40%] justify-end gap-3">
-              <div className="w-[50%]">
+            <div className="flex w-[80%] justify-end gap-3">
+              <div className="w-[20rem]">
                 <CustomServiceDropDown
                   onApplyFilter={(value) => {
                     setFetchPayload({
@@ -156,6 +156,7 @@ export default function PricingDetails() {
                   }}
                   options={serviceCategories}
                   label="Service Types"
+                  popoverStyle="!w-[20rem]"
                 />
               </div>
               <SearchInput
@@ -248,7 +249,7 @@ const PricingData = ({
       field: "",
       headerClassName: "justify-items-center custom-header",
       body: (rowData: ILabTestService) => (
-        <i
+        <button type="button"
           className="pi pi-pen-to-square w-full text-center text-purple-800"
           onClick={() => onEdit(true, rowData)}
         />

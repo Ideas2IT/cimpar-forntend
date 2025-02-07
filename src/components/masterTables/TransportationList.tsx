@@ -57,7 +57,7 @@ const TransportationForm = () => {
 
   const description = watch('description')
 
-  
+
 
   useEffect(() => {
     dispatch(getUrlByCategoryThunk(selectedCategory)).then((response) => {
@@ -90,7 +90,7 @@ const TransportationForm = () => {
         }, 2000);
       } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
         const errorResponse = response.payload as ErrorResponse;
-        errorToast("Update Failed", errorResponse.message);
+        errorToast("Unable To Update", errorResponse.message);
       }
     });
   };

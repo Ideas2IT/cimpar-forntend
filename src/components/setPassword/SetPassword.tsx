@@ -55,7 +55,7 @@ const SetPassword = () => {
           navigate(PATH_NAME.HOME);
         }, 1500);
       } else {
-        errorToast("Password Reset Failed", response?.payload?.message);
+        errorToast("Unable To Reset Password", response?.payload?.message);
       }
     });
   };

@@ -10,33 +10,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
-import {
-  ErrorResponse,
-  IAllTestspayload,
-  ILabTestService,
-  IToggleRecordStatusPayload,
-  IUpdateMasterRecordPayload,
-} from "../../interfaces/common";
+import { ErrorResponse, IAllTestspayload, ILabTestService, IToggleRecordStatusPayload, IUpdateMasterRecordPayload } from "../../interfaces/common";
 import { ICreateLabTest } from "../../interfaces/masterTable";
 import { cleanString, getRowClasses } from "../../services/commonFunctions";
-import {
-  addMasterRecordThunk,
-  getLabTestsForAdminThunk,
-  selectServiceCategories,
-  toggleRecordStatusThunk,
-  updateMasterRecordThunk,
-} from "../../store/slices/masterTableSlice";
+import { addMasterRecordThunk, getLabTestsForAdminThunk, selectServiceCategories, toggleRecordStatusThunk, updateMasterRecordThunk } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  HEADER_TITLE,
-  LAB_SERVICES,
-  PAGE_LIMIT,
-  PATH_NAME,
-  PATTERN,
-  RESPONSE,
-  SERVICE_MENU,
-  TABLE,
-} from "../../utils/AppConstants";
+import { HEADER_TITLE, LAB_SERVICES, PAGE_LIMIT, PATH_NAME, PATTERN, RESPONSE, SERVICE_MENU, TABLE } from "../../utils/AppConstants";
 import SearchInput, { SearchInputHandle } from "../SearchInput";
 import BackButton from "../backButton/BackButton";
 import CustomModal from "../customModal/CustomModal";
@@ -53,11 +32,15 @@ interface IPagging {
 }
 
 const ServiceList = () => {
-  const { service } = useParams();
-  const [isOpenModal, setIsOpendModal] = useState(false);
-  const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
+
   const serviceCategories = useSelector(selectServiceCategories);
+
+  const { service } = useParams();
+
   const dispatch = useDispatch<AppDispatch>();
+
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
   const [tests, setTests] = useState<ILabTestService[]>([]);
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -65,11 +48,20 @@ const ServiceList = () => {
     total_pages: 0,
     page_size: PAGE_LIMIT,
   } as IPagging);
+  const [fetchPayload, setFetchPayload] = useState<IAllTestspayload>({
+    tableName: TABLE.LAB_TEST,
+    page: 1,
+    page_size: PAGE_LIMIT,
+    current_page: 1,
+    display: "",
+    service_type: getServiceType(),
+  } as IAllTestspayload);
+
   const { toast, errorToast, successToast } = useToast();
   const searchInputRef = useRef<SearchInputHandle>(null);
   const dataTableRef = useRef<DataTable<ILabTestService[]>>(null);
 
-  const getServiceType = () => {
+  function getServiceType() {
     switch (service) {
       case SERVICE_MENU.LABORATORY:
         return LAB_SERVICES.CLINICAL_LABORATORY;
@@ -81,15 +73,6 @@ const ServiceList = () => {
         return LAB_SERVICES.CLINICAL_LABORATORY;
     }
   };
-
-  const [fetchPayload, setFetchPayload] = useState<IAllTestspayload>({
-    tableName: TABLE.LAB_TEST,
-    page: 1,
-    page_size: PAGE_LIMIT,
-    current_page: 1,
-    display: "",
-    service_type: getServiceType(),
-  } as IAllTestspayload);
 
   const handlePageChange = useCallback(
     (value: number) => {
@@ -139,12 +122,10 @@ const ServiceList = () => {
             "Updated successfully",
             "Test has been updated successfully"
           );
-          setIsOpendModal(false);
+          setIsOpenModal(false);
           if (selectedTest.service_type === data.service_type) {
             setTests((prevItems) =>
-              prevItems.map((item) =>
-                item.id === data.id ? { ...item, ...data } : item
-              )
+              prevItems.map((item) => item.id === data.id ? { ...item, ...data } : item)
             );
           } else {
             setTests((prevItems) =>
@@ -153,7 +134,7 @@ const ServiceList = () => {
           }
         } else {
           const errorResponse = response.payload as ErrorResponse;
-          errorToast("Failed to update", errorResponse.message);
+          errorToast("Unable To Update", errorResponse.message);
         }
       });
     } else {
@@ -179,17 +160,17 @@ const ServiceList = () => {
           if (searchInputRef?.current) {
             searchInputRef.current.clearInput();
           }
-          setIsOpendModal(false);
+          setIsOpenModal(false);
         } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
           const errorResponse = response.payload as ErrorResponse;
-          errorToast("Failed to create", errorResponse.message);
+          errorToast("Unable To Create", errorResponse.message);
         }
       });
     }
   };
 
   const showModal = () => {
-    setIsOpendModal(true);
+    setIsOpenModal(true);
   };
   const handleToggleStatus = (status: boolean, id: string) => {
     const payload: IToggleRecordStatusPayload = {
@@ -211,15 +192,33 @@ const ServiceList = () => {
     });
   };
 
+  const getIsActiveStatus = (row: ILabTestService) => {
+    return <div className="font-tertiary">
+      <label className="block ps-2">{row.is_active ? "Yes" : "No"}</label>
+      <InputSwitch
+        checked={row.is_active}
+        onChange={(e) => handleToggleStatus(e.value, row.id)}
+      />
+    </div>
+  }
+
+  const isTeleHealthRequired = (row: ILabTestService) => {
+    return <div className="font-tertiary text-center justify-items-center">
+      {row.is_telehealth_required ? "Yes" : "No"}
+    </div>
+  }
+
+  const getSerialNumber = (index: number) => {
+    return <>
+      {(pagination?.current_page - 1) * PAGE_LIMIT + index + 1}
+    </>
+  }
+
   const columns = [
     {
       field: "serial",
       header: "S.No",
-      body: (_: ILabTestService, options: { rowIndex: number }) => (
-        <>
-          {(pagination?.current_page - 1) * PAGE_LIMIT + options.rowIndex + 1}
-        </>
-      ),
+      body: (_: ILabTestService, options: { rowIndex: number }) => getSerialNumber(options.rowIndex),
     },
     {
       field: "display",
@@ -234,24 +233,12 @@ const ServiceList = () => {
     {
       header: "telehealth required",
       headerClassName: "custom-header justify-items-center !align-middle",
-      body: (row: ILabTestService) => (
-        <div className="font-tertiary text-center justify-items-center">
-          {row.is_telehealth_required ? "Yes" : "No"}
-        </div>
-      ),
+      body: (row: ILabTestService) => isTeleHealthRequired(row),
     },
     {
       field: "is_active",
       header: "ACTIVE",
-      body: (row: ILabTestService) => (
-        <div className="font-tertiary">
-          <label className="block ps-2">{row.is_active ? "Yes" : "No"}</label>
-          <InputSwitch
-            checked={row.is_active}
-            onChange={(e) => handleToggleStatus(e.value, row.id)}
-          />
-        </div>
-      ),
+      body: (row: ILabTestService) => getIsActiveStatus(row),
     },
     {
       field: "",
@@ -260,8 +247,8 @@ const ServiceList = () => {
       header: "ACTION",
       body: (row: ILabTestService) => (
         <div className="font-primary text-purple-800 text-center w-full">
-          <span
-            className="cursor-pointer pi pi-pen-to-square text-xl"
+          <button
+            className="cursor-pointer pi pi-pen-to-square text-xl shadow-none"
             onClick={() => {
               showModal();
               setSelectedTest(row);
@@ -273,7 +260,7 @@ const ServiceList = () => {
   ];
 
   const handleCloseModal = () => {
-    setIsOpendModal(false);
+    setIsOpenModal(false);
     setSelectedTest({} as ILabTestService);
   };
 
@@ -290,7 +277,7 @@ const ServiceList = () => {
       <div className="flex w-full justify-between">
         <BackButton
           backLink={PATH_NAME.SERVICE_MASTER}
-          currentPage={service || ""}
+          currentPage={getServiceType()}
           previousPage={HEADER_TITLE.SERVICE_MASTER}
         />
         <SearchInput
@@ -448,7 +435,7 @@ export const AddMasterModal = ({
     <form onSubmit={handleSubmit((data) => handleUpdate(data))}>
       <div className="flex flex-col gap-5 p-6">
         <div className="w-full font-primary text-xl">
-          {heading ? heading : "Add Data"}
+          {heading ?? "Add Data"}
         </div>
         <div className=" grid lg:grid-cols-2 grid-cols-1 gap-4">
           <div className="relative">
@@ -596,15 +583,15 @@ export const AddMasterModal = ({
             )}
           </div>
           <div className="relative">
-            <label className="input-label block pb-2">
+            <label htmlFor="teleHealth" className="input-label block pb-2">
               TeleHealth Required
             </label>
             <Controller
               name="is_telehealth_required"
               control={control}
-              defaultValue={selectedItem?.is_telehealth_required ? true : false}
+              defaultValue={!!selectedItem?.is_telehealth_required}
               render={({ field }) => (
-                <div className="w-full gap-6 flex font-primary">
+                <div className="w-full gap-6 flex font-primary" id="teleHealth">
                   <div className="align-center items-center">
                     <RadioButton
                       className="w-6 h-6"
@@ -640,16 +627,14 @@ export const AddMasterModal = ({
             size="large"
             type="button"
           >
-            <i className="pi pi-times me-2" />
-            Cancel
+            <i className="pi pi-times me-2" />Cancel
           </PrimeButton>
           <PrimeButton
             className="font-primary border px-3 py-2 rounded-full ms-3 border border-purple-800 text-purple-800"
             size="large"
             type="submit"
           >
-            <i className="pi pi-check me-2" />
-            Save
+            <i className="pi pi-check me-2" />Save
           </PrimeButton>
         </div>
       </div>

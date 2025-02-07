@@ -21,7 +21,7 @@ const MedicalConditionDetails = () => {
         getPatientMedicalConditionsThunk(patient?.basicDetails?.id)
       ).then(({ meta }) => {
         if (meta.requestStatus === RESPONSE.REJECTED) {
-          errorToast("Failed to fetch", "Not able to load medical conditions");
+          errorToast("Unable To Fetch", "Not able to load medical conditions");
         }
       });
   }, [patient?.basicDetails?.id]);

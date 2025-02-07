@@ -27,7 +27,7 @@ const Header = () => {
       <p className="font-bold text-2xl font-primary truncate max-w-[20rem] text-gray-700 capitalize">
         {username}
       </p>
-      <div
+      <button type="button"
         onClick={(event) => {
           op?.current?.toggle(event);
           setToggleButton(true);
@@ -48,7 +48,7 @@ const Header = () => {
         <i
           className={`px-1 pi px-3 ${toggleButton ? "pi-sort-up-fill" : "pi-sort-down-fill"}`}
         />
-      </div>
+      </button>
       <OverlayPanel
         unstyled
         className="bg-white py-2 mt-3 shadow-md rounded-lg"
@@ -82,21 +82,21 @@ export const LogoutPopover = ({
     dispatch(logoutThunk());
   };
   return (
-    <ul>
-      <li
+    <div className="flex flex-col justify-center">
+      <button type="button"
         className="py-3 cursor-pointer px-8 border-bottom hover:bg-[#EEF1F4] hover:text-[#2D6D80]"
         onClick={() => handleChangePassword()}
       >
         Change Password
-      </li>
-      <li
+      </button>
+      <button type="button"
         className="flex nowrap cursor-pointer px-6 justify-center items-center text-red-500 hover:bg-pink-50 py-3"
         onClick={handleLogout}
       >
         <LogoutImage className="me-3" />
         <span>Logout</span>
-      </li>
-    </ul>
+      </button>
+    </div>
   );
 };
 

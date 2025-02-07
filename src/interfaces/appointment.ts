@@ -52,6 +52,7 @@ export interface IAppointmentList {
   dateAndTime: string;
   appointmentFor: string;
   patientId: string;
+  serviceCategory: string;
 }
 
 export interface IAppointmentMeta {
@@ -176,6 +177,8 @@ export interface IDownloadCsvPayload {
   end_date: string;
   transaction_id?: string;
   appointment_id?: string;
+  service_category?: string;
+  patient_name?: string;
 }
 
 export type TAppointmentStatus =

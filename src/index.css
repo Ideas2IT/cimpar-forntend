@@ -223,3 +223,7 @@ input::placeholder {
 .p-datatable .p-datatable-header {
   @apply p-0;
 }
+
+.custom-row:hover {
+  background-color: #f3f4f6 !important;
+}

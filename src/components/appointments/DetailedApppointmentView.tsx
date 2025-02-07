@@ -37,7 +37,8 @@ const DetailedAppointmentView = ({
       };
       dispatch(getAppointmentByIdThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-          setSelectedAppointment(response.payload as IDetailedAppointment);
+          const _response = response.payload as IDetailedAppointment;
+          setSelectedAppointment(_response);
         } else if (response.meta.requestStatus === RESPONSE.REJECTED) {
           const errorMessage = response.payload as ErrorResponse;
           errorToast("Failed to load appointment", errorMessage.message);
@@ -119,22 +120,22 @@ const DetailedAppointmentView = ({
   const remarks = [
     {
       Label: "CURRENT MEDICAL CONDITIONS",
-      value: selectedAppointment?.currentConditions,
+      value: selectedAppointment?.currentConditions || 'None',
       full: true,
     },
     {
       Label: "OTHER MEDICAL CONDITIONS",
-      value: selectedAppointment?.otherConditions,
+      value: selectedAppointment?.otherConditions || 'None',
       full: true,
     },
     {
       Label: "CURRENT ALLERGIES",
-      value: selectedAppointment?.currentAllergies,
+      value: selectedAppointment?.currentAllergies || 'None',
       full: true,
     },
     {
       Label: "OTHER ALLERGIES",
-      value: selectedAppointment?.otherAllergies,
+      value: selectedAppointment?.otherAllergies || 'None',
       full: true,
     },
   ];

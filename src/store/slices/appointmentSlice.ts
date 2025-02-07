@@ -64,6 +64,7 @@ const transformAppointments = (data: any) => {
       gender: appointment?.gender || "NA",
       patientName: appointment?.name || "",
       patientId: appointment?.patientId || "",
+      serviceCategory: appointment?.serviceCategory ?? "N/A",
     };
     return result;
   });

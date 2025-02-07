@@ -1,47 +1,20 @@
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableExpandedRows, DataTableValueArray } from "primereact/datatable";
 import { Sidebar } from "primereact/sidebar";
 import { Toast } from "primereact/toast";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Download from "../../assets/icons/download.svg?react";
 import Eye from "../../assets/icons/eye.svg?react";
-import {
-  IDetailedAppointment,
-  IGetAppointmentByIdPayload,
-  ISidebarAppointment,
-} from "../../interfaces/appointment";
+import { IDetailedAppointment, IGetAppointmentByIdPayload, ISidebarAppointment, } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
-import {
-  IGetTestByIdPayload,
-  IImmunization,
-  IImmunizationPayload,
-  ILabTest,
-  IServiceHistory,
-} from "../../interfaces/immunization";
-import {
-  appointmentStatus,
-  capitalizeFirstLetter,
-  getRowClasses,
-  getStatusColor,
-  getStatusColors,
-} from "../../services/commonFunctions";
+import { IGetTestByIdPayload, IImmunization, IImmunizationPayload, ILabTest, IServiceHistory, } from "../../interfaces/immunization";
+import { appointmentStatus, capitalizeFirstLetter, getStatusColor, getStatusColors, } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
-import {
-  getImmunizationByIdThunk,
-  getLabTestByIdThunk,
-  selectServiceHistory,
-} from "../../store/slices/serviceHistorySlice";
+import { getImmunizationByIdThunk, getLabTestByIdThunk, selectServiceHistory, } from "../../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../../store/store";
-import {
-  APPOINTMENT,
-  DATE_FORMAT,
-  IMMUNIZATION,
-  RESPONSE,
-  SERVICE_CATEGORY,
-} from "../../utils/AppConstants";
+import { APPOINTMENT, DATE_FORMAT, IMMUNIZATION, RESPONSE, SERVICE_CATEGORY, } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import TestDetailsTable from "../appointments/TestDetailsTable";
 import CustomPaginator from "../customPagenator/CustomPaginator";
@@ -54,19 +27,20 @@ const ServiceHistory = ({
 }: {
   handlePageChange: (value: number) => void;
 }) => {
-  const [selectedService, setSelectedService] = useState<IServiceHistory>(
-    {} as IServiceHistory
-  );
+
   const dispatch = useDispatch<AppDispatch>();
-  const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+
   const serviceData = useSelector(selectServiceHistory);
-  const [selectedTest, setSelectedTest] = useState<ILabTest>({} as ILabTest);
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<ISidebarAppointment>({} as ISidebarAppointment);
-  const [selectedImmunization, setSelectedImmunization] =
-    useState<IImmunization>({} as IImmunization);
   const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
+
   const { toast, errorToast } = useToast();
+
+  const [selectedService, setSelectedService] = useState<IServiceHistory>({} as IServiceHistory);
+  const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<ILabTest>({} as ILabTest);
+  const [selectedAppointment, setSelectedAppointment] = useState<ISidebarAppointment>({} as ISidebarAppointment);
+  const [selectedImmunization, setSelectedImmunization] = useState<IImmunization>({} as IImmunization);
+  const [expandedRows, setExpandedRows] = useState<DataTableExpandedRows | DataTableValueArray | []>([]);
 
   const downloadDocument = (url: string) => {
     if (url) {
@@ -84,7 +58,7 @@ const ServiceHistory = ({
     }
   };
 
-  const handleReports = (action: string, row: IServiceHistory) => {
+  const handleReports = (row: IServiceHistory) => {
     if (row?.type?.toLowerCase() === IMMUNIZATION && patientId) {
       const payload: IImmunizationPayload = {
         immunization_id: row.id?.toString(),
@@ -93,7 +67,8 @@ const ServiceHistory = ({
       dispatch(getImmunizationByIdThunk(payload)).then((response) => {
         if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
           if (response?.payload) {
-            setSelectedImmunization(response?.payload as IImmunization);
+            const _response = response?.payload as IImmunization
+            setSelectedImmunization(_response);
             setIsOpenSidebar(true);
             setSelectedService(row);
           }
@@ -102,45 +77,47 @@ const ServiceHistory = ({
           errorToast("Failed to load", errorResponse.message);
         }
       });
-    } else if (row?.type?.toLowerCase() === SERVICE_CATEGORY.LAB_TEST) {
-      const payload: IGetTestByIdPayload = {
-        patient_id: patientId,
-        test_id: row?.id?.toString(),
-      };
-      dispatch(getLabTestByIdThunk(payload)).then((response) => {
-        if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
-          if (action === "view") {
-            if (response?.payload) {
-              setSelectedTest(response?.payload as ILabTest);
-              setIsOpenSidebar(true);
-              setSelectedService(row);
-            }
-          } else if (action === "download") {
-            if (response?.payload && "fileUrl" in response.payload) {
-              const fileUrl = (response.payload as ILabTest).fileUrl;
+    }
+    // else if (row?.type?.toLowerCase() === SERVICE_CATEGORY.LAB_TEST) {
+    //   const payload: IGetTestByIdPayload = {
+    //     patient_id: patientId,
+    //     test_id: row?.id?.toString(),
+    //   };
+    //   dispatch(getLabTestByIdThunk(payload)).then((response) => {
+    //     if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
+    //       if (action === "view") {
+    //         if (response?.payload) {
+    //           setSelectedTest(response?.payload as ILabTest);
+    //           setIsOpenSidebar(true);
+    //           setSelectedService(row);
+    //         }
+    //       } else if (action === "download") {
+    //         if (response?.payload && "fileUrl" in response.payload) {
+    //           const fileUrl = (response.payload).fileUrl;
 
-              if (fileUrl) {
-                const link = document.createElement("a");
-                link.href = fileUrl;
-                link.download = "document";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              } else {
-                errorToast(
-                  "File not found",
-                  "This observation does not have a file"
-                );
-                return;
-              }
-            }
-          }
-        } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
-          const errorResponse = response?.payload as ErrorResponse;
-          errorToast("Failed to load", errorResponse.message);
-        }
-      });
-    } else if (row?.type?.toLowerCase() === APPOINTMENT) {
+    //           if (fileUrl) {
+    //             const link = document.createElement("a");
+    //             link.href = fileUrl;
+    //             link.download = "document";
+    //             document.body.appendChild(link);
+    //             link.click();
+    //             document.body.removeChild(link);
+    //           } else {
+    //             errorToast(
+    //               "File not found",
+    //               "This observation does not have a file"
+    //             );
+    //             return;
+    //           }
+    //         }
+    //       }
+    //     } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
+    //       const errorResponse = response?.payload as ErrorResponse;
+    //       errorToast("Failed to load", errorResponse.message);
+    //     }
+    //   });
+    // } 
+    else if (row?.type?.toLowerCase() === APPOINTMENT) {
       const payload: IGetAppointmentByIdPayload = {
         appointment_id: row.id?.toString(),
         patient_id: patientId,
@@ -177,13 +154,55 @@ const ServiceHistory = ({
           }
         } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
           const errorResponse = response?.payload as ErrorResponse;
-          errorToast("Failed to load", errorResponse.message);
+          errorToast("Unable To Fetch", errorResponse.message);
         }
       });
     }
   };
 
-  const SidebarHeader = () => {
+  const handleViewLabTest = (action: string, row: any) => {
+    const payload: IGetTestByIdPayload = {
+      patient_id: patientId,
+      test_id: row?.orderId?.toString(),
+    };
+    dispatch(getLabTestByIdThunk(payload)).then((response) => {
+      if (response?.meta?.requestStatus !== RESPONSE.FULFILLED) {
+        return;
+      }
+
+      const handleViewAction = () => {
+        if (!response?.payload) return;
+        const _response = response.payload as ILabTest;
+        setSelectedTest(_response);
+        setIsOpenSidebar(true);
+        setSelectedService({ ...row, category: _response.category || '-' });
+      };
+
+      const handleDownloadAction = () => {
+        const fileUrl = (response.payload as { fileUrl?: string })?.fileUrl;
+        if (!fileUrl) {
+          errorToast("File not found", "This observation does not have a file");
+          return;
+        }
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      if (action === "view") {
+        handleViewAction();
+      } else if (action === "download") {
+        handleDownloadAction();
+      }
+    });
+  };
+
+
+
+  const sidebarHeader = () => {
     const getValue = (status: string) => {
       if (!status) return status;
       return status
@@ -195,7 +214,7 @@ const ServiceHistory = ({
     return selectedService?.category?.toLowerCase() ===
       SERVICE_CATEGORY.IMMUNIZATION ? (
       <div>
-        <label className="pe-3">Immunization Details</label>
+        <span className="pe-3">Immunization Details</span>
         <span
           className={`sidebar-header capitalize ${getStatusColor(selectedImmunization.status)}`}
         >
@@ -209,7 +228,7 @@ const ServiceHistory = ({
         <div className="capitalize">
           <span className="pe-3">{selectedService?.category || ""}</span>
           <span
-            className={`${getStatusColors(selectedTest?.status)} py-2 capitalize px-3 rounded-full text-sm font-tertiary`}
+            className={`${getStatusColors(selectedTest?.status)} py-2 text-center capitalize px-3 rounded-full text-sm font-tertiary`}
           >
             {selectedTest?.status ? getValue(selectedTest.status) : "-"}
           </span>
@@ -217,8 +236,7 @@ const ServiceHistory = ({
         {selectedTest?.fileUrl && (
           <Button
             title="Download test report"
-            label="Download"
-            className="text-purple-900 bg-purple-100 rounded-full py-2 px-3 border border-purple-900 me-3 text-[16px]"
+            className="text-purple-900 bg-purple-100 rounded-lg py-2 px-3 border border-purple-900 me-3 text-[16px]"
             icon="pi pi-download"
             onClick={() => downloadDocument(selectedTest.fileUrl)}
           />
@@ -227,7 +245,7 @@ const ServiceHistory = ({
     );
   };
 
-  const AppointmentHeader = () => {
+  const appointmentHeader = () => {
     const getValue = () => {
       if (!selectedAppointment?.status) return selectedAppointment?.status;
       return selectedAppointment?.status
@@ -289,33 +307,109 @@ const ServiceHistory = ({
       field: "status",
       header: "APPOINTMENT STATUS",
       body: (rowData: IServiceHistory) => (
-        <TestStatus status={rowData?.status || "-"} />
+        <TestStatus status={rowData?.status ?? "-"} />
       ),
     },
   ];
+
+  const viewReportColumn = (rowData: IServiceHistory) => {
+    return (<>
+      <Button
+        title="View report"
+        label="View Report"
+        className="text-purple-900  rounded-full  me-3 focus:shadow-none text-[16px]"
+        onClick={() => handleViewLabTest('view', rowData)}
+      />
+      <Button
+        title="Download report"
+        icon="pi pi-download"
+        className={`${rowData.fileUrl ? "font-bold text-purple-900 rounded-full  me-3 focus:shadow-none text-[16px]}" : 'hidden'}`}
+        onClick={() => handleViewLabTest('download', rowData)}
+      />
+    </>
+    );
+  }
+
+  const rowExpansionTemplate = (data: IServiceHistory) => {
+    return (
+      <div className="text-center">
+        <DataTable value={data?.results} emptyMessage="No Available Results" className="p-0 m-0 lg:max-w-[80%]" rowClassName={() => "border-b custom-row"} tableClassName="p-0">
+          <Column field="testName" header="TEST NAME" headerClassName="text-sm font-secondary py-1 border-b bg-gray-300 max-w[15rem]"
+          />
+          <Column
+            field=""
+            header="Action"
+            className="max-w-[3rem]"
+            headerClassName="text-sm font-secondary py-1 border-b bg-gray-300"
+            body={(rowData) => viewReportColumn(rowData)}
+          />
+        </DataTable>
+      </div>
+    );
+  };
+
+  const emptyMessage = () => {
+    return <div className="w-full justify-center flex">
+      No service history available.
+    </div>
+  }
+
+  const isRowExpandable = (rowData: IServiceHistory) => rowData.results.length > 0;
+  const toggleRow = (event: React.MouseEvent, rowData: any) => {
+    event.stopPropagation();
+    if (!isRowExpandable(rowData)) return;
+
+    setExpandedRows((prevExpanded: any) => {
+      const isExpanded = prevExpanded?.some((r: any) => r.id === rowData.id);
+      return isExpanded
+        ? prevExpanded.filter((r: any) => r.id !== rowData.id)
+        : [...(prevExpanded || []), rowData];
+    });
+  };
+
+  const expanderTemplate = (rowData: IServiceHistory) => {
+    const isExpanded = Array.isArray(expandedRows) ? expandedRows.some((r: any) => r.id === rowData.id) : false;
+    return (
+      <Button
+        type="button"
+        className={`${isExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'} focus:shadow-none`}
+        disabled={!isRowExpandable(rowData)}
+        onClick={(e) => toggleRow(e, rowData)}
+      />
+    );
+  };
+
+  const showReportsButton = (rowData: IServiceHistory) => {
+    return <ReportColumn data={rowData} handleReports={handleReports} />
+  }
 
   return (
     <>
       <div className="h-[calc(100vh-175px)] overflow-auto">
         <DataTable
-          selection={selectedService}
           value={serviceData?.data}
-          emptyMessage={
-            <div className="w-full justify-center flex">
-              No service history available.
-            </div>
-          }
-          selectionMode="single"
+          emptyMessage={emptyMessage}
           dataKey="id"
           tableStyle={{ minWidth: "50rem" }}
-          className="mt-2 rowHoverable"
-          rowClassName={() => getRowClasses("h-10 border-b")}
+          className="mt-2"
+          rowClassName={() => "h-10 border-b"}
+          selection={selectedService}
+          expandedRows={expandedRows}
+          rowExpansionTemplate={rowExpansionTemplate}
+          stripedRows
         >
-          {serviceColumns?.map((column, index) => {
+          <Column
+            exportable={true}
+            expander
+            body={(row) => expanderTemplate(row)}
+            className="w-[4rem]"
+            headerClassName="text-sm font-secondary py-1 border-b bg-white"
+          />
+          {serviceColumns?.map((column) => {
             return (
               <Column
                 bodyClassName="py-4 max-w-[10rem]"
-                key={index}
+                key={column.header}
                 field={column?.field}
                 header={column?.header}
                 body={column?.body}
@@ -323,17 +417,14 @@ const ServiceHistory = ({
               />
             );
           })}
-
           <Column
             field=""
             header=""
             headerClassName="text-sm font-secondary py-1 border-b bg-white"
-            body={(rowData) => (
-              <ReportColumn data={rowData} handleReports={handleReports} />
-            )}
+            body={(rowData: IServiceHistory) => showReportsButton(rowData)}
           />
         </DataTable>
-      </div>
+      </div >
 
       {serviceData?.pagination?.total_pages > 1 && (
         <CustomPaginator
@@ -341,60 +432,67 @@ const ServiceHistory = ({
           currentPage={serviceData?.pagination?.current_page}
           totalPages={serviceData?.pagination?.total_pages}
         />
-      )}
+      )
+      }
 
-      {!!Object.keys(selectedImmunization).length && (
-        <Sidebar
-          className="detailed-view w-[30rem]"
-          header={<SidebarHeader />}
-          visible={!!Object.keys(selectedImmunization)?.length && isOpenSidebar}
-          position="right"
-          onHide={() => {
-            setSelectedImmunization({} as IImmunization);
-            setIsOpenSidebar(false);
-            setSelectedService({} as IServiceHistory);
-          }}
-        >
-          <ImmunizationDetailView data={selectedImmunization} />
-        </Sidebar>
-      )}
-      {!!Object.keys(selectedTest).length && (
-        <Sidebar
-          className="detailed-view w-[30rem]"
-          header={<SidebarHeader />}
-          visible={!!Object.keys(selectedTest)?.length && isOpenSidebar}
-          position="right"
-          onHide={() => {
-            setSelectedTest({} as ILabTest);
-            setIsOpenSidebar(false);
-            setSelectedService({} as IServiceHistory);
-          }}
-        >
-          <TestDetailedView test={selectedTest} />
-        </Sidebar>
-      )}
-      {!!Object.keys(selectedAppointment).length && (
-        <Sidebar
-          className="detailed-view w-[30rem]"
-          header={<AppointmentHeader />}
-          visible={!!Object.keys(selectedAppointment)?.length && isOpenSidebar}
-          position="right"
-          onHide={() => {
-            setSelectedAppointment({} as ISidebarAppointment);
-            setIsOpenSidebar(false);
-            setSelectedService({} as IServiceHistory);
-          }}
-        >
-          <AppointentView appointment={selectedAppointment} />
-        </Sidebar>
-      )}
+      {
+        !!Object.keys(selectedImmunization).length && (
+          <Sidebar
+            className="detailed-view w-[30rem]"
+            header={sidebarHeader}
+            visible={!!Object.keys(selectedImmunization)?.length && isOpenSidebar}
+            position="right"
+            onHide={() => {
+              setSelectedImmunization({} as IImmunization);
+              setIsOpenSidebar(false);
+              setSelectedService({} as IServiceHistory);
+            }}
+          >
+            <ImmunizationDetailView data={selectedImmunization} />
+          </Sidebar>
+        )
+      }
+      {
+        !!Object.keys(selectedTest).length && (
+          <Sidebar
+            className="detailed-view w-[30rem]"
+            header={sidebarHeader}
+            visible={!!Object.keys(selectedTest)?.length && isOpenSidebar}
+            position="right"
+            onHide={() => {
+              setSelectedTest({} as ILabTest);
+              setIsOpenSidebar(false);
+              setSelectedService({} as IServiceHistory);
+            }}
+          >
+            <TestDetailedView test={selectedTest} />
+          </Sidebar>
+        )
+      }
+      {
+        !!Object.keys(selectedAppointment).length && (
+          <Sidebar
+            className="detailed-view w-[30rem]"
+            header={appointmentHeader}
+            visible={!!Object.keys(selectedAppointment)?.length && isOpenSidebar}
+            position="right"
+            onHide={() => {
+              setSelectedAppointment({} as ISidebarAppointment);
+              setIsOpenSidebar(false);
+              setSelectedService({} as IServiceHistory);
+            }}
+          >
+            <AppointentView appointment={selectedAppointment} />
+          </Sidebar>
+        )
+      }
       <Toast ref={toast} />
     </>
   );
 };
 
 const TestDetails = ({ value }: { value: string }) => {
-  return <div className="font-tertiary">{value ? value : "-"}</div>;
+  return <div className="font-tertiary">{value ?? "-"}</div>;
 };
 const TestStatus = ({ status }: { status: string }) => {
   return (
@@ -402,7 +500,7 @@ const TestStatus = ({ status }: { status: string }) => {
       <span
         className={`${getStatusColors(status)} font-tertiary rounded-full py-[.4rem] px-4 text-sm text-center capitalize`}
       >
-        {status ? status : "-"}
+        {status ?? "-"}
       </span>
     </div>
   );
@@ -413,47 +511,19 @@ const ReportColumn = ({
   handleReports,
 }: {
   data: IServiceHistory;
-  handleReports: (action: string, data: IServiceHistory) => void;
+  handleReports: (data: IServiceHistory) => void;
 }) => {
   return (
     <div className="flex flex-row items-center stroke-purple-800 justify-start">
-      <Eye className="me-2" onClick={() => handleReports("view", data)} />
-      {data?.fileUrl && (
-        <Download onClick={() => handleReports("download", data)} />
-      )}
+      <Eye className="me-2 cursor-pointer" onClick={() => handleReports(data)} />
     </div>
   );
 };
-
 export const AppointentView = ({
   appointment,
 }: {
   appointment: ISidebarAppointment;
 }) => {
-  const TableCell = ({
-    label,
-    value,
-    highlight,
-    wrap,
-  }: {
-    label: string | undefined;
-    value: string | undefined;
-    highlight?: boolean;
-    wrap?: boolean;
-  }) => (
-    <div
-      title={value}
-      className={`'border-b pb-1 max-w-[100%]' ${wrap ? "" : "truncate"}`}
-    >
-      <div className="text-gray-500 font-secondary text-sm pt-4">
-        {label ?? "-"}
-      </div>
-      <label className={`${highlight && "text-red-600"} font-primary`}>
-        {value ?? "-"}
-      </label>
-    </div>
-  );
-
   const columnKeys = [
     {
       key: "ORDER ID",
@@ -497,15 +567,15 @@ export const AppointentView = ({
         case "REASON FOR TEST":
           return getReasonForTest();
         case "MEDICAL CONDITIONS":
-          return appointment.conditions;
+          return appointment.conditions || "None";
         case "OTHER MEDICAL CONDITIONS":
-          return appointment.otherMedicalConditions;
+          return appointment?.otherMedicalConditions || "None";
         case "ALLERGIES":
-          return appointment.allergies;
+          return appointment?.allergies || "None";
         case "OTHER ALLERGIES":
-          return appointment.otherAllergies;
+          return appointment?.otherAllergies || "None";
         case "SERVICE CENTER LOCATION":
-          return appointment.centerLocation;
+          return appointment?.centerLocation ?? 'N/A';
         case "TEST TO BE TAKEN AT":
           return capitalizeFirstLetter(appointment.takeTestAt);
         case "TOTAL COST":
@@ -519,7 +589,7 @@ export const AppointentView = ({
   };
   return (
     <div className="pt-6">
-      <label className="font-primary text-sm">Test Details</label>
+      <p className="font-primary text-sm">Test Details</p>
       <div className="mt-4">
         <TestDetailsTable
           testLocation={appointment.takeTestAt}
@@ -529,11 +599,11 @@ export const AppointentView = ({
       </div>
       <div>
         {Boolean(columnKeys?.length) &&
-          columnKeys.map((column, index) => {
+          columnKeys.map((column) => {
             return (
               <TableCell
                 label={column.key}
-                key={index}
+                key={column.key}
                 wrap={column.wrap}
                 value={getValue(column.key)}
               />
@@ -543,5 +613,29 @@ export const AppointentView = ({
     </div>
   );
 };
+
+const TableCell = ({
+  label,
+  value,
+  highlight,
+  wrap,
+}: {
+  label: string | undefined;
+  value: string | undefined;
+  highlight?: boolean;
+  wrap?: boolean;
+}) => (
+  <div
+    title={value}
+    className={`'border-b pb-1 max-w-[100%]' ${wrap ? "" : "truncate"}`}
+  >
+    <div className="text-gray-500 font-secondary text-sm pt-4">
+      {label ?? "-"}
+    </div>
+    <label className={`${highlight && "text-red-600"} font-primary`}>
+      {value ?? "-"}
+    </label>
+  </div>
+);
 
 export default ServiceHistory;

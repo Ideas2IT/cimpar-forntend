@@ -1,5 +1,5 @@
+import { differenceInDays } from "date-fns";
 import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { OverlayPanel } from "primereact/overlaypanel";
@@ -9,41 +9,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SearchInput from "../components/SearchInput";
 import { IDualCalendarReponse } from "../components/appointments/Appointments";
-import CustomModal from "../components/customModal/CustomModal";
 import CustomPaginator from "../components/customPagenator/CustomPaginator";
 import DualCalendar from "../components/dualCalendar/DualCalendar";
-import ErrorMessage from "../components/errorMessage/ErrorMessage";
 import CustomServiceDropDown from "../components/serviceFilter/CustomServiceDropdown";
 import useToast from "../components/useToast/UseToast";
-import {
-  ITransaction,
-  ITransactionPayload,
-  ITransactionResponse,
-} from "../interfaces/appointment";
-import {
-  downloadtransactionsThunk,
-  getAllTransactionsThunk,
-} from "../store/slices/appointmentSlice";
+import { IDownloadCsvPayload, ITransaction, ITransactionPayload, ITransactionResponse, } from "../interfaces/appointment";
+import { downloadtransactionsThunk, getAllTransactionsThunk, } from "../store/slices/appointmentSlice";
 import { selectServiceCategories } from "../store/slices/masterTableSlice";
 import { AppDispatch } from "../store/store";
-import {
-  DATE_FORMAT,
-  PAGE_LIMIT,
-  PAYMENT_STATUS,
-  RESPONSE,
-} from "../utils/AppConstants";
+import { DATE_FORMAT, MESSAGE, PAGE_LIMIT, PAYMENT_STATUS, RESPONSE, } from "../utils/AppConstants";
 import { dateFormatter } from "../utils/Date";
 
-const transaction = () => {
-  const [transactionResponse, setTransactionsResponse] =
-    useState<ITransactionResponse>({} as ITransactionResponse);
-  const [selectedTransaction, setSelectedTransaction] = useState<ITransaction>(
-    {} as ITransaction
-  );
-  const [isOpenCalendar, setIsOpenCalendar] = useState<boolean>(false);
+const Transaction = () => {
+
+  const serviceCategories = useSelector(selectServiceCategories);
+
   const dispatch = useDispatch<AppDispatch>();
-  const [showDownloadModal, setShowDownloadModal] = useState<boolean>(false);
-  const op = useRef<OverlayPanel>(null);
+
+  const [transactionResponse, setTransactionResponse] = useState<ITransactionResponse>({} as ITransactionResponse);
+  const [selectedTransaction, setSelectedTransaction] = useState<ITransaction>({} as ITransaction);
+  const [isOpenCalendar, setIsOpenCalendar] = useState<boolean>(false);
   const [dateFilter, setDateFilter] = useState<Date[]>();
   const [transactionPayload, setTransactionPayload] =
     useState<ITransactionPayload>({
@@ -52,35 +37,24 @@ const transaction = () => {
       start_date: "",
       service_category: "",
     } as ITransactionPayload);
+
   const dataTableRef = useRef<DataTable<ITransaction[]>>(null);
+  const op = useRef<OverlayPanel>(null);
+
   const { toast, errorToast } = useToast();
 
-  const serviceCategories = useSelector(selectServiceCategories);
 
   useEffect(() => {
     dispatch(getAllTransactionsThunk(transactionPayload)).then((response) => {
       const _response = response.payload as ITransactionResponse;
-      if (_response && _response?.transactions?.length) {
-        setTransactionsResponse(_response);
+      if (_response?.transactions?.length) {
+        setTransactionResponse(_response);
       } else {
-        setTransactionsResponse({} as ITransactionResponse);
+        setTransactionResponse({} as ITransactionResponse);
       }
     });
     dataTableRef?.current && dataTableRef.current.resetScroll();
   }, [transactionPayload]);
-
-  function convertStartToUTC(date: Date): string {
-    const timezoneOffset = date.getTimezoneOffset() * 60000;
-    const utcDate = new Date(date.getTime() + timezoneOffset);
-    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
-  }
-
-  function convertEndToUTC(date: Date): string {
-    date && date.setHours(23, 59, 59, 999);
-    const timezoneOffset = date.getTimezoneOffset() * 60000;
-    const utcDate = new Date(date.getTime() + timezoneOffset);
-    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
-  }
 
   useEffect(() => {
     if (dateFilter?.length && dateFilter[0]) {
@@ -89,7 +63,6 @@ const transaction = () => {
         page: 1,
         start_date: convertStartToUTC(dateFilter[0]),
         end_date: "",
-        // end_date: convertEndToUTC(dateFilter[0]),
       });
       if (dateFilter[1]) {
         setTransactionPayload({
@@ -108,6 +81,21 @@ const transaction = () => {
       });
     }
   }, [dateFilter]);
+
+
+  function convertStartToUTC(date: Date): string {
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    const utcDate = new Date(date.getTime() + timezoneOffset);
+    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
+  }
+
+  function convertEndToUTC(date: Date): string {
+    date?.setHours(23, 59, 59, 999);
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    const utcDate = new Date(date.getTime() + timezoneOffset);
+    return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
+  }
+
 
   const handleCloseCalendar = () => {
     setTimeout(() => {
@@ -133,8 +121,73 @@ const transaction = () => {
     selectedRange: dateFilter,
   };
 
+
+  const exportCsv = (transactionId: string = '', appointmentId: string = '') => {
+    let payload: IDownloadCsvPayload;
+
+    if (transactionId && appointmentId) {
+      payload = {
+        transaction_id: transactionId,
+        appointment_id: appointmentId,
+        start_date: dateFormatter(transactionPayload.start_date, "MM/dd/yyyy")?.toString(),
+        end_date: dateFormatter(transactionPayload.end_date, "MM/dd/yyyy")?.toString(),
+      }
+    } else {
+      const daysBetween = differenceInDays(transactionPayload.end_date, transactionPayload.start_date);
+      if (!daysBetween || daysBetween > 31) {
+        errorToast("Invalid Date Range", "Please select a date range within 31 days to download CSV file");
+        return;
+      }
+      payload = {
+        transaction_id: '',
+        appointment_id: '',
+        start_date: dateFormatter(transactionPayload.start_date, "MM/dd/yyyy")?.toString(),
+        end_date: dateFormatter(transactionPayload.end_date, "MM/dd/yyyy")?.toString(),
+        patient_name: transactionPayload.patient_name,
+        service_category: transactionPayload.service_category,
+      }
+    }
+    dispatch(
+      downloadtransactionsThunk(payload)
+    ).then((response) => {
+      if (
+        response?.payload &&
+        response.meta.requestStatus === RESPONSE.FULFILLED
+      ) {
+        const url = window.URL.createObjectURL(new Blob([response.payload]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `transactions.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        errorToast(MESSAGE.UNABLE_TO_DOWNLOAD, "No data available for the selected date range. Please choose a different date");
+      }
+    });
+  }
+
+  const handleSearch = useCallback(
+    (patient_name: string) => {
+      setTransactionPayload({
+        ...transactionPayload,
+        patient_name: patient_name,
+        page: 1,
+      });
+    },
+    [transactionPayload]
+  );
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setTransactionPayload({ ...transactionPayload, page: newPage });
+    },
+    [transactionPayload]
+  );
+
+
   const getColumnValue = (value: string) => {
-    let bgColor = "bg-white";
+    let bgColor = "";
     switch (value?.toLowerCase()) {
       case PAYMENT_STATUS.PAID:
         bgColor = "bg-green-100";
@@ -196,68 +249,16 @@ const transaction = () => {
     {
       header: "",
       body: (row: ITransaction) => (
-        <div
+        <button type="button"
           className="cursor-pointer"
           onClick={() => setSelectedTransaction(row)}
         >
           <i className="pi pi-eye text-xl text-purple-900 font-bold" />
-        </div>
+        </button>
       ),
     },
   ];
 
-  const exportCsv = useCallback(
-    (
-      startDate: Date,
-      endDate: Date,
-      appointmentId = "",
-      transactionId = ""
-    ) => {
-      dispatch(
-        downloadtransactionsThunk({
-          transaction_id: transactionId,
-          appointment_id: appointmentId,
-          start_date: dateFormatter(startDate, "MM/dd/yyyy")?.toString(),
-          end_date: dateFormatter(endDate, "MM/dd/yyyy")?.toString(),
-        })
-      ).then((response) => {
-        if (
-          response?.payload &&
-          response.meta.requestStatus === RESPONSE.FULFILLED
-        ) {
-          const url = window.URL.createObjectURL(new Blob([response.payload]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute("download", `transactions.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        } else {
-          errorToast("Failed to download", "Failed to download csv file");
-        }
-      });
-      setShowDownloadModal(false);
-    },
-    [errorToast, dispatch]
-  );
-
-  const handleSearch = useCallback(
-    (patient_name: string) => {
-      setTransactionPayload({
-        ...transactionPayload,
-        patient_name: patient_name,
-        page: 1,
-      });
-    },
-    [transactionPayload]
-  );
-
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      setTransactionPayload({ ...transactionPayload, page: newPage });
-    },
-    [transactionPayload]
-  );
 
   const sidebarHeader = () => {
     return (
@@ -266,10 +267,8 @@ const transaction = () => {
         <Button
           onClick={() =>
             exportCsv(
-              {} as Date,
-              {} as Date,
+              selectedTransaction.transactionId,
               selectedTransaction.appointmentId,
-              selectedTransaction.transactionId
             )
           }
           icon="pi pi-download px-1"
@@ -283,9 +282,9 @@ const transaction = () => {
   };
 
   const tableProps = {
+    rowClassName: () => 'no-pointe',
     value: transactionResponse.transactions,
     ref: dataTableRef,
-    selectionMode: "single",
     selection: selectedTransaction,
     scrollable: true,
     scrollHeight: "calc(100vh - 200px)",
@@ -293,10 +292,11 @@ const transaction = () => {
       <div className="flex justify-center w-full">No transaction found</div>
     ),
   } as const;
+
   return (
     <div>
       <div className="flex w-full h-[3rem] justify-end gap-3">
-        <div
+        <button type="button"
           className={`md:w-[13rem] cursor-pointer border-primary max-h-[2.5rem] flex  items-center justify-between px-4 rounded-full ${isOpenCalendar ? "bg-primary text-white" : "color-primary bg-white"}`}
           onClick={(e) => {
             op?.current?.toggle(e);
@@ -310,7 +310,7 @@ const transaction = () => {
           ) : (
             <i className="pi pi-chevron-down" />
           )}
-        </div>
+        </button>
         <span className="h-[2.5rem] w-[20rem]">
           <CustomServiceDropDown
             label="All Services"
@@ -329,7 +329,8 @@ const transaction = () => {
           handleSearch={(patient_name: string) => handleSearch(patient_name)}
         />
         <Button
-          onClick={() => setShowDownloadModal(true)}
+          onClick={() => exportCsv()}
+          type="button"
           icon="pi pi-download px-1"
           className="rounded-full font-primary  text-purple-900 bg-purple-100 h-[2.5rem] px-4 py-3 border border-purple-900"
           title="Download CSV"
@@ -343,27 +344,13 @@ const transaction = () => {
         >
           <DualCalendar dateFilter={handleDateFilter} />
         </OverlayPanel>
-        {showDownloadModal && (
-          <CustomModal
-            handleClose={() => setShowDownloadModal(false)}
-            showCloseButton={true}
-            styleClass="h-[20rem] w-[40rem]"
-            header={<div className="px-3">Download Transactions</div>}
-          >
-            <DownloadTransactions
-              exportCsv={(start_date, end_date) =>
-                exportCsv(start_date, end_date)
-              }
-              onCancel={() => setShowDownloadModal(false)}
-            />
-          </CustomModal>
-        )}
+
       </div>
       <div className="rounded-lg bg-white p-2 h-[calc(100vh-180px)] flex-grow">
         <DataTable {...tableProps}>
-          {columns.map((column, index) => (
+          {columns.map((column) => (
             <Column
-              key={index}
+              key={column.header}
               headerClassName="border-b font-tertiary text-sm uppercase"
               header={column.header}
               field={column.field}
@@ -396,138 +383,11 @@ const transaction = () => {
   );
 };
 
-const DownloadTransactions = ({
-  exportCsv,
-  onCancel,
-}: {
-  exportCsv: (startDate: Date, endDate: Date) => void;
-  onCancel: () => void;
-}) => {
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
-  const [endDate, setEndDate] = useState<Date | null>(new Date());
-
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleDownload = () => {
-    if (!errorMessage && startDate && endDate) {
-      exportCsv(startDate, endDate);
-    }
-  };
-
-  const handleValidation = (start: Date, end: Date) => {
-    if (start > end) {
-      setErrorMessage("From date should be less than or equal to To date.");
-    } else {
-      setErrorMessage("");
-    }
-  };
-
-  const getMaxEndDate = (): Date | null => {
-    if (startDate) {
-      const minEndDate = new Date(startDate);
-      minEndDate.setMonth(minEndDate.getMonth() + 1);
-      return minEndDate;
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    setEndDate(startDate);
-  }, [startDate]);
-
-  const calendarProps = {
-    classNames: "h-[2.5rem] rounded-lg border border-gray-300 p-2",
-    showIcon: true,
-    icon: "pi pi-calendar-minus",
-  } as const;
-  const buttonStyle =
-    "w-full pe-3 py-2 border rounded-full border-purple-900 font-primary text-purple-900 justify-center items-center";
-
-  return (
-    <div className="flex-grow">
-      <p className="font-primary text-xl py-6">Select Date Range</p>
-      <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
-        <span className="relative">
-          <label>From*</label>
-          <Calendar
-            value={startDate}
-            maxDate={new Date()}
-            dateFormat={DATE_FORMAT.DD_MM_YY}
-            onChange={(e) => {
-              if (e?.target?.value && endDate) {
-                setStartDate(e.target.value);
-                handleValidation(e.target.value, endDate);
-              }
-            }}
-            className={calendarProps.classNames}
-            showIcon
-            icon={calendarProps.icon}
-          />
-          {errorMessage && (
-            <span>
-              <ErrorMessage message={errorMessage} />
-            </span>
-          )}
-        </span>
-        <span>
-          <label>To*</label>
-          <Calendar
-            dateFormat={DATE_FORMAT.DD_MM_YY}
-            maxDate={getMaxEndDate() || undefined}
-            minDate={startDate || new Date()}
-            value={endDate}
-            onChange={(e) => {
-              if (e?.target?.value && startDate) {
-                handleValidation(startDate, e.target.value);
-                setEndDate(e?.target?.value);
-              }
-            }}
-            className={calendarProps.classNames}
-            showIcon
-            icon={calendarProps.icon}
-          />
-        </span>
-        <div className="border-b w-full py-2 col-span-2" />
-        <Button
-          className={buttonStyle}
-          onClick={onCancel}
-          icon="pi pi-times px-3"
-        >
-          Cancel
-        </Button>
-        <Button
-          className={`${buttonStyle} bg-purple-100`}
-          icon="pi pi-download px-3 py-2"
-          onClick={handleDownload}
-        >
-          Download CSV
-        </Button>
-      </div>
-    </div>
-  );
-};
-
 const TransactionDetailedView = ({
   transaction,
 }: {
   transaction: ITransaction;
 }) => {
-  const DetailRow = ({
-    label,
-    value,
-    styleClasses,
-  }: {
-    label: string;
-    value: string | number;
-    styleClasses: string;
-  }) => (
-    <div className={`border-b ${styleClasses}`}>
-      <div className="input-label !uppercase text-gray-900 font-secondary pt-4">
-        {label || ""}
-      </div>
-      <label className="font-primary">{value || "-"}</label>
-    </div>
-  );
 
   const transactionFields = [
     {
@@ -579,6 +439,7 @@ const TransactionDetailedView = ({
         {transactionFields.map((field) => {
           return (
             <DetailRow
+              key={field.label}
               label={field.label}
               value={field.value}
               styleClasses={field.styleClasses || ""}
@@ -590,4 +451,21 @@ const TransactionDetailedView = ({
   );
 };
 
-export default transaction;
+const DetailRow = ({
+  label,
+  value,
+  styleClasses,
+}: {
+  label: string;
+  value: string | number;
+  styleClasses: string;
+}) => (
+  <div className={`border-b ${styleClasses}`}>
+    <div className="input-label !uppercase text-gray-900 font-secondary pt-4">
+      {label || ""}
+    </div>
+    <label className="font-primary">{value ?? "-"}</label>
+  </div>
+);
+
+export default Transaction;

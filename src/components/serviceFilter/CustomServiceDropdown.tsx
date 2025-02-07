@@ -10,10 +10,12 @@ const CustomServiceDropDown = ({
   onApplyFilter,
   options,
   label,
+  popoverStyle
 }: {
   onApplyFilter: (services: string[]) => void;
   options: string[];
   label: string;
+  popoverStyle?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const op = useRef<OverlayPanel>(null);
@@ -52,73 +54,73 @@ const CustomServiceDropDown = ({
   };
 
   return (
-    <>
-      <div className="h-full !min-h-[2.5rem] min-w-[17rem] relative">
-        <div
-          onClick={(e) => {
-            op?.current?.toggle(e);
-            setIsOpen(true);
-          }}
-          className={`relative rounded-full h-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
-        >
-          <Button
-            type="button"
-            label={label || ""}
-            icon={
-              isOpen ? (
-                <ActiveFilterIcon className="me-3" />
-              ) : (
-                <InactiveFilterIcon className="me-3" />
-              )
-            }
-            className={`rounded-full font-primary border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
-          />
-          <span
-            className={`absolute right-[1rem] top-[.7rem] pi ${isOpen ? "pi-chevron-up" : "pi-chevron-down"}`}
-          />
-        </div>
-        <OverlayPanel
-          ref={op}
-          className="min-w-[20rem] max-w-[20rem] max-h-[25rem] relative overflow-auto custom-overlay"
-          onHide={() => setIsOpen(false)}
-        >
-          <div className="flex flex-col max-h-[20rem] relative">
-            <div className="flex-1 overflow-y-auto">
-              {!!options?.length &&
-                options.map((option) => (
-                  <div
-                    key={option}
-                    onClick={() => toggleService(option)}
-                    className="w-full flex justify-between min-h-[2.5rem] pe-1 border-b items-center cursor-pointer"
-                  >
-                    <label className="cursor-pointer">{option}</label>
-                    <Checkbox
-                      inputId={option}
-                      value={option}
-                      checked={selectedServices.includes(option)}
-                    />
-                  </div>
-                ))}
-              <Divider />
-            </div>
-            <div className="flex h-[50px] gap-4 py-1 bg-white justify-end  w-full right-2 relative bottom-0">
-              <Button
-                type="button"
-                label="Cancel"
-                className="color-primary rounded-md bg-white px-6 py-2 border border-blue-900"
-                onClick={clearSelections}
-              />
-              <Button
-                type="button"
-                label="Apply"
-                className="bg-primary text-white px-6 py-2 rounded-md"
-                onClick={applySelections}
-              />
-            </div>
+
+    <div className="h-full !min-h-[2.5rem] w-full relative">
+      <button type="button"
+        onClick={(e) => {
+          op?.current?.toggle(e);
+          setIsOpen(true);
+        }}
+        className={`relative text-start rounded-full h-full w-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
+      >
+        <Button
+          type="button"
+          label={label || ""}
+          icon={
+            isOpen ? (
+              <ActiveFilterIcon className="me-3" />
+            ) : (
+              <InactiveFilterIcon className="me-3" />
+            )
+          }
+          className={`rounded-full font-primary border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
+        />
+        <span
+          className={`absolute right-[1rem] top-[.7rem] pi ${isOpen ? "pi-chevron-up" : "pi-chevron-down"}`}
+        />
+      </button>
+      <OverlayPanel
+        ref={op}
+        className={`overflow-auto max-h-[25rem] relative overflow-auto custom-overlay w-[20rem] ${popoverStyle}`}
+        onHide={() => setIsOpen(false)}
+      >
+        <div className="flex flex-col max-h-[20rem] relative">
+          <div className="flex-1 overflow-y-auto">
+            {!!options?.length &&
+              options.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => toggleService(option)}
+                  className="w-full flex justify-between min-h-[2.5rem] pe-1 border-b items-center cursor-pointer"
+                >
+                  <label className="cursor-pointer text-start" >{option}</label>
+                  <Checkbox
+                    inputId={option}
+                    value={option}
+                    checked={selectedServices.includes(option)}
+                  />
+                </button>
+              ))}
+            <Divider />
           </div>
-        </OverlayPanel>
-      </div>
-    </>
+          <div className="flex h-[50px] gap-4 py-1 bg-white justify-end  w-full right-2 relative bottom-0">
+            <Button
+              type="button"
+              label="Cancel"
+              className="color-primary rounded-md bg-white px-6 py-2 border border-blue-900"
+              onClick={clearSelections}
+            />
+            <Button
+              type="button"
+              label="Apply"
+              className="bg-primary text-white px-6 py-2 rounded-md"
+              onClick={applySelections}
+            />
+          </div>
+        </div>
+      </OverlayPanel>
+    </div>
   );
 };
 export default CustomServiceDropDown;

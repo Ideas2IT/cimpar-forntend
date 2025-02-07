@@ -41,11 +41,7 @@ const getAllTransactions = (payload: ITransactionPayload) => {
   const params: Record<string, string> = {};
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== "") {
-      if (key === "start_date" || key === "end_date") {
-        params[key] = value;
-      } else {
-        params[key] = value;
-      }
+      params[key] = value;
     }
   });
   const queryString = new URLSearchParams(params).toString();
@@ -85,6 +81,5 @@ export {
   getAppointments,
   getApppointmentById,
   getBookedSlotsByServiceCenter,
-  getBookedSlotsForHomeService
+  getBookedSlotsForHomeService,
 };
-

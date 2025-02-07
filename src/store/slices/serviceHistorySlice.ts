@@ -100,7 +100,10 @@ function transformSingleImmunization(data: any) {
       immunization?.protocolApplied?.[0]?.doseNumberPositiveInt?.toString() ??
       "",
     administrator: immunization?.performer?.[0]?.actor?.display ?? "",
-    status: immunization?.statusReason?.coding?.[0]?.display ?? "",
+    status:
+      immunization?.statusReason?.coding?.[0]?.display ||
+      immunization?.status ||
+      "",
     dosageForm: immunization?.doseQuantity
       ? `${immunization.doseQuantity.value ?? ""} ${immunization.doseQuantity.unit ?? ""}`
       : "",
@@ -137,6 +140,7 @@ const immunizationToService = (resource: any) => {
     status: resource?.status ?? "",
     type: IMMUNIZATION,
     paymentStatus: "-",
+    results: [],
   };
   return service;
 };
@@ -151,8 +155,48 @@ const labResultToService = (resource: any) => {
     type: SERVICE_CATEGORY.LAB_TEST,
     fileUrl: resource?.file_url ? resource?.file_url : "",
     paymentStatus: "-",
+    results: [],
   };
   return service;
+};
+
+const getResultsFromAppointment = (data: any) => {
+  if (data?.length) {
+    const allResults = data.map((item: any) => {
+      return {
+        testName: item?.code?.coding?.[0]?.display ?? "",
+        dateOfTest: item?.effective?.dateTime
+          ? dateFormatter(item?.effective?.dateTime, DATE_FORMAT.DD_MMM_YYYY)
+          : "",
+        orderId: item?.id ?? "",
+        testedAt: item?.performer?.[0]?.display ?? "",
+        specimenUsed: item?.category?.[0]?.coding?.[0]?.display ?? "",
+
+        collectedDateTime: item?.specimen?.collection?.collectedDateTime
+          ? dateFormatter(
+              item?.specimen?.collection?.collectedDateTime,
+              DATE_FORMAT.DD_MMM_YYYY
+            )
+          : "",
+        reportedDateTime:
+          dateFormatter(item?.issued, DATE_FORMAT.DD_MMM_YYYY) ?? "",
+        physicianName: item?.performer?.[0]?.display ?? "",
+        contactInfo: "",
+        result: item?.valueQuantity?.value?.toString() ?? "",
+        range: item?.referenceRange?.[0]
+          ? `${item?.referenceRange[0]?.low?.value ?? ""} - ${item?.referenceRange[0]?.high?.value ?? ""} ${item?.referenceRange[0]?.low?.unit ?? ""}`
+          : "",
+        unit: item?.valueQuantity?.unit ?? "",
+        flag: Array.isArray(item?.interpretation)
+          ? item?.interpretation?.[0]?.coding?.[0]?.display ?? ""
+          : "",
+        status: RESULT_STATUS.AVAILABLE,
+        fileUrl: item?.file_url || "",
+      } as ILabTest;
+    });
+    return allResults;
+  }
+  return [];
 };
 const appointmentToService = (data: any) => {
   const service: IServiceHistory = {
@@ -163,6 +207,7 @@ const appointmentToService = (data: any) => {
     status: appointmentStatus(data?.end || ""),
     type: APPOINTMENT,
     paymentStatus: data?.payment_status || "-",
+    results: data?.result?.length ? getResultsFromAppointment(data.result) : [],
   };
   return service;
 };
@@ -212,10 +257,11 @@ const appointmentToResult = (data: any) => {
     unit: "",
     fileUrl: "",
     paymentStatus: data?.payment_status || "",
+    results: data?.result?.length ? getResultsFromAppointment(data.result) : [],
   } as ILabTest;
 };
 
-function transformLabTests(data: any) {
+function transformTests(data: any) {
   const labtestData: ILabTestData = {} as ILabTestData;
   if (data?.data?.length) {
     const pagination: IPagination = {
@@ -260,6 +306,7 @@ function transformLabTests(data: any) {
             : "",
           status: RESULT_STATUS.AVAILABLE,
           fileUrl: resource?.file_url || "",
+          results: resource?.result ?? [],
         } as ILabTest;
       } else if (
         resource?.record_type?.toLowerCase() === RECORD_TYPE.APPOINTMENT
@@ -277,7 +324,11 @@ function transformSingleTest(data: any): ILabTest {
     return {} as ILabTest;
   }
   const test: ILabTest = {
-    category: data?.serviceCategory?.[0]?.coding?.[0]?.display || "",
+    category:
+      data?.serviceCategory?.[0]?.coding?.[0]?.display ||
+      data?.focus?.[0]?.type ||
+      data?.focus?.[1]?.type ||
+      "",
     testName: data?.code?.coding?.[0]?.display ?? "",
     dateOfTest:
       (data?.effectiveDateTime &&
@@ -297,6 +348,7 @@ function transformSingleTest(data: any): ILabTest {
     status: RESULT_STATUS.AVAILABLE,
     fileUrl: data.file_url ? data?.file_url : "",
     paymentStatus: data?.payment_status || "",
+    results: [],
   };
 
   return test;
@@ -334,7 +386,7 @@ export const getServiceHistoryThunk = createAsyncThunk(
         case SERVICE_TABS.CLINICAL_LABORATORY:
         case SERVICE_TABS.IMAGING:
         case SERVICE_TABS.HOME_CARE: {
-          const _response = transformLabTests(response.data);
+          const _response = transformTests(response.data);
           return { selectedTab: payload.selectedTab, data: _response };
         }
         case SERVICE_TABS.IMMUNIZATION: {
@@ -359,7 +411,7 @@ export const getLabTestsThunk = createAsyncThunk(
   async (payload: ITestResultPayload, { rejectWithValue }) => {
     try {
       const response = await getLabTests(payload);
-      const _response = transformLabTests(response.data);
+      const _response = transformTests(response.data);
       return _response;
     } catch (error) {
       if (isAxiosError(error)) {

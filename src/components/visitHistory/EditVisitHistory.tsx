@@ -141,7 +141,7 @@ const EditVisitHistory = () => {
         } else {
           setIsDisabled(false);
           const errorResponse = response.payload as ErrorResponse;
-          errorToast("Creation Failed", errorResponse.message);
+          errorToast(MESSAGE.UNABLE_TO_CREATE, errorResponse.message);
         }
       });
     } else {
@@ -159,7 +159,7 @@ const EditVisitHistory = () => {
             navigateBackMenu();
           } else {
             setIsDisabled(false);
-            errorToast("Updation failed", "Visit history updation failed");
+            errorToast(MESSAGE.UNABLE_TO_UPDATE, "Unable to update Visit History");
           }
         }
       );
@@ -230,7 +230,7 @@ const EditVisitHistory = () => {
           );
           setUploadedDocs(uploadedDocs.filter((f) => f !== file));
         } else {
-          errorToast("Failed to delete file", "Failed to delete document file");
+          errorToast(MESSAGE.UNABLE_TO_DELETE, "Unable to delete document file");
         }
       });
   };

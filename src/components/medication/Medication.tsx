@@ -33,7 +33,7 @@ const Medication = () => {
       dispatch(getPatientMedicationThunk(selectedPatinet.basicDetails.id)).then(
         ({ meta }) => {
           if (meta.requestStatus === RESPONSE.REJECTED) {
-            errorToast("Failed to fetch", "Unable to fetch medication details");
+            errorToast("Unable To Fetch", "Unable to fetch Medication Details");
           }
         }
       );
