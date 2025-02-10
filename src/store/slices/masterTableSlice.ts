@@ -514,17 +514,17 @@ export const updateLocationThunk = createAsyncThunk(
       if (isAxiosError(error)) {
         let errorMessage = "";
         if (
-          error?.response?.data?.error.toLowerCase() ===
+          error?.response?.data?.error?.toLowerCase() ===
           ERROR_CODES.VALIDATION_ERROR
         ) {
           errorMessage =
             error?.response?.data?.details?.[0]?.field +
-              ":" +
-              error?.response?.data?.details?.[0]?.message ||
+            ":" +
+            error?.response?.data?.details?.[0]?.message ||
             "Failed to Update Location";
         } else {
           errorMessage =
-            error?.response?.data?.error || "Failed to update Location";
+            error?.response?.data?.detail || "Failed to update Location";
         }
         return rejectWithValue({
           message: errorMessage,
@@ -680,7 +680,7 @@ const userSlice = createSlice({
       )
       .addCase(getServiceCategoriesThunk.fulfilled, (state, { payload }) => {
         if (payload?.data?.length) {
-          state.serviceCategories = [...payload?.data];
+          state.serviceCategories = [...payload.data];
         } else {
           state.serviceCategories = [];
         }

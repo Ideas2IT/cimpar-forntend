@@ -24,11 +24,12 @@ import {
   getBookedSlotsByServiceCenter,
   getBookedSlotsForHomeService,
 } from "../../services/appointment.service";
-import { getAgeFromDob } from "../../services/commonFunctions";
+import { appointmentStatus, getAgeFromDob } from "../../services/commonFunctions";
 import {
   DATE_FORMAT,
   INSURANCE_TYPE,
   NONE,
+  RESULT_STATUS,
   YES,
 } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
@@ -44,6 +45,18 @@ const initialState: appointmentInitialState = {
   apointments: [] as IAppointmentList[],
   appointmentMeta: {} as IAppointmentMeta,
 };
+
+const getResultStatus = (status: string, dateOfAppointment: string | Date) => {
+  if (status?.toLowerCase() === 'available') {
+    return RESULT_STATUS.AVAILABLE;
+  }
+  try {
+    const appointmentDate = new Date(dateOfAppointment);
+    return appointmentStatus(appointmentDate);
+  } catch (error) {
+    return ''
+  }
+}
 
 const transformAppointments = (data: any) => {
   if (!data?.data?.length) {
@@ -138,64 +151,74 @@ const transformInsurance = (data: any) => {
   }
 };
 
+const getTestTakenAt = (value: string | undefined) => {
+  if (value?.toLowerCase() === 'service_center' || value?.toLowerCase() === 'service center' || value?.toLowerCase() === 'service centre') {
+    return "Service Center";
+  } else if (value?.toLowerCase() === 'at_home' || value?.toLowerCase() === 'home') {
+    return 'Home'
+  }
+  return NONE;
+}
+
 const transformSingleAppointment = (data: any) => {
   const appointmentCopy = data?.data?.[0];
   if (appointmentCopy) {
     const _appointment: IDetailedAppointment = {
-      category: appointmentCopy.service_type || "",
-      id: appointmentCopy?.appointmentId || "",
-      patientName: appointmentCopy?.name || "",
-      age: getAgeFromDob(appointmentCopy?.dob) || "",
+      category: appointmentCopy.service_type ?? "",
+      id: appointmentCopy?.appointmentId ?? "",
+      patientName: appointmentCopy?.name ?? "",
+      age: getAgeFromDob(appointmentCopy?.dob) ?? "",
       dob: dateFormatter(appointmentCopy?.dob, DATE_FORMAT.DD_MMM_YYYY) || "",
       contactNumber: appointmentCopy?.phoneNo ?? "",
-      gender: appointmentCopy?.gender || "",
-      insurance: appointmentCopy?.insurance || "",
-      appointmentDate: appointmentCopy?.end || "",
+      gender: appointmentCopy?.gender ?? "",
+      insurance: appointmentCopy?.insurance ?? "",
+      appointmentDate: appointmentCopy?.end ?? "",
       appointmentTime:
-        dateFormatter(appointmentCopy?.end, DATE_FORMAT.HH_MM_A) || "",
-      appointmentFor: appointmentCopy?.appointmentFor || "",
+        dateFormatter(appointmentCopy?.end, DATE_FORMAT.HH_MM_A) ?? "",
+      appointmentFor: appointmentCopy?.appointmentFor ?? "",
       reasonForTest: appointmentCopy?.reason_for_test ?? "",
       currentConditions: appointmentCopy?.condition?.conditions.length
         ? transformConditionsAndAllergies(
-            appointmentCopy?.condition?.conditions,
-            "current"
-          )
+          appointmentCopy?.condition?.conditions,
+          "current"
+        )
         : "",
       otherConditions: appointmentCopy?.condition?.conditions.length
         ? transformConditionsAndAllergies(
-            appointmentCopy?.condition?.conditions,
-            "other"
-          )
+          appointmentCopy?.condition?.conditions,
+          "other"
+        )
         : "",
       currentAllergies: appointmentCopy?.condition.allergies.length
         ? transformConditionsAndAllergies(
-            appointmentCopy?.condition.allergies,
-            "current"
-          )
+          appointmentCopy?.condition.allergies,
+          "current"
+        )
         : "",
       otherAllergies: appointmentCopy?.condition.allergies.length
         ? transformConditionsAndAllergies(
-            appointmentCopy?.condition.allergies,
-            "other"
-          )
+          appointmentCopy?.condition.allergies,
+          "other"
+        )
         : NONE,
       insuranceProvider:
         appointmentCopy?.insurance?.insurance === YES
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
-              ?.insurnaceProvider
+            ?.insurnaceProvider
           : "",
       insuraceNumber:
         appointmentCopy?.insurance?.insurance === YES
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
-              ?.insuranceNumber
+            ?.insuranceNumber
           : NONE,
       testDetails: appointmentCopy?.test_details ?? [],
       totalCost: appointmentCopy?.total_cost || 0,
       centerLocation: appointmentCopy?.service_center_location || NONE,
-      takeTestAt: appointmentCopy?.test_location || NONE,
-      paymentStatus: appointmentCopy?.payment_status || "",
-      reason_for_test: appointmentCopy?.reason_for_test || "",
+      takeTestAt: getTestTakenAt(appointmentCopy?.test_location),
+      paymentStatus: appointmentCopy?.payment_status ?? "",
+      reason_for_test: appointmentCopy?.reason_for_test ?? "",
       other_reason: appointmentCopy?.other_reason || "",
+      status: getResultStatus(appointmentCopy?.result_status, appointmentCopy?.end),
     };
     return _appointment;
   }
@@ -290,7 +313,7 @@ export const downloadtransactionsThunk = createAsyncThunk(
     } catch (error) {
       if (isAxiosError(error)) {
         const errorMessage =
-          error?.response?.data?.error ||
+          error?.response?.data?.detail ||
           "Failed to load translations csv file";
         return rejectWithValue({
           message: errorMessage,
@@ -345,12 +368,9 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // .addCase(createAppointmentThunk.fulfilled, (state, { payload }) => {
-      //   state.apointments = payload?.data;
-      // })
       .addCase(getAllAppointmentsThunk.fulfilled, (state, { payload }) => {
         if (payload) {
-          state.apointments = [...payload?.response];
+          state.apointments = [...payload.response];
           state.appointmentMeta = payload?.meta;
         }
       });

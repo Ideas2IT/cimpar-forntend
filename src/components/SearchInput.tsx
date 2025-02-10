@@ -29,7 +29,7 @@ const SearchInput = forwardRef<SearchInputHandle, SearchInputProps>(
     }, [debouncedValue]);
 
     return (
-      <div
+      <button
         className="relative h-[2.5rem] min-w-[15rem] rounded-full border bg-white border-gray-300 font-tertiary text-start cursor-pointer"
         onClick={setFocus}
       >
@@ -39,12 +39,12 @@ const SearchInput = forwardRef<SearchInputHandle, SearchInputProps>(
           title="Type to search"
           onChange={(event) => setInputValue(event?.target?.value)}
           ref={searchRef}
-          placeholder={placeholder ? placeholder : "Search"}
+          placeholder={placeholder ?? "Search"}
           style={{ paddingInlineStart: "1rem" }}
-          className="h-full w-[calc(100%-40px)] rounded rounded-full"
+          className="h-full w-[calc(100%-40px)] rounded rounded-full outline-none"
         />
         <i className="pi pi-search absolute right-[1rem] top-[.8rem] h-[1rem] text-purple-900" />
-      </div>
+      </button>
     );
   }
 );

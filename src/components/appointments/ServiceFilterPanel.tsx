@@ -61,18 +61,18 @@ const ServiceFilterPanel = ({
         }}
         className={`relative rounded-full w-full h-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
       >
-        <Button
-          type="button"
-          label="All Services"
-          icon={
+        <div
+          title="Click to open dropdown"
+          className={`rounded-full font-primary items-center flex border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
+        >
+          {
             isOpen ? (
               <ActiveFilterIcon className="me-3" />
             ) : (
               <InactiveFilterIcon className="me-3" />
             )
-          }
-          className={`rounded-full font-primary border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
-        />
+          }All Services
+        </div>
         <span
           className={`absolute right-[1rem] top-[.7rem] pi ${isOpen ? "pi-chevron-up" : "pi-chevron-down"}`}
         />

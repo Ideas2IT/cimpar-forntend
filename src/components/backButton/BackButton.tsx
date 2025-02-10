@@ -1,4 +1,3 @@
-import { Button as PrimeButton } from "primereact/button";
 import { confirmDialog } from "primereact/confirmdialog";
 import { useNavigate } from "react-router-dom";
 
@@ -49,14 +48,11 @@ const BackButton = ({
         onClick={handleBackLink}
         className="flex align-items-center items-center"
       >
-        <PrimeButton
-          type="button"
-          className="p-2 bg-white shadow-none rounded-md"
-          text
-          raised
+        <span
+          className="px-2 py-1 bg-white shadow-none rounded-md align-middle"
         >
-          <i className="pi pi-arrow-left color-primary" />
-        </PrimeButton>
+          <i className="pi pi-arrow-left align-middle color-primary" />
+        </span>
         <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer capitalize ps-1">
           {previousPage ?? "back"}
         </label>

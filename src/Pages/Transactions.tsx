@@ -129,20 +129,20 @@ const Transaction = () => {
       payload = {
         transaction_id: transactionId,
         appointment_id: appointmentId,
-        start_date: dateFormatter(transactionPayload.start_date, "MM/dd/yyyy")?.toString(),
-        end_date: dateFormatter(transactionPayload.end_date, "MM/dd/yyyy")?.toString(),
+        start_date: transactionPayload.start_date,
+        end_date: transactionPayload.end_date,
       }
     } else {
-      const daysBetween = differenceInDays(transactionPayload.end_date, transactionPayload.start_date);
-      if (!daysBetween || daysBetween > 31) {
-        errorToast("Invalid Date Range", "Please select a date range within 31 days to download CSV file");
+      const daysBetween = differenceInDays(transactionPayload?.end_date, transactionPayload?.start_date);
+      if (daysBetween > 31 || isNaN(daysBetween)) {
+        errorToast("Invalid Date Range", "Please select a date range of up to one month to download the CSV file.");
         return;
       }
       payload = {
         transaction_id: '',
         appointment_id: '',
-        start_date: dateFormatter(transactionPayload.start_date, "MM/dd/yyyy")?.toString(),
-        end_date: dateFormatter(transactionPayload.end_date, "MM/dd/yyyy")?.toString(),
+        start_date: transactionPayload.start_date,
+        end_date: transactionPayload.end_date,
         patient_name: transactionPayload.patient_name,
         service_category: transactionPayload.service_category,
       }
@@ -162,7 +162,8 @@ const Transaction = () => {
         link.click();
         document.body.removeChild(link);
       } else {
-        errorToast(MESSAGE.UNABLE_TO_DOWNLOAD, "No data available for the selected date range. Please choose a different date");
+        const errorResponse = response.payload;
+        errorToast(MESSAGE.UNABLE_TO_DOWNLOAD, errorResponse.message || "No data available for the selected date range. Please choose a different date");
       }
     });
   }
@@ -213,6 +214,25 @@ const Transaction = () => {
     );
   };
 
+  const renderAmountPaid = (row: ITransaction) => (
+    <>{`$${row.amountPaid ? row.amountPaid : "0"}`}</>
+  );
+
+  const renderTransactionDateTime = (row: ITransaction) => (
+    <>
+      {dateFormatter(row.transactionDateAndTime, DATE_FORMAT.DD_MMM_YYYY_HH_MM_A)}
+    </>
+  );
+
+  const renderActionButtons = (row: ITransaction) =>
+  (<button type="button"
+    className="cursor-pointer"
+    onClick={() => setSelectedTransaction(row)}
+  >
+    <i className="pi pi-eye text-xl text-purple-900 font-bold" />
+  </button>
+  )
+
   const columns = [
     {
       header: "Patient Name",
@@ -223,24 +243,14 @@ const Transaction = () => {
       field: "testName",
     },
     { header: "Service Location", field: "serviceType" },
-
     {
       header: "Amount Paid",
       field: "amountPaid",
-      body: (row: ITransaction) => (
-        <>{`$${row.amountPaid ? row.amountPaid : "0"}`}</>
-      ),
+      body: (row: ITransaction) => renderAmountPaid(row),
     },
     {
       header: "Transaction Date & Time",
-      body: (row: ITransaction) => (
-        <>
-          {dateFormatter(
-            row.transactionDateAndTime,
-            DATE_FORMAT.DD_MMM_YYYY_HH_MM_A
-          )}
-        </>
-      ),
+      body: (row: ITransaction) => renderTransactionDateTime(row),
     },
     {
       header: "payment status",
@@ -248,14 +258,7 @@ const Transaction = () => {
     },
     {
       header: "",
-      body: (row: ITransaction) => (
-        <button type="button"
-          className="cursor-pointer"
-          onClick={() => setSelectedTransaction(row)}
-        >
-          <i className="pi pi-eye text-xl text-purple-900 font-bold" />
-        </button>
-      ),
+      body: (row: ITransaction) => renderActionButtons(row),
     },
   ];
 
@@ -325,7 +328,7 @@ const Transaction = () => {
           />
         </span>
         <SearchInput
-          placeholder="Search for Patient"
+          placeholder="Search For Patient"
           handleSearch={(patient_name: string) => handleSearch(patient_name)}
         />
         <Button
@@ -442,7 +445,7 @@ const TransactionDetailedView = ({
               key={field.label}
               label={field.label}
               value={field.value}
-              styleClasses={field.styleClasses || ""}
+              styleClasses={field.styleClasses ?? ""}
             />
           );
         })}

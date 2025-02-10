@@ -111,6 +111,7 @@ export interface IDetailedAppointment {
   paymentStatus: string;
   reason_for_test: string;
   other_reason: string;
+  status: string;
 }
 
 export interface ISidebarAppointment {

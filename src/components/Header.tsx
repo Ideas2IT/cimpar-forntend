@@ -18,10 +18,12 @@ const Header = () => {
   const op = useRef<OverlayPanel>(null);
   const [toggleButton, setToggleButton] = useState(false);
 
+
   const handleChangePassword = () => {
     setIsChangePasswordOpen(true);
     op?.current?.toggle({} as SyntheticEvent<Element, Event>);
   };
+
   return (
     <div className="flex text-black justify-between items-center mb-6 mx-6">
       <p className="font-bold text-2xl font-primary truncate max-w-[20rem] text-gray-700 capitalize">
@@ -34,16 +36,10 @@ const Header = () => {
         }}
         className="max-w-[20rem] py-2 px-3 rounded-full border border-gray-300 shadow-none justify-between flex items-center"
       >
-        <Button
-          unstyled
-          title={selectedUserProfile.email}
-          label={selectedUserProfile.email}
+        <div
+          title={selectedUserProfile?.email}
           className=" max-w-[90%] truncate"
-          severity="info"
-          text
-          raised
-          outlined={false}
-        />
+        >{selectedUserProfile?.email ?? ''}</div>
 
         <i
           className={`px-1 pi px-3 ${toggleButton ? "pi-sort-up-fill" : "pi-sort-down-fill"}`}

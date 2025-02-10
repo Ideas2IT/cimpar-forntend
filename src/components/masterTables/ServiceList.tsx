@@ -438,7 +438,8 @@ export const AddMasterModal = ({
           {heading ?? "Add Data"}
         </div>
         <div className=" grid lg:grid-cols-2 grid-cols-1 gap-4">
-          <div className="relative">
+          <div className={`realtive ${selectedItem && !!Object.keys(selectedItem)?.length && "cursor-not-allowed opacity-60"}`}
+          >
             <label className="input-label font-secondary" htmlFor="code">
               Code*
             </label>
@@ -456,6 +457,7 @@ export const AddMasterModal = ({
                 <InputText
                   id="code"
                   {...field}
+                  disabled={selectedItem && !!Object.keys(selectedItem)?.length}
                   placeholder="Code"
                   className="w-full cimpar-input"
                 />

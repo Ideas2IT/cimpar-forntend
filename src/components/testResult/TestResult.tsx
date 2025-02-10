@@ -8,13 +8,13 @@ import { useDispatch, useSelector } from "react-redux";
 import Eye from "../../assets/icons/eye.svg?react";
 import { IDetailedAppointment, IGetAppointmentByIdPayload, ISidebarAppointment } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
-import { IGetTestByIdPayload, ILabTest, IServiceHistory } from "../../interfaces/immunization";
+import { IGetTestByIdPayload, ILabTest, IServiceHistory, ITestResult } from "../../interfaces/immunization";
 import { appointmentStatus, getStatusColors } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
 import { getLabTestByIdThunk, selectLabTests } from "../../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../../store/store";
-import { DATE_FORMAT, NORMAL, RESPONSE, RESULT_STATUS } from "../../utils/AppConstants";
+import { DATE_FORMAT, NORMAL, RECORD_TYPE, RESPONSE, RESULT_STATUS } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { AppointentView } from "../serviceHistory/ServiceHistory";
@@ -51,10 +51,7 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
         return;
       }
     }
-    if (
-      row.status?.toLowerCase() === RESULT_STATUS.UPCOMING ||
-      row.status?.toLowerCase() === RESULT_STATUS.UNDER_PROCESSING
-    ) {
+    if (row.type?.toLowerCase() === RECORD_TYPE.APPOINTMENT) {
       const payload: IGetAppointmentByIdPayload = {
         appointment_id: row.orderId,
         patient_id: patientId,
@@ -62,7 +59,7 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
       dispatch(getAppointmentByIdThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
           const appointment = response.payload as IDetailedAppointment;
-          const appointmentDate: ISidebarAppointment = {
+          const appointmentData: ISidebarAppointment = {
             category: appointment.category || "",
             allergies: appointment?.currentAllergies || "",
             conditions: appointment?.currentConditions || "",
@@ -84,21 +81,10 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
             reasonForTest: appointment?.reasonForTest,
             otherReasonForTest: appointment?.other_reason || "",
           };
-          setSelectedAppointment(appointmentDate);
+          setSelectedAppointment(appointmentData);
         } else {
           const errorMessage = response.payload as ErrorResponse;
           errorToast("Unable To Fetch", errorMessage.message);
-        }
-      });
-    } else {
-      const payload: IGetTestByIdPayload = {
-        test_id: row.orderId,
-        patient_id: patientId,
-      };
-      dispatch(getLabTestByIdThunk(payload)).then((response) => {
-        if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-          const test = response.payload as ILabTest;
-          setSelectedTest(test);
         }
       });
     }
@@ -123,10 +109,7 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
         <div>
           <span className="pe-3">{selectedTest.category}</span>
           <span
-            className={`${getStatusColors(selectedTest.status)} py-2 px-3 rounded-full text-sm capitalize font-tertiary`}
-          >
-            {selectedTest.status ? selectedTest.status : "-"}
-          </span>
+            className={`${getStatusColors(selectedTest.status)} py-2 px-3 rounded-full text-sm capitalize font-tertiary`}>{` ${selectedTest?.status}`}</span>
         </div>
         {selectedTest.fileUrl && (
           <Button
@@ -162,41 +145,47 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
     );
   };
 
+  const renderTestName = (rowData: ILabTest) => <TestName name={rowData.testName} />
+  const renderOrderId = (rowData: ILabTest) => <TestDetails value={rowData.orderId} />
+  const renderDateOfTest = (rowData: ILabTest) => <TestDetails value={rowData.dateOfTest} />
+  const renderPaymentStatus = (rowData: ILabTest) => <div> {rowData.paymentStatus || "-"} </div>
+  const renderAppointmentStatus = (rowData: ILabTest) => <TestStatus status={rowData.status} />
+  const renderActionColumn = (rowData: ILabTest) => <ReportColumn data={rowData} handleReports={handleReports} />
+
   const resultColumns = [
     {
       field: "testName",
       header: "TEST NAME",
-      body: (rowData: ILabTest) => <TestName name={rowData.testName} />,
+      body: (rowData: ILabTest) => renderTestName(rowData),
     },
     {
       field: "orderId",
       header: "ORDER ID",
-      body: (rowData: ILabTest) => <TestDetails value={rowData.orderId} />,
+      body: (rowData: ILabTest) => renderOrderId(rowData),
     },
     {
       field: "dateOfTest",
       header: "DATE OF TEST",
-      body: (rowData: ILabTest) => <TestDetails value={rowData.dateOfTest} />,
+      body: (rowData: ILabTest) => renderDateOfTest(rowData),
     },
     {
       header: "PAYMENT STATUS",
-      body: (rowData: ILabTest) => <div> {rowData.paymentStatus || "-"} </div>,
+      body: (rowData: ILabTest) => renderPaymentStatus(rowData),
     },
     {
       field: "status",
       header: "APPOINTMENT STATUS",
-      body: (rowData: ILabTest) => <TestStatus status={rowData.status} />,
+      body: (rowData: ILabTest) => renderAppointmentStatus(rowData),
     },
     {
       field: "",
       header: "",
-      body: (rowData: ILabTest) => (
-        <ReportColumn data={rowData} handleReports={handleReports} />
-      ),
+      body: (rowData: ILabTest) => renderActionColumn(rowData),
     },
   ];
 
-  const isRowExpandable = (rowData: IServiceHistory) => rowData?.results?.length > 0;
+  const isRowExpandable = (rowData: ILabTest) => rowData?.results?.length > 0;
+
   const toggleRow = (event: React.MouseEvent, rowData: any) => {
     event.stopPropagation();
     if (!isRowExpandable(rowData)) return;
@@ -255,8 +244,8 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
     })
   }
 
-  const expanderTemplate = (rowData: IServiceHistory) => {
-    const isExpanded = Array.isArray(expandedRows) ? expandedRows.some((r: any) => r.id === rowData.id) : false;
+  const expanderTemplate = (rowData: ILabTest) => {
+    const isExpanded = Array.isArray(expandedRows) ? expandedRows.some((r: any) => r.orderId === rowData.orderId) : false;
     return (
       <Button
         type="button"
@@ -268,7 +257,7 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
   };
 
 
-  const viewReportColumn = (rowData: IServiceHistory) => {
+  const viewReportColumn = (rowData: ILabTest) => {
     return (<>
       <Button
         title="View report"
@@ -279,17 +268,17 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
       <Button
         title="Download report"
         icon="pi pi-download"
-        className={`${rowData.fileUrl ? "font-bold text-purple-900 rounded-full  me-3 focus:shadow-none text-[16px]}" : 'hidden'}`}
+        className={`${rowData.fileUrl ? "font-bold text-purple-900 rounded-full  me-3 focus:shadow-none text-[16px]} cursor-pointer" : 'hidden'}`}
         onClick={() => handleViewLabTest('download', rowData)}
       />
     </>
     );
   }
 
-  const rowExpansionTemplate = (data: any) => {
+  const rowExpansionTemplate = (data: ILabTest) => {
     return (
       <div className="text-center">
-        <DataTable value={data.results} emptyMessage="No Available Results" className="p-0 m-0 lg:max-w-[80%]" rowClassName={() => "border-b custom-row"} tableClassName="p-0">
+        <DataTable value={data?.results} emptyMessage="No Available Results" className="p-0 m-0 lg:max-w-[80%]" rowClassName={() => "border-b custom-row"} tableClassName="p-0">
           <Column field="testName" header="TEST NAME" headerClassName="text-sm font-secondary py-1 border-b bg-gray-300 max-w-[15rem]"
           />
           <Column
@@ -322,16 +311,17 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
           stripedRows
         >
           <Column
+            key="expander"
             exportable={true}
             expander
             body={(row) => expanderTemplate(row)}
             className="w-[4rem]"
             headerClassName="text-sm font-secondary py-1 border-b bg-white"
           />
-          {resultColumns.map((column) => {
+          {resultColumns.map((column, index) => {
             return (
               <Column
-                key={column.header}
+                key={column.header + index}
                 headerClassName={columnHeaderStyle}
                 bodyClassName="py-4 text-ellipsis text-wrap max-w-[12rem]"
                 field={column.field}
@@ -416,7 +406,7 @@ const ReportColumn = ({
   handleReports: (action: string, data: ILabTest) => void;
 }) => {
   return (
-    <div className="flex flex-row items-center stroke-purple-800 items-center justify-start">
+    <div className="flex flex-row items-center stroke-purple-800 items-center cursor-pointer justify-start">
       <Eye className="me-2" onClick={() => handleReports("view", data)} />
     </div>
   );

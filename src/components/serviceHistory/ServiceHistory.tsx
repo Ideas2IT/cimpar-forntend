@@ -9,7 +9,7 @@ import Eye from "../../assets/icons/eye.svg?react";
 import { IDetailedAppointment, IGetAppointmentByIdPayload, ISidebarAppointment, } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
 import { IGetTestByIdPayload, IImmunization, IImmunizationPayload, ILabTest, IServiceHistory, } from "../../interfaces/immunization";
-import { appointmentStatus, capitalizeFirstLetter, getStatusColor, getStatusColors, } from "../../services/commonFunctions";
+import { capitalizeFirstLetter, getStatusColor, getStatusColors, } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
 import { getImmunizationByIdThunk, getLabTestByIdThunk, selectServiceHistory, } from "../../store/slices/serviceHistorySlice";
@@ -78,45 +78,6 @@ const ServiceHistory = ({
         }
       });
     }
-    // else if (row?.type?.toLowerCase() === SERVICE_CATEGORY.LAB_TEST) {
-    //   const payload: IGetTestByIdPayload = {
-    //     patient_id: patientId,
-    //     test_id: row?.id?.toString(),
-    //   };
-    //   dispatch(getLabTestByIdThunk(payload)).then((response) => {
-    //     if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
-    //       if (action === "view") {
-    //         if (response?.payload) {
-    //           setSelectedTest(response?.payload as ILabTest);
-    //           setIsOpenSidebar(true);
-    //           setSelectedService(row);
-    //         }
-    //       } else if (action === "download") {
-    //         if (response?.payload && "fileUrl" in response.payload) {
-    //           const fileUrl = (response.payload).fileUrl;
-
-    //           if (fileUrl) {
-    //             const link = document.createElement("a");
-    //             link.href = fileUrl;
-    //             link.download = "document";
-    //             document.body.appendChild(link);
-    //             link.click();
-    //             document.body.removeChild(link);
-    //           } else {
-    //             errorToast(
-    //               "File not found",
-    //               "This observation does not have a file"
-    //             );
-    //             return;
-    //           }
-    //         }
-    //       }
-    //     } else if (response?.meta?.requestStatus === RESPONSE.REJECTED) {
-    //       const errorResponse = response?.payload as ErrorResponse;
-    //       errorToast("Failed to load", errorResponse.message);
-    //     }
-    //   });
-    // } 
     else if (row?.type?.toLowerCase() === APPOINTMENT) {
       const payload: IGetAppointmentByIdPayload = {
         appointment_id: row.id?.toString(),
@@ -141,7 +102,7 @@ const ServiceHistory = ({
               orderId: appointment?.id || "",
               otherAllergies: appointment?.otherAllergies || "",
               otherMedicalConditions: appointment?.otherConditions || "",
-              status: appointmentStatus(appointment?.appointmentDate),
+              status: appointment?.status,
               testDetails: appointment?.testDetails,
               totalCost: appointment?.totalCost,
               centerLocation: appointment?.centerLocation || "",
@@ -203,25 +164,11 @@ const ServiceHistory = ({
 
 
   const sidebarHeader = () => {
-    const getValue = (status: string) => {
-      if (!status) return status;
-      return status
-        ?.split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    };
-
     return selectedService?.category?.toLowerCase() ===
       SERVICE_CATEGORY.IMMUNIZATION ? (
       <div>
         <span className="pe-3">Immunization Details</span>
-        <span
-          className={`sidebar-header capitalize ${getStatusColor(selectedImmunization.status)}`}
-        >
-          {selectedImmunization?.status
-            ? getValue(selectedImmunization?.status)
-            : "-"}
-        </span>
+        <div className={`sidebar-header capitalize ${getStatusColor(selectedImmunization.status)}`}>{selectedImmunization?.status ?? ""}</div>
       </div>
     ) : (
       <div className="flex items-center justify-between w-full">
@@ -229,8 +176,7 @@ const ServiceHistory = ({
           <span className="pe-3">{selectedService?.category || ""}</span>
           <span
             className={`${getStatusColors(selectedTest?.status)} py-2 text-center capitalize px-3 rounded-full text-sm font-tertiary`}
-          >
-            {selectedTest?.status ? getValue(selectedTest.status) : "-"}
+          > {selectedTest.status ?? ""}
           </span>
         </div>
         {selectedTest?.fileUrl && (
@@ -246,73 +192,53 @@ const ServiceHistory = ({
   };
 
   const appointmentHeader = () => {
-    const getValue = () => {
-      if (!selectedAppointment?.status) return selectedAppointment?.status;
-      return selectedAppointment?.status
-        ?.split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    };
-
     return (
       <div>
         <label className="pe-3">{selectedAppointment.category || "-"}</label>
         <span
-          className={`sidebar-header ms-4 ${getStatusColors(selectedAppointment.status)}`}
-        >
-          {getValue() || "-"}
+          className={`sidebar-header ms-4 capitalize ${getStatusColors(selectedAppointment.status)}`}> {selectedAppointment?.status ?? ''}
         </span>
       </div>
     );
   };
+
+  const renderCategory = (rowData: IServiceHistory) => <div className="font-tertiary capitalize">{rowData?.category} </div>
+  const renderDateOfService = (rowData: IServiceHistory) => <TestDetails value={rowData?.dateOfService ? dateFormatter(rowData?.dateOfService, DATE_FORMAT.DD_MMM_YYYY) : ""} />
+  const renderPaymentStatus = (rowData: IServiceHistory) => <div className="font-tertiary">{rowData.paymentStatus}</div>
+  const renderAppointmentStatus = (rowData: IServiceHistory) => <TestStatus status={rowData?.status ?? "-"} />
+  const renderServiceFor = (rowData: IServiceHistory) => <TestDetails value={rowData.serviceFor || ""} />
 
   const serviceColumns = [
     {
       field: "category",
       header: "CATEGORY",
       bodyClassName: "py-2",
-      body: (rowData: IServiceHistory) => (
-        <div className="font-tertiary capitalize">{rowData?.category} </div>
-      ),
+      body: (rowData: IServiceHistory) => renderCategory(rowData),
     },
     {
       field: "serviceFor",
       header: "SERVICE FOR",
-      body: (rowData: IServiceHistory) => (
-        <TestDetails value={rowData.serviceFor || ""} />
-      ),
+      body: (rowData: IServiceHistory) => renderServiceFor(rowData),
     },
     {
       field: "dateOfService",
       header: "DATE OF SERVICE",
-      body: (rowData: IServiceHistory) => (
-        <TestDetails
-          value={
-            rowData?.dateOfService
-              ? dateFormatter(rowData?.dateOfService, DATE_FORMAT.DD_MMM_YYYY)
-              : ""
-          }
-        />
-      ),
+      body: (rowData: IServiceHistory) => renderDateOfService(rowData),
     },
     {
-      field: "category",
+      field: "",
       header: "PAYMENT STATUS",
       bodyClassName: "py-1",
-      body: (rowData: IServiceHistory) => (
-        <div className="font-tertiary">{rowData.paymentStatus}</div>
-      ),
+      body: (rowData: IServiceHistory) => renderPaymentStatus(rowData),
     },
     {
       field: "status",
       header: "APPOINTMENT STATUS",
-      body: (rowData: IServiceHistory) => (
-        <TestStatus status={rowData?.status ?? "-"} />
-      ),
+      body: (rowData: IServiceHistory) => renderAppointmentStatus(rowData),
     },
   ];
 
-  const viewReportColumn = (rowData: IServiceHistory) => {
+  const viewReportColumn = (rowData: ILabTest) => {
     return (<>
       <Button
         title="View report"

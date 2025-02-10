@@ -153,7 +153,7 @@ const labResultToService = (resource: any) => {
     serviceFor: getStringValuesFromObjectArray(resource?.code?.coding) || "",
     status: RESULT_STATUS.AVAILABLE,
     type: SERVICE_CATEGORY.LAB_TEST,
-    fileUrl: resource?.file_url ? resource?.file_url : "",
+    // fileUrl: resource?.file_url ? resource?.file_url : "",
     paymentStatus: "-",
     results: [],
   };
@@ -174,9 +174,9 @@ const getResultsFromAppointment = (data: any) => {
 
         collectedDateTime: item?.specimen?.collection?.collectedDateTime
           ? dateFormatter(
-              item?.specimen?.collection?.collectedDateTime,
-              DATE_FORMAT.DD_MMM_YYYY
-            )
+            item?.specimen?.collection?.collectedDateTime,
+            DATE_FORMAT.DD_MMM_YYYY
+          )
           : "",
         reportedDateTime:
           dateFormatter(item?.issued, DATE_FORMAT.DD_MMM_YYYY) ?? "",
@@ -204,7 +204,7 @@ const appointmentToService = (data: any) => {
     serviceFor: getStringValuesFromObjectArray(data?.serviceType?.[0]?.coding),
     dateOfService: data?.end || "",
     id: data?.id || "",
-    status: appointmentStatus(data?.end || ""),
+    status: appointmentStatus(data?.end || "", data?.result?.length),
     type: APPOINTMENT,
     paymentStatus: data?.payment_status || "-",
     results: data?.result?.length ? getResultsFromAppointment(data.result) : [],
@@ -242,7 +242,7 @@ const appointmentToResult = (data: any) => {
     testName:
       getStringValuesFromObjectArray(data?.serviceType?.[0].coding) || "",
     category: "Lab Tests",
-    status: appointmentStatus(data?.end || ""),
+    status: appointmentStatus(data?.end || "", data?.result?.length),
     collectedDateTime: "",
     contactInfo: "",
     dateOfTest: dateFormatter(data?.end || ""),
@@ -258,6 +258,7 @@ const appointmentToResult = (data: any) => {
     fileUrl: "",
     paymentStatus: data?.payment_status || "",
     results: data?.result?.length ? getResultsFromAppointment(data.result) : [],
+    type: data?.record_type || "",
   } as ILabTest;
 };
 
@@ -278,9 +279,9 @@ function transformTests(data: any) {
           testName: resource?.code?.coding?.[0]?.display ?? "",
           dateOfTest: resource?.effective?.dateTime
             ? dateFormatter(
-                resource?.effective?.dateTime,
-                DATE_FORMAT.DD_MMM_YYYY
-              )
+              resource?.effective?.dateTime,
+              DATE_FORMAT.DD_MMM_YYYY
+            )
             : "",
           orderId: resource?.id ?? "",
           testedAt: resource?.performer?.[0]?.display ?? "",
@@ -288,9 +289,9 @@ function transformTests(data: any) {
 
           collectedDateTime: resource?.specimen?.collection?.collectedDateTime
             ? dateFormatter(
-                resource?.specimen?.collection?.collectedDateTime,
-                DATE_FORMAT.DD_MMM_YYYY
-              )
+              resource?.specimen?.collection?.collectedDateTime,
+              DATE_FORMAT.DD_MMM_YYYY
+            )
             : "",
           reportedDateTime:
             dateFormatter(resource?.issued, DATE_FORMAT.DD_MMM_YYYY) ?? "",
@@ -307,6 +308,7 @@ function transformTests(data: any) {
           status: RESULT_STATUS.AVAILABLE,
           fileUrl: resource?.file_url || "",
           results: resource?.result ?? [],
+          type: resource?.record_type ?? "",
         } as ILabTest;
       } else if (
         resource?.record_type?.toLowerCase() === RECORD_TYPE.APPOINTMENT
@@ -349,6 +351,7 @@ function transformSingleTest(data: any): ILabTest {
     fileUrl: data.file_url ? data?.file_url : "",
     paymentStatus: data?.payment_status || "",
     results: [],
+    type: data?.record_type ?? "",
   };
 
   return test;

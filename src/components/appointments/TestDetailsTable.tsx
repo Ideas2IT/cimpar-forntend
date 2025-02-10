@@ -13,7 +13,7 @@ const TestDetailsTable = ({
   testLocation: string;
 }) => {
   const calculatePrice = (test: ITestDetails) => {
-    if (testLocation === PRICING_SCHEME.HOME) {
+    if (testLocation?.toLowerCase() === PRICING_SCHEME.HOME) {
       return `$${Number(test?.home_price).toFixed(2) || "0.00"}`;
     } else {
       return `$${Number(test?.center_price).toFixed(2) || "0.00"}`;

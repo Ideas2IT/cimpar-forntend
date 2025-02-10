@@ -36,6 +36,7 @@ import VerticalTabView from "../VerticalTabView";
 import VisitHistory from "../visitHistory/VisitHistory";
 import DetailedAppointmentView from "./DetailedApppointmentView";
 import ServiceFilterPanel from "./ServiceFilterPanel";
+import { render } from "@testing-library/react";
 
 interface IHandlers {
   viewAppointment: () => void;
@@ -231,75 +232,55 @@ const Appointments = () => {
     viewAppointment: handleViewAppointment,
   };
 
-  const ColumnDetails = ({
-    value,
-    styleClass,
-  }: {
-    value: string | number;
-    styleClass?: string;
-  }) => {
-    return (
-      <div
-        className={`text-[16px] font-tertiary capitalize ${styleClass}`}
-      >
-        {value}
-      </div>
-    );
-  };
+  const renderPatinetName = (rowData: IAppointmentList) => {
+    return <button type="button"
+      className="text-start"
+      onClick={() => {
+        handlers.viewAppointment();
+        handlers.viewPatient(false, rowData);
+      }}
+    >
+      <ColumnDetails
+        styleClass="text-purple-900 hover:underline"
+        value={rowData.patientName}
+      />
+    </button>
+  }
+
+  const renderColumnDetails = (value: string = '-') => {
+    return <ColumnDetails value={value} />;
+  }
 
   const columns = [
     {
       field: "patientName",
       header: "PATIENT NAME",
-      body: (rowData: IAppointmentList) => (
-        <button type="button"
-          className="text-start"
-          onClick={() => {
-            handlers.viewAppointment();
-            handlers.viewPatient(false, rowData);
-          }}
-        >
-          <ColumnDetails
-            styleClass="text-purple-900 hover:underline"
-            value={rowData.patientName}
-          />
-        </button>
-      ),
+      body: (rowData: IAppointmentList) => renderPatinetName(rowData),
     },
     {
       field: "age",
       header: "AGE",
-      body: (rowData: IAppointmentList) => (
-        <ColumnDetails value={rowData.age} />
-      ),
+      body: (rowData: IAppointmentList) => renderColumnDetails(rowData.age)
     },
     {
       field: "gender",
       header: "GENDER",
-      body: (rowData: IAppointmentList) => (
-        <ColumnDetails value={rowData.gender} />
-      ),
+      body: (rowData: IAppointmentList) => renderColumnDetails(rowData.gender)
     },
     {
       field: "insurance",
       header: "INSURANCE",
-      body: (rowData: IAppointmentList) => (
-        <ColumnDetails value={rowData.insurance} />
-      ),
+      body: (rowData: IAppointmentList) => renderColumnDetails(rowData.insurance)
     },
     {
-      field: "insurance",
+      field: "dateAndTime",
       header: "DATE & TIME OF TEST",
-      body: (rowData: IAppointmentList) => (
-        <ColumnDetails value={rowData.dateAndTime} />
-      ),
+      body: (rowData: IAppointmentList) => renderColumnDetails(rowData.dateAndTime)
     },
     {
-      field: "insurance",
+      field: "appointmentFor",
       header: "APPOINTMENT FOR",
-      body: (rowData: IAppointmentList) => (
-        <ColumnDetails value={rowData?.appointmentFor} />
-      ),
+      body: (rowData: IAppointmentList) => renderColumnDetails(rowData?.appointmentFor),
     },
     {
       headerClassName:
@@ -470,7 +451,7 @@ const Appointments = () => {
                   <ServiceFilterPanel onApplyFilter={handleTestFilter} />
                 </span>
                 <SearchInput
-                  placeholder="Search patient name"
+                  placeholder="Search For Patient"
                   handleSearch={handleSearch}
                 />
               </div>
@@ -669,6 +650,22 @@ const ViewAppointment = ({
         title="View Profile"
         onClick={() => handlers.viewPatient(true, appoinement)}
       />
+    </div>
+  );
+};
+
+const ColumnDetails = ({
+  value,
+  styleClass,
+}: {
+  value: string | number;
+  styleClass?: string;
+}) => {
+  return (
+    <div
+      className={`text-[16px] font-tertiary capitalize ${styleClass}`}
+    >
+      {value}
     </div>
   );
 };

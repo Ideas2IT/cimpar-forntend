@@ -41,7 +41,7 @@ export interface IServiceHistory {
   id: string;
   status?: string;
   type?: string;
-  fileUrl?: string;
+  // fileUrl?: string;
   paymentStatus: string;
   results: ILabTest[];
 }
@@ -114,6 +114,7 @@ export interface ILabTest {
   fileUrl: string;
   paymentStatus: string;
   results: ITestResult[];
+  type: string
 }
 
 export interface ILabTestData {

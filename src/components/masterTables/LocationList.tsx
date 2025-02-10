@@ -235,8 +235,9 @@ const LocationList = () => {
       status: data?.status ?? '',
       working_days: ["mon", "tue", "wed"],
       holiday: "",
-      azure_booking_id: data.azureBooking?.id ?? "",
+      azure_booking_id: data?.azure_booking_id ?? "",
     };
+
     if (!Object.keys(selectedLocation)?.length) {
       dispatch(createLocationThunk(payload)).then((response) => {
         if (response.meta.requestStatus === RESPONSE.FULFILLED) {
@@ -263,7 +264,7 @@ const LocationList = () => {
           updateLocationList(updatePayload);
         } else {
           const _response = response.payload as ErrorResponse;
-          errorToast("Failed to update location", _response?.message);
+          errorToast("Unable To Update location", _response?.message);
         }
       });
     }
@@ -273,7 +274,6 @@ const LocationList = () => {
     const bookingId = selectedLocation?.azure_booking_id;
     if (bookingId) {
       const bookingDetails = bookingNames.find((b) => b.id === bookingId);
-      console.log(bookingDetails)
       return bookingDetails?.displayName ?? "N/A";
     }
     return "N/A";

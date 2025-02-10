@@ -10,12 +10,8 @@ import { selectProfileName } from "../store/slices/UserSlice";
 import { setSelectedSidebarTab } from "../store/slices/commonSlice";
 import { selectRole } from "../store/slices/loginSlice";
 import { AppDispatch } from "../store/store";
-import {
-  ABSOLUTE_PATH,
-  HEADER_TITLE,
-  PATH_NAME,
-  SYMBOL,
-} from "../utils/AppConstants";
+import { ABSOLUTE_PATH, HEADER_TITLE, PATH_NAME, SYMBOL, } from "../utils/AppConstants";
+
 interface Tab {
   key: string;
   icon: React.ReactNode;
@@ -23,68 +19,84 @@ interface Tab {
   header: string;
 }
 
+const tabs = {
+  patient: [
+    {
+      header: HEADER_TITLE.HOME,
+      key: "home",
+      icon: <Home />,
+      routerLink: PATH_NAME.HOME,
+      title: "Home",
+    },
+    {
+      header: HEADER_TITLE.HEALTH_RECORD,
+      key: "labTestResults",
+      icon: <AddRecord />,
+      routerLink: PATH_NAME.HEALTH_RECORDS,
+      title: "Health Record",
+    },
+    {
+      header: HEADER_TITLE.PROFILE,
+      key: "profile",
+      icon: <Profile />,
+      routerLink: PATH_NAME.PROFILE,
+      title: "Profile",
+    },
+  ],
+  admin: [
+    {
+      header: HEADER_TITLE.APPOINTMENT,
+      key: "appointment",
+      icon: <i className="pi pi-calendar-minus text-2xl" />,
+      routerLink: PATH_NAME.APPOINTMENTS,
+      title: "Appointments",
+    },
+    {
+      header: HEADER_TITLE.MASTER,
+      key: "master",
+      icon: <i className="pi pi-wallet text-2xl" />,
+      routerLink: PATH_NAME.MASTER_TABLES,
+      title: "Master",
+    },
+    {
+      header: HEADER_TITLE.TRANSACTION,
+      key: "transaction",
+      icon: <i className="pi pi-clock text-2xl" />,
+      routerLink: PATH_NAME.TRANSACTIONS,
+      title: "Transactions",
+    },
+  ],
+  other: [],
+};
+
+
+
 const Sidebar = () => {
-  const tabs = {
-    patient: [
-      {
-        header: HEADER_TITLE.HOME,
-        key: "home",
-        icon: <Home />,
-        routerLink: PATH_NAME.HOME,
-        title: "Home",
-      },
-      {
-        header: HEADER_TITLE.HEALTH_RECORD,
-        key: "labTestResults",
-        icon: <AddRecord />,
-        routerLink: PATH_NAME.HEALTH_RECORDS,
-        title: "Health Record",
-      },
-      {
-        header: HEADER_TITLE.PROFILE,
-        key: "profile",
-        icon: <Profile />,
-        routerLink: PATH_NAME.PROFILE,
-        title: "Profile",
-      },
-    ],
-    admin: [
-      {
-        header: HEADER_TITLE.APPOINTMENT,
-        key: "appointment",
-        icon: <i className="pi pi-calendar-minus text-2xl" />,
-        routerLink: PATH_NAME.APPOINTMENTS,
-        title: "Appointments",
-      },
-      {
-        header: HEADER_TITLE.MASTER,
-        key: "master",
-        icon: <i className="pi pi-wallet text-2xl" />,
-        routerLink: PATH_NAME.MASTER_TABLES,
-        title: "Master",
-      },
-      {
-        header: HEADER_TITLE.TRANSACTION,
-        key: "transaction",
-        icon: <i className="pi pi-clock text-2xl" />,
-        routerLink: PATH_NAME.TRANSACTIONS,
-        title: "Transactions",
-      },
-    ],
-    other: [],
-  };
+
+
   const role = useSelector(selectRole);
+
   const dispatch = useDispatch<AppDispatch>();
-  const [selectedTab, setSelectedTab] = useState<Tab>(tabs[role][0]);
-  const { updateHeaderTitle } = useContext(HeaderContext);
+
   const location = useLocation();
   const username = useSelector(selectProfileName);
+
+  const { updateHeaderTitle } = useContext(HeaderContext);
+  const [selectedTab, setSelectedTab] = useState<Tab>(tabs[role][0]);
+
 
   useEffect(() => {
     if (location.pathname === SYMBOL.SLASH) {
       updateHeaderTitle("Hi, " + username);
+    } else {
+      updateHeaderTitle(selectedTab.header);
     }
-  }, [username]);
+
+  }, [username, selectedTab]);
+
+  useEffect(() => {
+    changeMenuOption();
+  }, [location.pathname]);
 
   const handleOnTabClick = (tab: Tab) => {
     setSelectedTab(tab);
@@ -96,9 +108,7 @@ const Sidebar = () => {
     dispatch(setSelectedSidebarTab("Personal"));
   };
 
-  useEffect(() => {
-    changeMenuOption();
-  }, [location.pathname]);
+
 
   const changeMenuOption = () => {
     const pathname = location.pathname.split(SYMBOL.SLASH)[1];
@@ -121,9 +131,8 @@ const Sidebar = () => {
       default:
         tabIndex = 0;
     }
-    if (tabIndex) {
+    if (role)
       setSelectedTab(tabs[role][tabIndex]);
-    }
   };
 
   return (

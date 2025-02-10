@@ -12,6 +12,11 @@ import "./Immunization.css";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { DATE_FORMAT } from "../../utils/AppConstants";
 
+interface IColumnType {
+  field: string;
+  header: string;
+}
+
 const Immunization = ({
   handlePageChange,
 }: {
@@ -23,7 +28,7 @@ const Immunization = ({
   );
   const immunizations = useSelector(selectImmunizations);
 
-  const columnsConfig = [
+  const columnsConfig: IColumnType[] = [
     {
       field: "vaccineName",
       header: "VACCINE NAME",
@@ -58,6 +63,20 @@ const Immunization = ({
     );
   };
 
+  const renderColumnBody = (column: IColumnType, rowData: IImmunization) => {
+    const fieldKey = column.field as keyof IImmunization;
+    if (column.header === "ADMINISTRATION DATE") {
+      return <ColumnData
+        content={dateFormatter(
+          rowData[fieldKey],
+          DATE_FORMAT.DD_MMM_YYYY
+        )}
+      />
+    } else {
+      return <ColumnData content={rowData[fieldKey]} />
+    }
+  }
+
   return (
     <>
       <div className="h-[calc(100vh-200px)] overflow-auto">
@@ -84,17 +103,7 @@ const Immunization = ({
                   header={column.header}
                   bodyClassName="py-4"
                   headerClassName="text-sm font-secondary py-1 border-b bg-white"
-                  body={(rowData) =>
-                    column.header === "ADMINISTRATION DATE" ? (
-                      <ColumnData
-                        content={dateFormatter(
-                          rowData[column.field],
-                          DATE_FORMAT.DD_MMM_YYYY
-                        )}
-                      />
-                    ) : (
-                      <ColumnData content={rowData[column.field]} />
-                    )
+                  body={(rowData) => renderColumnBody(column, rowData)
                   }
                 />
               );
@@ -150,15 +159,6 @@ const Immunization = ({
 };
 
 export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
-  const DetailRow = ({ label, value }: { label: string; value: string }) => (
-    <div className="border-b">
-      <div className="input-label text-gray-900 font-secondary pt-4">
-        {label || ""}
-      </div>
-      <label className="font-primary">{value || ""}</label>
-    </div>
-  );
-
   const columnKeys = [
     "ADMINISTRATION DATE",
     "ADMINISTRATOR",
@@ -198,15 +198,15 @@ export const ImmunizationDetailView = ({ data }: { data: IImmunization }) => {
 
   return (
     <div className="pt-6">
-      <label className="font-primary text-xl">Vaccine details</label>
+      <p className="font-primary text-xl">Vaccine details</p>
       <div className="border-b">
         <DetailRow label="VACCINE NAME" value={data.vaccineName} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         {Boolean(columnKeys.length) &&
-          columnKeys?.map((column, index) => {
+          columnKeys?.map((column) => {
             return (
-              <DetailRow key={index} label={column} value={getValue(column)} />
+              <DetailRow key={column} label={column} value={getValue(column)} />
             );
           })}
       </div>
@@ -241,18 +241,29 @@ const ViewColumn = ({
   };
 
   return (
-    <div
+    <button
       className="flex flex-row gap-2 text-purple-800"
       onClick={() => handleView(data)}
     >
       <EyeIcon className="stroke-purple-800" />
-    </div>
+    </button>
   );
 };
 
 const ColumnData = ({ content }: { content: string }) => {
   return (
-    <div className="text-[16px] font-tertiary">{content ? content : "-"}</div>
+    <div className="text-[16px] font-tertiary">{content || "-"}</div>
   );
 };
+
+
+const DetailRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="border-b">
+    <div className="input-label text-gray-900 font-secondary pt-4">
+      {label || ""}
+    </div>
+    <label className="font-primary">{value || ""}</label>
+  </div>
+);
+
 export default Immunization;

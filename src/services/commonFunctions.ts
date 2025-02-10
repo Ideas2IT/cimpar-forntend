@@ -75,7 +75,7 @@ export const createFullName = (
   lastName: string
 ) => {
   let fullNameArray = [firstName, middleName, lastName].filter(
-    (name) => name && name.trim()
+    (name) => name?.trim()
   );
 
   return fullNameArray.join(" ");
@@ -115,8 +115,8 @@ export const combineHeight = (
   feet: number | undefined | null,
   inches: number | undefined | null
 ): string => {
-  const validFeet = feet || 0;
-  const validInches = inches || 0;
+  const validFeet = feet ?? 0;
+  const validInches = inches ?? 0;
   return `${validFeet}.${validInches}`;
 };
 
@@ -126,7 +126,7 @@ export const convertToFeetAndInches = (
   if (!num) {
     return { feet: "0", inches: "0" };
   }
-  const [feet, inches] = num?.toString().split(".").map(Number);
+  const [feet, inches] = num.toString().split(".").map(Number);
   return {
     feet: feet || "0",
     inches: inches || "0",
@@ -177,7 +177,7 @@ export function obfuscateAccountNumber(accountNumber: string) {
 }
 
 export const getPolicyDetails = (insurances: IInsurance[]) => {
-  if (insurances && insurances?.length) {
+  if (insurances?.length) {
     const priorities = [
       INSURANCE_TYPE.PRIMARY,
       INSURANCE_TYPE.SECONDARY,
@@ -276,26 +276,44 @@ export function setAppointmentCategory(
   }
 }
 
-export const appointmentStatus = (appointmentDateStr: string | Date) => {
-  const appointmentDate =
-    typeof appointmentDateStr === "string"
-      ? parseISO(appointmentDateStr)
-      : appointmentDateStr;
-  if (isNaN(appointmentDate.getTime())) {
+export const appointmentStatus = (appointmentDateStr: string | Date, resultLength?: number) => {
+  if (resultLength && resultLength > 0) {
+    return RESULT_STATUS.AVAILABLE;
+  }
+  let appointmentDate: Date;
+  if (typeof appointmentDateStr === 'string') {
+    try {
+      appointmentDate = parseISO(appointmentDateStr);
+    } catch (error) {
+      console.error('Error parsing appointment date:', error);
+      return RESULT_STATUS.UPCOMING;
+    }
+  } else {
+    appointmentDate = appointmentDateStr;
+  }
+
+  if (!(appointmentDate instanceof Date) || isNaN(appointmentDate.getTime())) {
     return RESULT_STATUS.UPCOMING;
   }
-  const appointmentDateUTC = new Date(
-    formatInTimeZone(appointmentDate, "UTC", DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
-  );
-  const currentDateUTC = new Date(
-    formatInTimeZone(new Date(), "UTC", DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
-  );
-  if (isBefore(currentDateUTC, appointmentDateUTC)) {
+
+  try {
+    const appointmentDateUTC = new Date(
+      formatInTimeZone(appointmentDate, 'UTC', DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
+    );
+    const currentDateUTC = new Date(
+      formatInTimeZone(new Date(), 'UTC', DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z)
+    );
+    if (isBefore(currentDateUTC, appointmentDateUTC)) {
+      return RESULT_STATUS.UPCOMING;
+    } else {
+      return RESULT_STATUS.UNDER_PROCESSING;
+    }
+  } catch (error) {
+    console.error('Error formatting or comparing dates:', error);
     return RESULT_STATUS.UPCOMING;
-  } else {
-    return RESULT_STATUS.UNDER_PROCESSING;
   }
 };
+
 
 export const compareDates = (
   startDate: Date | string | null | undefined,

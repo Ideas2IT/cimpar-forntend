@@ -78,17 +78,15 @@ const Button: React.FC<ButtonProps> = ({
   }, [setFocus]);
 
   return (
-    <>
-      <button
-        ref={buttonRef}
-        className={`${commonStyles} ${buttonStyle} ${sizeStyles} ${disabledStyles} ${className}`}
-        type={type}
-        disabled={disabled}
-        onClick={handleClick}
-      >
-        {children}
-      </button>
-    </>
+    <button
+      ref={buttonRef}
+      className={`${commonStyles} ${buttonStyle} ${sizeStyles} ${disabledStyles} ${className}`}
+      type={type}
+      disabled={disabled}
+      onClick={handleClick}
+    >
+      {children}
+    </button>
   );
 };
 
