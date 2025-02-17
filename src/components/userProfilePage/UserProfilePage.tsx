@@ -1,18 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AddRecord from "../../assets/icons/addrecord.svg?react";
 import SlideOpen from "../../assets/icons/slideOpen.svg?react";
 import SlideBack from "../../assets/icons/slideback.svg?react";
 import Tab from "../../interfaces/Tab";
-import {
-  selectHasMedicalConditions,
-  selectSelectedPatient,
-} from "../../store/slices/PatientSlice";
-import {
-  selectTab,
-  setSelectedSidebarTab,
-} from "../../store/slices/commonSlice";
+import { selectHasMedicalConditions, selectSelectedPatient } from "../../store/slices/PatientSlice";
+import { selectTab, setSelectedSidebarTab } from "../../store/slices/commonSlice";
 import { AppDispatch } from "../../store/store";
 import { PATH_NAME } from "../../utils/AppConstants";
 import Button from "../Button";
@@ -70,23 +64,23 @@ export const tabs: Tab[] = [
     ),
   },
 ];
+
 const UserProfilePage = () => {
   const selectedPatient = useSelector(selectSelectedPatient);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const selectedOption = useSelector(selectTab);
-  const [selectedTab, setSelectedTab] = useState(
-    selectedOption ? selectedOption : "personal"
-  );
+  const [selectedTab, setSelectedTab] = useState(selectedOption ?? "personal");
   const [hideTabs, setHideTabs] = useState(false);
   const hasConditions = useSelector(selectHasMedicalConditions);
 
   useEffect(() => {
     dispatch(setSelectedSidebarTab(selectedTab));
-  }, [selectedTab]);
+  }, [selectedTab, dispatch]);
 
   const handleEdit = () => {
-    switch (selectedTab.toLowerCase()) {
+    const lowerCaseTab = selectedTab.toLowerCase();
+    switch (lowerCaseTab) {
       case "personal":
         navigate(PATH_NAME.EDIT_PROFILE, { state: { from: "menu" } });
         break;
@@ -102,13 +96,93 @@ const UserProfilePage = () => {
     }
   };
 
+  const renderButton = useMemo(() => {
+    const lowerCaseTab = selectedTab.toLowerCase();
+    const isInsuranceTab = lowerCaseTab === "insurance";
+    const isVisitHistoryTab = lowerCaseTab === "visit history";
+    const isMedicationsTab = lowerCaseTab === "medications";
+    const isMedicalConditionsTab = lowerCaseTab === "medical conditions & allergies";
+
+    if (isInsuranceTab) {
+      return (
+        <Button
+          disabled={!!(selectedPatient && selectedPatient?.InsuranceDetails?.length >= 3)}
+          className="ml-3 font-primary"
+          variant="primary"
+          style="outline"
+          onClick={() => navigate(PATH_NAME.EDIT_INSURANCE)}
+        >
+          <AddRecord className="stroke-purple-900 mx-2" />
+          Add Insurance
+        </Button>
+      );
+    } else if (isVisitHistoryTab) {
+      return (
+        <Button
+          className="ml-3 font-primary"
+          variant="primary"
+          style="outline"
+          onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}`)}
+        >
+          <AddRecord className="stroke-purple-900 mx-2" />
+          Add Visit History
+        </Button>
+      );
+    } else if (isMedicationsTab) {
+      return (
+        <Button
+          className="ml-3 font-primary"
+          variant="primary"
+          style="outline"
+          onClick={() => navigate(PATH_NAME.EDIT_MEDICATION)}
+        >
+          <AddRecord className="stroke-purple-900 mx-2" />
+          {selectedPatient?.medicationDetails && Object.keys(selectedPatient.medicationDetails).length
+            ? "Edit Medication"
+            : "Add Medication"}
+        </Button>
+      );
+    } else if (isMedicalConditionsTab) {
+      return (
+        <Button
+          className="ml-3 font-primary"
+          variant="primary"
+          style="outline"
+          onClick={() => navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS)}
+        >
+          {!hasConditions ? (
+            <>
+              <AddRecord className="stroke-purple-900 mx-2" />
+              Add Medical Conditions & Allergies
+            </>
+          ) : (
+            <>
+              <i className="pi pi-pencil stroke-purple-700 mr-2" />Edit Details
+            </>
+          )}
+        </Button>
+      );
+    } else {
+      return (
+        <Button
+          className="ml-3 font-primary"
+          variant="primary"
+          style="outline"
+          onClick={handleEdit}
+        >
+          <i className="pi pi-pencil stroke-purple-700 mr-2" />Edit Details
+        </Button>
+      );
+    }
+  }, [selectedTab, selectedPatient, hasConditions, navigate]);
+
   return (
     <div className="flex flex-col flex-grow px-6">
       <div className="flex justify-between items-center mb-3">
         <div>
           <button
             className={`p-2 rounded-lg mr-3 ${hideTabs ? "bg-white" : "bg-cyan-700"}`}
-            onClick={() => setHideTabs((hideTabs) => !hideTabs)}
+            onClick={() => setHideTabs((prev) => !prev)}
           >
             {hideTabs ? <SlideOpen fill="clear" /> : <SlideBack fill="white" />}
           </button>
@@ -117,79 +191,7 @@ const UserProfilePage = () => {
           </span>
         </div>
         <div className="flex items-center">
-          {selectedTab.toLowerCase() === "insurance" ? (
-            <Button
-              disabled={
-                selectedPatient &&
-                selectedPatient?.InsuranceDetails?.length >= 3
-                  ? true
-                  : false
-              }
-              className="ml-3 font-primary"
-              variant="primary"
-              style="outline"
-              onClick={() => navigate(PATH_NAME.EDIT_INSURANCE)}
-            >
-              <AddRecord className="stroke-purple-900 mx-2" />
-              Add Insurance
-            </Button>
-          ) : selectedTab.toLowerCase() === "visit history" ? (
-            <Button
-              className="ml-3 font-primary"
-              variant="primary"
-              style="outline"
-              onClick={() => {
-                navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}`);
-              }}
-            >
-              <AddRecord className="stroke-purple-900 mx-2" />
-              Add Visit History
-            </Button>
-          ) : selectedTab.toLowerCase() === "medications" ? (
-            <Button
-              className="ml-3 font-primary"
-              variant="primary"
-              style="outline"
-              onClick={() => {
-                navigate(PATH_NAME.EDIT_MEDICATION);
-              }}
-            >
-              <AddRecord className="stroke-purple-900 mx-2" />
-              {selectedPatient?.medicationDetails &&
-              Object.keys(selectedPatient?.medicationDetails)?.length
-                ? "Edit Medication"
-                : "Add Medication"}
-            </Button>
-          ) : selectedTab === "Medical Conditions & Allergies" ? (
-            <Button
-              className="ml-3 font-primary"
-              variant="primary"
-              style="outline"
-              onClick={() => navigate(PATH_NAME.EDIT_MEDICAL_CONDITIONS)}
-            >
-              {!hasConditions ? (
-                <>
-                  <AddRecord className="stroke-purple-900 mx-2" />
-                  Add Medical Conditions & Allergies
-                </>
-              ) : (
-                <>
-                  <i className="pi pi-pencil stroke-purple-700 mr-2" />
-                  Edit Details
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button
-              className="ml-3 font-primary"
-              variant="primary"
-              style="outline"
-              onClick={() => handleEdit()}
-            >
-              <i className="pi pi-pencil stroke-purple-700 mr-2" />
-              Edit Details
-            </Button>
-          )}
+          {renderButton}
         </div>
       </div>
       <div className="flex flex-col rounded-xl overflow-hidden flex-grow border border-gray-100">
@@ -202,4 +204,5 @@ const UserProfilePage = () => {
     </div>
   );
 };
+
 export default UserProfilePage;

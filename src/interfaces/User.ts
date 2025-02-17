@@ -1,7 +1,7 @@
 import { IOptionValue } from "./common";
 
-export interface IUserBasicDetails {}
-export interface IUserContactDetails {}
+export interface IUserBasicDetails { }
+export interface IUserContactDetails { }
 
 export interface IUser {
   phoneNumber: number;
@@ -37,7 +37,7 @@ interface IHeight {
   inches: number;
 }
 
-export interface country {
+export interface Country {
   name: string;
   value: string;
 }

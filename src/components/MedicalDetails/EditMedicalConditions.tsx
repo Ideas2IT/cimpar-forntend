@@ -7,10 +7,15 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { ErrorResponse } from "../../interfaces/common";
 import { IMedicine } from "../../interfaces/medication";
-import { handleKeyPress } from "../../services/commonFunctions";
+import {
+  ICreateMedicalCondtion,
+  IUpdateAllergiesAndConditionsPayload,
+} from "../../interfaces/patient";
 import {
   createMedicalConditionsThunk,
+  getPatientMedicalConditionsThunk,
   selectHasMedicalConditions,
   selectSelectedPatient,
   updateMedicalConditonsThunk,
@@ -27,11 +32,6 @@ import Button from "../Button";
 import BackButton from "../backButton/BackButton";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
 import useToast from "../useToast/UseToast";
-import {
-  ICreateMedicalCondtion,
-  IUpdateAllergiesAndConditionsPayload,
-} from "../../interfaces/patient";
-import { ErrorResponse } from "../../interfaces/common";
 
 interface IConditionFormValue {
   medicalConditions: IMedicine[];
@@ -43,10 +43,12 @@ interface IConditionFormValue {
 }
 
 const EditMedicalConditions = () => {
+
   const hasCondtions = useSelector(selectHasMedicalConditions);
   const filteredAllergies = useSelector(selectAllergies);
   const filteredConditions = useSelector(selectConditions);
   const patient = useSelector(selectSelectedPatient);
+
   const { control, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {} as IConditionFormValue,
   });
@@ -72,6 +74,11 @@ const EditMedicalConditions = () => {
     };
     reset({ ...conditionDetails });
   }, [patient.medicalConditionsAndAllergies]);
+
+  useEffect(() => {
+    patient?.basicDetails?.id && dispatch(getPatientMedicalConditionsThunk(patient?.basicDetails?.id))
+  }, [patient?.basicDetails?.id])
+
   const areFamilyConditions = watch("areFamilyConditions");
   const { toast, successToast, errorToast } = useToast();
   const navigate = useNavigate();
@@ -195,10 +202,7 @@ const EditMedicalConditions = () => {
   };
   return (
     <>
-      <form
-        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => handleKeyPress(event)}
-      >
+      <form>
         <div className="flex flex-col md:flex-row justify-between py-2">
           <BackButton
             backLink={PATH_NAME.PROFILE}
@@ -220,7 +224,8 @@ const EditMedicalConditions = () => {
             <PrimeButton
               className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
               outlined
-              type="submit"
+              onClick={handleSubmit(handleFormSubmit)}
+              type="button"
             >
               <i className="pi pi-check me-2" />
               {patient?.medicalConditionsAndAllergies?.medicalConditions?.length
@@ -230,7 +235,7 @@ const EditMedicalConditions = () => {
           </div>
         </div>
         <div className="p-6 bg-white overflow-auto rounded-lg h-[calc(100vh-200px)]">
-          <label className="font-primary text-xl pb-6">
+          <label htmlFor="medicalConditions" className="font-primary text-xl pb-6">
             Medical Conditions
           </label>
           <div className="pt-4">
@@ -293,7 +298,7 @@ const EditMedicalConditions = () => {
                           )
                         ) {
                           const values: IMedicine[] = [
-                            ...(field?.value ? field?.value : []),
+                            ...(field?.value ? field.value : []),
                             {
                               display: event?.target?.value?.trim(),
                               code: CODE,
@@ -318,19 +323,20 @@ const EditMedicalConditions = () => {
                   />
                   {!!field?.value?.length && (
                     <div className="flex top-[1.2rem] h-full text-sm  font-normal right-5 items-center absolute text-red-500">
-                      <span
-                        className="cursor-pointer"
+                      <button
+                        type="button"
+                        className="cursor-pointer outline-none"
                         onClick={() => setValue("otherMedicalConditions", [])}
                       >
                         Clear all
-                      </span>
+                      </button>
                     </div>
                   )}
                 </>
               )}
             />
           </div>
-          <label className="font-primary text-xl block py-4">Allergies</label>
+          <p className="font-primary text-xl block py-4">Allergies</p>
 
           <div className="py-4">
             <label className="input-label block pb-1" htmlFor="allergies">
@@ -385,7 +391,7 @@ const EditMedicalConditions = () => {
                             )
                           ) {
                             const values: IMedicine[] = [
-                              ...(field?.value ? field?.value : []),
+                              ...(field?.value ? field.value : []),
                               {
                                 display: event?.target?.value?.trim(),
                                 code: CODE,
@@ -400,12 +406,12 @@ const EditMedicalConditions = () => {
                     />
                     {!!field?.value?.length && (
                       <div className="flex top-[.7rem] h-full right-5 items-center absolute text-red-500">
-                        <span
-                          className="cursor-pointer"
+                        <button type="button"
+                          className="cursor-pointer outline-none"
                           onClick={() => setValue("otherAllergies", [])}
                         >
                           Clear all
-                        </span>
+                        </button>
                       </div>
                     )}
                   </>
@@ -414,12 +420,12 @@ const EditMedicalConditions = () => {
             </label>
           </div>
           <div className="pt-4">
-            <label className="ont-primary text-xl block pb-3">
+            <p className="ont-primary text-xl block pb-3">
               Family Medical Conditions.
-            </label>
-            <label className="input-label">
+            </p>
+            <p className="input-label">
               Would you like to add your family history medical conditions?
-            </label>
+            </p>
             <div className="flex items-center font-primary content-center py-2">
               <Controller
                 name="areFamilyConditions"
@@ -427,24 +433,25 @@ const EditMedicalConditions = () => {
                 render={({ field }) => (
                   <>
                     <RadioButton
+                      inputId="yesButton"
                       checked={field.value === true}
                       onChange={() => setValue("areFamilyConditions", true)}
                     />
                     <label
+                      htmlFor="yesButton"
                       className={`mx-4 cursor-pointer ${field.value && "active"}`}
-                      onClick={() => setValue("areFamilyConditions", true)}
                     >
                       Yes
                     </label>
                     <RadioButton
+                      inputId="noButton"
                       onChange={() => setValue("areFamilyConditions", false)}
                       checked={field.value === false}
                     />
                     <label
+                      htmlFor="noButton"
                       className={`ms-4 cursor-pointer ${!field.value && "active"}`}
-                      onClick={() => setValue("areFamilyConditions", false)}
-                    >
-                      No
+                    >No
                     </label>
                   </>
                 )}
@@ -452,7 +459,7 @@ const EditMedicalConditions = () => {
             </div>
             {areFamilyConditions && (
               <>
-                <label className="input-label">
+                <label htmlFor="familyMedicalConditions" className="input-label">
                   Family Medical Condition(if any)
                 </label>
                 <Controller

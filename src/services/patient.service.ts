@@ -1,7 +1,7 @@
 import {
   INewInsurancePayload,
   IUpdateInsurancePayload,
-  deleteInsurancePayload,
+  IDeleteInsurancePayload,
 } from "../interfaces/insurance";
 import {
   ICreateMedication,
@@ -65,7 +65,7 @@ const addInsurance = (payload: INewInsurancePayload) => {
   return http.post(`/${API_URL.insurance}/${payload.beneficiary_id}`, formData);
 };
 
-const deleteInsurance = (payload: deleteInsurancePayload) => {
+const deleteInsurance = (payload: IDeleteInsurancePayload) => {
   return http.delete(
     `${API_URL.insurance}/${payload.patinetId}/${payload.insuranceId}`
   );
@@ -87,7 +87,7 @@ const updateInsuranceById = (payload: IUpdateInsurancePayload) => {
   );
 };
 
-const getInsuranceById = (payload: deleteInsurancePayload) => {
+const getInsuranceById = (payload: IDeleteInsurancePayload) => {
   return http.get(
     `${API_URL.insurance}/${payload.patinetId}/${payload.insuranceId}`
   );
@@ -173,13 +173,13 @@ const updateVisitHistory = (payload: IUpdateVisitHistoryPayload) => {
 
 const deleteVisitHistoryById = (payload: IDeleteVisitHistoryPayload) => {
   return http.delete(
-    `${API_URL.visit_history}/${payload.patinetId}/${payload.visitHistoryId}`
+    `${API_URL.visit_history}/${payload.patientId}/${payload.visitHistoryId}`
   );
 };
 
 const getVisitHistoryById = (payload: IDeleteVisitHistoryPayload) => {
   return http.get(
-    `${API_URL.visit_history}/${payload.patinetId}/${payload.visitHistoryId}`
+    `${API_URL.visit_history}/${payload.patientId}/${payload.visitHistoryId}`
   );
 };
 

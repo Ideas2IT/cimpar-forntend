@@ -32,12 +32,23 @@ type loggedInUserSliceState = {
   };
   serviceTitle: string;
 };
+
+const getRole = (userRole: string | null | undefined) => {
+  switch (userRole) {
+    case "patient":
+      return "patient";
+    case "admin":
+      return "admin";
+    default:
+      return "other";
+  }
+}
+
 const _role = localStorage.getItem("role");
 const initialState: loggedInUserSliceState = {
   loggedInUserData: {
-    emailVerified: sessionStorage.getItem("accessToken") ? true : false,
-    role:
-      _role === "patient" ? "patient" : _role === "admin" ? "admin" : "other",
+    emailVerified: !!sessionStorage.getItem("accessToken"),
+    role: getRole(_role),
     error: "",
     isAdmin: false,
   },
@@ -224,7 +235,7 @@ const loggedInUserSlice = createSlice({
           localStorage.setItem("email", payload?.req?.username || "");
           state.loggedInUserData.emailVerified = true;
           state.loggedInUserData.isAdmin =
-            payload?.res?.role === "admin" ? true : false;
+            payload?.res?.role === "admin";
         }
       })
       .addCase(loginUserThunk.rejected, () => {

@@ -84,6 +84,7 @@ const Transaction = () => {
 
 
   function convertStartToUTC(date: Date): string {
+    date.setHours(0, 0, 0, 0)
     const timezoneOffset = date.getTimezoneOffset() * 60000;
     const utcDate = new Date(date.getTime() + timezoneOffset);
     return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);

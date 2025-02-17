@@ -8,7 +8,7 @@ const ReportImage = ({
   closeModal: () => void;
   image_url?: string;
 }) => {
-  const imageUrl = image_url && image_url;
+  const imageUrl = image_url ?? '';
   const downloadDocument = () => {
     if (image_url) {
       const downloadUrl = image_url;
@@ -38,12 +38,12 @@ const ReportImage = ({
           alt={"document"}
         />
         <div className="icon-wrapper">
-          <div className="download-icon" onClick={downloadDocument}>
+          <button type="button" className="download-icon outline-none" onClick={downloadDocument}>
             <i className="pi pi-download" title="Download File" />
-          </div>
-          <div className="close-icon" onClick={closeModal}>
+          </button>
+          <button type="button" className="close-icon outline-none" onClick={closeModal}>
             <i className="pi pi-times" title="Close Image" />
-          </div>
+          </button>
         </div>
       </>
     </CustomModal>

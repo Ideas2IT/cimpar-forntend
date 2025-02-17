@@ -18,7 +18,7 @@ import { IAzureBookingData, ICreateAppointmentPayload, ICreateAppointmentRespons
 import { ErrorResponse, IGetPatientServicesPayload, ILabTestService, ITimeSlotPayload, } from "../../interfaces/common";
 import { ILocation, ILocationResponse, TServiceLocationType, } from "../../interfaces/location";
 import { IMedicine } from "../../interfaces/medication";
-import { getDobAndAge, getPolicyDetails, getStringArrayFromObjectArray, handleKeyPress, } from "../../services/commonFunctions";
+import { getDobAndAge, getPolicyDetails, getStringArrayFromObjectArray } from "../../services/commonFunctions";
 import { getPatientInsuranceThunk, getPatientMedicalConditionsThunk, selectSelectedPatient, } from "../../store/slices/PatientSlice";
 import { createAppointmentThunk } from "../../store/slices/appointmentSlice";
 import { getAllergiesByQueryThunk, getLabTestsForPatientThunk, getLocationsWithoutPaginationThunk, getMedicalConditionsByQueryThunk, getTimeSlotsByBookingIdAndCategoryThunk, getTimeSlotsForHomeThunk, selectAllergies, selectConditions, } from "../../store/slices/masterTableSlice";
@@ -548,10 +548,6 @@ const AppointmentForm = () => {
     <>
       <form
         className="h-[calc(100vh-150px)]"
-        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => {
-          handleKeyPress(event);
-        }}
       >
         <div className="flex mx-4 justify-between items-center bg-gray-100">
           <BackButton
@@ -572,12 +568,12 @@ const AppointmentForm = () => {
               <i className="pi pi-times me-2" />Cancel
             </Button>
             <Button
-              onClick={() => handleSubmit}
+              onClick={handleSubmit(handleFormSubmit)}
               className="ml-3 font-primary"
               variant="primary"
               style="outline"
               size="medium"
-              type="submit"
+              type="button"
             >
               <i className="pi pi-check me-2" />Review To Pay
             </Button>

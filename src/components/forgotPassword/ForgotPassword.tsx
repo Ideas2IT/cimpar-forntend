@@ -9,20 +9,16 @@ import ReyaIcon from "../../assets/reya-logo.svg?react";
 import { IForgotPassword } from "../../interfaces/UserLogin";
 import { resetPasswordThunk } from "../../store/slices/loginSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  MESSAGE,
-  PATH_NAME,
-  PATTERN,
-  RESPONSE,
-} from "../../utils/AppConstants";
+import { MESSAGE, PATH_NAME, PATTERN, RESPONSE, } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
 import "./forgotPassword.css";
 import localStorageService from "../../services/localStorageService";
 
 const ForgotPassword = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const navigate = useNavigate();
+
   const {
     control,
     handleSubmit,
@@ -31,7 +27,12 @@ const ForgotPassword = () => {
   } = useForm({ defaultValues: {} as IForgotPassword });
 
   const dispatch = useDispatch<AppDispatch>();
+
   const { toast, errorToast } = useToast();
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const email = watch("email");
 
   const handleFormSubmit = (data: IForgotPassword) => {
     if (data?.email) {
@@ -47,7 +48,6 @@ const ForgotPassword = () => {
     }
   };
 
-  const email = watch("email");
 
   return (
     <div className="wrapper">
@@ -58,7 +58,7 @@ const ForgotPassword = () => {
           </div>
           {!isSubmitted ? (
             <>
-              <label className="font-primary text-2xl pb-2 pt-5 block">
+              <label htmlFor="forgotPassword" className="font-primary text-2xl pb-2 pt-5 block">
                 Forgot Password
               </label>
               <label className="input-label py-2 block">
@@ -98,15 +98,11 @@ const ForgotPassword = () => {
             </>
           ) : (
             <>
-              <label className="font-primary text-2xl py-2 block">
+              <label htmlFor="checkEmail" className="font-primary text-2xl py-2 block">
                 Check your email
               </label>
               <label className="input-label">
-                We have sent you an email at
-                <span className="text-lg font-primary px-1"> {email}</span>
-                Check your inbox and follow the instructions to reset your
-                account password.
-              </label>
+                We have sent you an email at<span className="text-lg font-primary px-1"> {email}</span>Check your inbox and follow the instructions to reset your account password.</label>
             </>
           )}
 

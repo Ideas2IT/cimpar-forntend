@@ -54,7 +54,7 @@ const Immunization = ({
 
   const immunizationHeader = () => {
     return (
-      <div>
+      <div className="flex">
         <span className="pe-3">Immunization Details</span>
         <span
           className={`sidebar-header font-tertiary capitalize ${getStatusColor(selectedImmunization.status)}`}
@@ -76,6 +76,17 @@ const Immunization = ({
       return <ColumnData content={rowData[fieldKey]} />
     }
   }
+
+  const renderStatusColumn = (rowData: IImmunization) => <span
+    className={`sidebar-header font-tertiary ${getStatusColor(rowData.status)}`}
+  >
+    {rowData.status || "-"}
+  </span>
+
+  const renderActionColumn = (rowData: IImmunization) => <ViewColumn
+    data={rowData}
+    handleViewRecord={() => handleViewRecord(rowData)}
+  />
 
   return (
     <>
@@ -113,25 +124,14 @@ const Immunization = ({
             header="STATUS"
             bodyClassName="py-4"
             headerClassName="text-sm font-secondary py-1 border-b bg-white"
-            body={(rowData) => (
-              <span
-                className={`sidebar-header font-tertiary ${getStatusColor(rowData.status)}`}
-              >
-                {rowData.status || "-"}
-              </span>
-            )}
+            body={(rowData) => renderStatusColumn(rowData)}
           />
           <Column
             field="view"
             header=""
             bodyClassName="py-5  max-w-[3rem]"
             headerClassName="text-sm font-secondary py-1 border-b bg-white"
-            body={(rowData) => (
-              <ViewColumn
-                data={rowData}
-                handleViewRecord={() => handleViewRecord(rowData)}
-              />
-            )}
+            body={(rowData) => renderActionColumn(rowData)}
           />
         </DataTable>
       </div>

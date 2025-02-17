@@ -63,22 +63,18 @@ const CustomServiceDropDown = ({
         }}
         className={`relative text-start rounded-full h-full w-full cursor-pointer ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
       >
-        <Button
-          type="button"
-          label={label || ""}
-          icon={
-            isOpen ? (
-              <ActiveFilterIcon className="me-3" />
-            ) : (
-              <InactiveFilterIcon className="me-3" />
-            )
-          }
-          className={`rounded-full font-primary border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
-        />
+        <div
+          title={label || ""}
+          className={`rounded-full items-center flex font-primary border-primary focus:shadow-none shodow-none w-full h-full text-start px-5 ${isOpen ? serviceStyle.active : serviceStyle.inActive}`}
+        >{isOpen ? (
+          <ActiveFilterIcon className="me-3" />
+        ) : (
+          <InactiveFilterIcon className="me-3" />
+        )} {label || 'All services'}</div>
         <span
           className={`absolute right-[1rem] top-[.7rem] pi ${isOpen ? "pi-chevron-up" : "pi-chevron-down"}`}
         />
-      </button>
+      </button >
       <OverlayPanel
         ref={op}
         className={`overflow-auto max-h-[25rem] relative overflow-auto custom-overlay w-[20rem] ${popoverStyle}`}
@@ -120,7 +116,7 @@ const CustomServiceDropDown = ({
           </div>
         </div>
       </OverlayPanel>
-    </div>
+    </div >
   );
 };
 export default CustomServiceDropDown;

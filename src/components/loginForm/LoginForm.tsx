@@ -11,20 +11,15 @@ import { ErrorResponse } from "../../interfaces/common";
 import { getUserProfileThunk } from "../../store/slices/UserSlice";
 import { loginUserThunk } from "../../store/slices/loginSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  CLIENT_ID,
-  GRANT_TYPE,
-  MESSAGE,
-  PATH_NAME,
-  PATTERN,
-  RESPONSE,
-} from "../../utils/AppConstants";
+import { CLIENT_ID, GRANT_TYPE, MESSAGE, PATH_NAME, PATTERN, RESPONSE, } from "../../utils/AppConstants";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
 import { getServiceCategoriesThunk } from "../../store/slices/masterTableSlice";
 
 const LoginForm = () => {
+
   const dispatch = useDispatch<AppDispatch>();
+
   const { toast, errorToast } = useToast();
 
   const {
@@ -32,6 +27,7 @@ const LoginForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ defaultValues: { email: "", password: "" } });
+
 
   const handleLogin = (data: ILogin) => {
     const payload: ILoginPayload = {
@@ -48,8 +44,7 @@ const LoginForm = () => {
           }
         });
         dispatch(getServiceCategoriesThunk()).then((response) => {
-          if (response.meta.requestStatus === RESPONSE.FULFILLED) {
-          } else {
+          if (response.meta.requestStatus === RESPONSE.REJECTED) {
             errorToast("Failed to fetch", "Failed to fetch service categories");
           }
         });
@@ -59,6 +54,9 @@ const LoginForm = () => {
       }
     });
   };
+
+
+
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
       <form
@@ -134,9 +132,9 @@ const LoginForm = () => {
             )}
           </div>
           <Link to={PATH_NAME.FORGOT_PASSWORD}>
-            <label className="text-purple-800 font-primary text-sm cursor-pointer">
+            <p className="text-purple-800 font-primary text-sm cursor-pointer">
               Forgot Password?
-            </label>
+            </p>
           </Link>
           <div className="col-span-2 flex justify-end items-center pt-2">
             <Button

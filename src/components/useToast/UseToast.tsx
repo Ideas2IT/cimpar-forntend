@@ -11,7 +11,7 @@ const useToast = () => {
     const customContentSuccess: ReactNode = (
       <div className="w-full p-3">
         <div className="flex flex-row justify-start w-full">
-          <img src={bluetick} />
+          <img src={bluetick} alt="blue tick" />
           <label className="color-success font-primary px-4">{title}</label>
         </div>
         <div className="text-start ps-[2.3rem] w-full text-sm py-2 text-gray-500">

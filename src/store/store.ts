@@ -26,6 +26,7 @@ const store = configureStore({
   devTools: true,
 });
 
+
 const token = localStorage.getItem("accessToken");
 if (token) {
   store.dispatch(setAuthState({ isAuthenticated: true }));

@@ -44,7 +44,6 @@ export type ServiceTimeSlotsDetail = {
 
 function formatTime(timeString: string | undefined): number {
   if (!timeString) {
-    console.warn(`Invalid time: ${timeString}. Defaulting to 0 minutes.`);
     return 0;
   }
 
@@ -59,11 +58,9 @@ function formatMinutes(minutes: number): string {
 }
 
 function parseDuration(duration: string): number {
+
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
   if (!match) {
-    console.warn(
-      `Invalid duration format: ${duration}. Defaulting to 0 minutes.`
-    );
     return 0;
   }
   const hours = parseInt(match[1] || "0", 10);
@@ -84,9 +81,6 @@ function generateSlotsForDay(
 
   timeSlots.forEach(({ startTime, endTime }) => {
     if (!startTime || !endTime) {
-      console.warn(
-        `Invalid time slot range: startTime (${startTime}) or endTime (${endTime}) is missing or invalid. Skipping this slot.`
-      );
       return;
     }
 
@@ -94,9 +88,6 @@ function generateSlotsForDay(
     const endMinutes = formatTime(endTime.split(".")[0]);
 
     if (startMinutes >= endMinutes) {
-      console.warn(
-        `Invalid time slot: startTime (${startTime}) >= endTime (${endTime}). Skipping this slot.`
-      );
       return;
     }
 
@@ -177,9 +168,12 @@ export const transformAzureServiceSlotsResponse = (
 };
 
 export const combineDateAndTimeToUTC = (
-  appointmentDate: Date,
-  scheduleTime: string
+  appointmentDate: Date | null | undefined,
+  scheduleTime: string | null | undefined
 ) => {
+  if (!appointmentDate || !scheduleTime) {
+    return ""
+  }
   const datePart = appointmentDate;
   const [hours, minutes, seconds] = scheduleTime.split(":").map(Number);
   datePart.setUTCHours(hours);
@@ -187,6 +181,5 @@ export const combineDateAndTimeToUTC = (
   datePart.setUTCSeconds(seconds || 0);
   datePart.setUTCMilliseconds(0);
   const formattedDate = datePart.toISOString();
-
   return formattedDate;
 };

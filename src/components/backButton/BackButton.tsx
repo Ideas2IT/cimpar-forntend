@@ -7,15 +7,20 @@ const BackButton = ({
   backLink,
   showConfirmDialog,
   popupText,
+  handleClick,
 }: {
   previousPage: string | undefined;
   currentPage: string;
   backLink: string;
   showConfirmDialog?: boolean;
   popupText?: string;
+  handleClick?: () => void;
 }) => {
+
   const navigate = useNavigate();
+
   const handleBackLink = () => {
+    handleClick && handleClick();
     if (showConfirmDialog) {
       showBackDialog();
     } else {
@@ -49,9 +54,9 @@ const BackButton = ({
         className="flex align-items-center items-center"
       >
         <span
-          className="px-2 py-1 bg-white shadow-none rounded-md align-middle"
+          className="px-2 py-2 bg-white flex items-center justify-center shadow-none rounded-md"
         >
-          <i className="pi pi-arrow-left align-middle color-primary" />
+          <i className="pi pi-arrow-left color-primary" />
         </span>
         <label className="text-blue-200 items-center flex font-primary lg:text-xl md:text-md sm:text-sm cursor-pointer capitalize ps-1">
           {previousPage ?? "back"}

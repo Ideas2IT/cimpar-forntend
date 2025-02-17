@@ -12,29 +12,17 @@ import { ErrorResponse, IOptionValue } from "../../interfaces/common";
 import { IUpdatePatientPayload } from "../../interfaces/patient";
 import { IEditProfile } from "../../interfaces/User";
 import {
-  cleanString,
-  combineHeight,
-  getDecimalPartPart,
-  getFractionalPart,
-  handleKeyPress,
-  splitCodeWithPhoneNumber,
+  cleanString, combineHeight, getDecimalPart, getFractionalPart,
+  splitCodeWithPhoneNumber
 } from "../../services/commonFunctions";
 import { getOptionValuesThunk } from "../../store/slices/masterTableSlice";
 import {
-  getPatientDetailsThunk,
-  selectSelectedPatient,
-  updatePatientProfileThunk,
+  getPatientDetailsThunk, selectSelectedPatient, updatePatientProfileThunk,
 } from "../../store/slices/PatientSlice";
 import { getUserProfileThunk } from "../../store/slices/UserSlice";
 import { AppDispatch } from "../../store/store";
 import {
-  DATE_FORMAT,
-  ERROR,
-  GENDER,
-  PATH_NAME,
-  PATTERN,
-  RESPONSE,
-  TABLE,
+  DATE_FORMAT, ERROR, GENDER, PATH_NAME, PATTERN, RESPONSE, TABLE,
 } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import BackButton from "../backButton/BackButton";
@@ -44,10 +32,15 @@ import useToast from "../useToast/UseToast";
 import "./EditUserDetails.css";
 
 const EditUserDetails = () => {
-  const userDetails = useSelector(selectSelectedPatient).basicDetails;
-  const [races, setRace] = useState<IOptionValue[]>([]);
+
+  const userDetails = useSelector(selectSelectedPatient)?.basicDetails;
+
+
+  const [races, setRaces] = useState<IOptionValue[]>([]);
   const [ethnicities, setEthnicities] = useState<IOptionValue[]>([]);
   const [states, setStates] = useState<IOptionValue[]>([]);
+
+
   const {
     register,
     control,
@@ -88,8 +81,7 @@ const EditUserDetails = () => {
 
   useEffect(() => {
     if (races?.length) {
-      let value = {} as IOptionValue | undefined;
-      value = races?.find(
+      let value = races?.find(
         (item: IOptionValue) =>
           item?.display?.toLowerCase() === userDetails?.race?.toLowerCase()
       );
@@ -130,7 +122,7 @@ const EditUserDetails = () => {
       gender: userDetails?.gender,
       fullAddress: userDetails?.address ?? "",
       height: {
-        inches: getDecimalPartPart(Number(userDetails?.height)),
+        inches: getDecimalPart(Number(userDetails?.height)),
         feet: getFractionalPart(Number(userDetails?.height)),
       },
       id: "",
@@ -168,9 +160,9 @@ const EditUserDetails = () => {
               }
             }
           );
-          setRace(updatedResponse);
+          setRaces(updatedResponse);
         } else {
-          setRace([]);
+          setRaces([]);
         }
       }
     });
@@ -196,10 +188,23 @@ const EditUserDetails = () => {
     });
   };
 
+
   const { toast, successToast, errorToast } = useToast();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
+
+  const getGender = (gender: string = 'U') => {
+    switch (gender?.toLowerCase()) {
+      case GENDER.MALE:
+        return 'M'
+      case GENDER.FEMAIL:
+        return 'F'
+      default:
+        return 'U'
+    }
+  }
+
   const handleFormSubmit = (data: IEditProfile) => {
     const payload: IUpdatePatientPayload = {
       city: cleanString(data.city),
@@ -210,21 +215,16 @@ const EditUserDetails = () => {
       middleName: cleanString(data?.middleName),
       lastName: cleanString(data.lastName),
       address: cleanString(data.fullAddress),
-      gender:
-        data?.gender?.toLowerCase() === GENDER.MALE
-          ? "M"
-          : data?.gender?.toLowerCase() === GENDER.FEMAIL
-            ? "F"
-            : "U",
+      gender: getGender(data.gender) || '',
       patient_id: userDetails.id,
-      phoneNo: data.phoneNo?.toString() || "",
+      phoneNo: data.phoneNo?.toString() ?? "",
       state: data.state.code,
       zipCode: cleanString(data.zipCode),
       weight: data.weight.toString() || "",
       height: combineHeight(data.height.feet, data.height.inches) || "0",
       ethnicity: data.ethnicity.code || "",
       race: data?.race?.code,
-      alternativeNumber: data?.alternateNo?.toString() || "",
+      alternativeNumber: data?.alternateNo?.toString() ?? "",
     };
     dispatch(updatePatientProfileThunk(payload)).then((response) => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
@@ -290,8 +290,6 @@ const EditUserDetails = () => {
     <div className="px-6">
       <form
         className="relative"
-        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-row justify-between pb-6">
           <BackButton
@@ -321,13 +319,12 @@ const EditUserDetails = () => {
               </Button>
 
               <PrimeButton
-                onClick={() => handleSubmit}
                 className="ml-3 submit-button items-center"
                 outlined
-                type="submit"
+                type="button"
+                onClick={handleSubmit(handleFormSubmit)}
               >
-                <i className="pi pi-check me-2" />
-                Save
+                <i className="pi pi-check me-2" />Save
               </PrimeButton>
             </div>
           </div>
@@ -408,7 +405,6 @@ const EditUserDetails = () => {
               <label
                 className="block input-label"
                 htmlFor="gender"
-                onClick={() => document.getElementById("gender")?.click()}
               >
                 Gender*
               </label>
@@ -420,6 +416,7 @@ const EditUserDetails = () => {
                 }}
                 render={({ field }) => (
                   <Dropdown
+                    inputId="gender"
                     id="gender"
                     {...field}
                     onChange={(e) => setValue("gender", e.target.value)}
@@ -484,7 +481,7 @@ const EditUserDetails = () => {
                         {...field}
                         inputId="height"
                         onChange={(event: InputNumberChangeEvent) => {
-                          setValue("height.feet", event.value || 0);
+                          setValue("height.feet", event.value ?? 0);
                           trigger("height.feet");
                         }}
                         placeholder="Feet"
@@ -542,24 +539,24 @@ const EditUserDetails = () => {
                   validate: (value) => value >= 1 || "Weight is required",
                 }}
                 render={({ field }) => (
-                  <>
-                    <InputNumber
-                      mode="decimal"
-                      value={field.value}
-                      onChange={(event) => {
-                        event.value
-                          ? setValue("weight", event?.value)
-                          : setValue("weight", 0);
-                        trigger("weight");
-                      }}
-                      className="cimpar-input weight focus:outline-none"
-                      minFractionDigits={1}
-                      maxFractionDigits={2}
-                      id="weight"
-                      placeholder="weight"
-                      useGrouping={false}
-                    />
-                  </>
+
+                  <InputNumber
+                    mode="decimal"
+                    value={field.value}
+                    onChange={(event) => {
+                      event.value
+                        ? setValue("weight", event?.value)
+                        : setValue("weight", 0);
+                      trigger("weight");
+                    }}
+                    className="cimpar-input weight focus:outline-none"
+                    minFractionDigits={1}
+                    maxFractionDigits={2}
+                    id="weight"
+                    placeholder="weight"
+                    useGrouping={false}
+                  />
+
                 )}
               />
               {errors.weight && (
@@ -570,7 +567,6 @@ const EditUserDetails = () => {
               <label
                 className="block input-label pb-1"
                 htmlFor="race"
-                onClick={() => document.getElementById("race")?.click()}
               >
                 Race*
               </label>
@@ -583,6 +579,7 @@ const EditUserDetails = () => {
                 render={({ field }) => (
                   <Dropdown
                     id="race"
+                    inputId="race"
                     value={field.value}
                     onChange={(e: DropdownChangeEvent) =>
                       setValue("race", e.value)
@@ -600,7 +597,6 @@ const EditUserDetails = () => {
               <label
                 className="block input-label pb-1"
                 htmlFor="ethnicity"
-                onClick={() => document.getElementById("ethnicity")?.click()}
               >
                 Ethnicity*
               </label>
@@ -615,6 +611,7 @@ const EditUserDetails = () => {
                     {...field}
                     onChange={(e) => setValue("ethnicity", e.value)}
                     id="ethnicity"
+                    inputId="ethnicity"
                     value={field.value}
                     options={ethnicities}
                     optionLabel="display"
@@ -695,7 +692,7 @@ const EditUserDetails = () => {
                       inputId="alternateNumberCode"
                       value={field?.value ? Number(field?.value) : null}
                       onChange={(e) => {
-                        setValue("alternateNo", e.value || null);
+                        setValue("alternateNo", e.value ?? null);
                         trigger("alternateNo");
                       }}
                       placeholder="Phone Number"
@@ -784,7 +781,6 @@ const EditUserDetails = () => {
               <label
                 className="block input-label pb-1"
                 htmlFor="state"
-                onClick={() => document.getElementById("state")?.click()}
               >
                 State*
               </label>
@@ -797,6 +793,7 @@ const EditUserDetails = () => {
                 render={({ field }) => (
                   <Dropdown
                     {...field}
+                    inputId="state"
                     onChange={(event) => {
                       setValue("state", event?.value);
                       setValue("zipCode", "");
@@ -815,13 +812,13 @@ const EditUserDetails = () => {
               <label
                 className="block input-label pb-1"
                 htmlFor="country"
-                onClick={() => document.getElementById("country")?.click()}
               >
                 Country*
               </label>
 
               <Dropdown
                 id="country"
+                inputId="country"
                 value="USA"
                 onChange={(e) => setValue("country", e.target.value)}
                 placeholder="USA"

@@ -4,13 +4,7 @@ import { KeyboardEvent } from "react";
 import { IItem } from "../components/appointmentForm/AppointmentForm";
 import { IInsurance } from "../interfaces/User";
 import { IMedicine } from "../interfaces/medication";
-import {
-  CODE,
-  DATE_FORMAT,
-  INSURANCE_TYPE,
-  RESULT_STATUS,
-  SYSTEM,
-} from "../utils/AppConstants";
+import { CODE, DATE_FORMAT, INSURANCE_TYPE, RESULT_STATUS, SYSTEM, } from "../utils/AppConstants";
 import { dateFormatter } from "../utils/Date";
 import { isAxiosError } from "axios";
 import { ErrorResponse } from "../interfaces/common";
@@ -144,15 +138,14 @@ export const getFractionalPart = (feet: number | null | undefined) => {
   } else return 0;
 };
 
-export const getDecimalPartPart = (inches: number | null | undefined) => {
-  if (inches) {
-    const numStr = inches.toString().split(".")[1];
-    if (numStr) {
-      return Number(numStr);
-    } else {
-      return 0;
-    }
-  } else return 0;
+export const getDecimalPart = (inches: number | null | undefined) => {
+  if (!inches) return 0;
+  const num = Math.round((inches - Math.floor(inches)) * 100);;
+  if (num) {
+    return num;
+  } else {
+    return 0;
+  }
 };
 
 export const getDobAndAge = (dob: string) => {
@@ -160,7 +153,7 @@ export const getDobAndAge = (dob: string) => {
     const dateOfBirth = dateFormatter(dob, DATE_FORMAT.DD_MMMM_YYYY);
     const age = new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
     return dateOfBirth + " (" + age + ")";
-  } else return;
+  } else return "";
 };
 
 export function obfuscateAccountNumber(accountNumber: string) {
@@ -183,6 +176,7 @@ export const getPolicyDetails = (insurances: IInsurance[]) => {
       INSURANCE_TYPE.SECONDARY,
       INSURANCE_TYPE.TERTIARY,
     ];
+
     for (const priority of priorities) {
       const insurance = insurances.find(
         (ins) => ins.insuranceType?.toLowerCase() === priority
@@ -195,8 +189,9 @@ export const getPolicyDetails = (insurances: IInsurance[]) => {
         );
       }
     }
-  } else return "";
+  } else return "N/A";
 };
+
 
 export const maskNumber = (value: string) => {
   if (value && value?.length > 5) {
@@ -285,7 +280,6 @@ export const appointmentStatus = (appointmentDateStr: string | Date, resultLengt
     try {
       appointmentDate = parseISO(appointmentDateStr);
     } catch (error) {
-      console.error('Error parsing appointment date:', error);
       return RESULT_STATUS.UPCOMING;
     }
   } else {
@@ -309,7 +303,6 @@ export const appointmentStatus = (appointmentDateStr: string | Date, resultLengt
       return RESULT_STATUS.UNDER_PROCESSING;
     }
   } catch (error) {
-    console.error('Error formatting or comparing dates:', error);
     return RESULT_STATUS.UPCOMING;
   }
 };
@@ -361,7 +354,8 @@ export const getStringArrayFromObjectArray = (values: IMedicine[]) => {
   } else return [];
 };
 
-export const cleanString = (str: string | undefined) => {
+export const cleanString = (str: string | undefined | null) => {
+  if (!str) return "";
   return str ? str.replace(/\s+/g, " ").trim() : "";
 };
 

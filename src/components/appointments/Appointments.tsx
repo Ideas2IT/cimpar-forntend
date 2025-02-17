@@ -36,7 +36,6 @@ import VerticalTabView from "../VerticalTabView";
 import VisitHistory from "../visitHistory/VisitHistory";
 import DetailedAppointmentView from "./DetailedApppointmentView";
 import ServiceFilterPanel from "./ServiceFilterPanel";
-import { render } from "@testing-library/react";
 
 interface IHandlers {
   viewAppointment: () => void;
@@ -56,6 +55,7 @@ const Appointments = () => {
       page_size: PAGE_LIMIT,
       page: 1,
       searchValue: "",
+      service_type: ''
     } as IServiceHistoryPayload);
 
   const appointments = useSelector(selectAppointments);
@@ -64,24 +64,28 @@ const Appointments = () => {
   const isAdmin = useSelector(selectIsAdmin);
 
   const services = [
-    { id: 1, name: "Lab Results", value: "lab_result" },
-    { id: 2, name: "Immunization", value: "Immunization" },
-    { id: 3, name: "Imaging", value: "Imaging" },
+    { id: 1, name: "Clinical Laboratory", value: "Clinical Laboratory" },
     { id: 4, name: "Home Care", value: "Home_care" },
+    { id: 3, name: "Imaging", value: "Imaging" },
+    { id: 2, name: "Immunization", value: "Immunization" },
   ];
+
+  const handlePageChange = (page: number) => {
+    setServiceHistoryPayload((prev) => ({
+      ...prev,
+      page: page,
+    }));
+  };
+
   const tabs: Tab[] = [
     {
       key: "serviceHistory",
       value: TABS.SERVICE_HISTORY,
       content: (
-        <div className="ps-6 py-1 h-full">
+        <div className="ps-6 py-1 h-[calc(100vh-160px)] overflow-auto">
           <ServiceHistory
-            handlePageChange={(page) => {
-              setServiceHistoryPayload({
-                ...serviceHistoryPayload,
-                page: page,
-              });
-            }}
+            key="admin"
+            handlePageChange={handlePageChange}
           />
         </div>
       ),
@@ -90,7 +94,7 @@ const Appointments = () => {
       key: "Personal",
       value: "Personal",
       content: (
-        <div className="px-6 py-1 h-full">
+        <div className="px-6 py-1 max-h-[calc(100vh-180px)] overflow-auto">
           <UserDetails />
         </div>
       ),
@@ -190,6 +194,7 @@ const Appointments = () => {
   };
 
   function convertStartToUTC(date: Date): string {
+    date?.setHours(0, 0, 0, 0)
     const timezoneOffset = date.getTimezoneOffset() * 60000;
     const utcDate = new Date(date.getTime() + timezoneOffset);
     return dateFormatter(utcDate, DATE_FORMAT.YYYY_MM_DD_HH_MM_SS_Z);
@@ -251,6 +256,8 @@ const Appointments = () => {
     return <ColumnDetails value={value} />;
   }
 
+  const renderViewAppointment = (rowData: IAppointmentList) => <ViewAppointment appoinement={rowData} handlers={handlers} />
+
   const columns = [
     {
       field: "patientName",
@@ -287,9 +294,7 @@ const Appointments = () => {
         "flex justify-center text-sm font-secondary py-1 border-b bg-white",
       field: "",
       header: "VIEW APPOINTMENT",
-      body: (rowData: IAppointmentList) => (
-        <ViewAppointment appoinement={rowData} handlers={handlers} />
-      ),
+      body: (rowData: IAppointmentList) => renderViewAppointment(rowData),
     },
   ];
 
@@ -305,11 +310,11 @@ const Appointments = () => {
     if (selectedTab === TABS.SERVICE_HISTORY && patientId) {
       const payload: IServiceHistoryPayload = {
         selectedTab: selectedTab,
-        patinetId: patientId,
+        patientId: patientId,
         searchValue: serviceHistoryPayload.searchValue,
         page: serviceHistoryPayload.page,
         page_size: PAGE_LIMIT,
-        service_type: serviceHistoryPayload?.service_type,
+        service_type: serviceHistoryPayload?.selectedTab,
       };
       dispatch(getServiceHistoryThunk(payload)).then((respone) => {
         if (respone.meta.requestStatus === RESPONSE.REJECTED) {
@@ -357,8 +362,7 @@ const Appointments = () => {
     handleCloseCalendar();
   };
 
-  const handleServiceFilter = (newService: IItem) => {
-    setAppointmentPayload({ ...appointmentPayload, page: 1 });
+  const handleServiceHistoryFilter = (newService: IItem) => {
     if (selectedServices.includes(newService.id)) {
       setSelectedServices(
         selectedServices.filter((id) => id !== newService.id)
@@ -368,11 +372,27 @@ const Appointments = () => {
     }
   };
 
+
+
   const handleDateFilter: IDualCalendarReponse = {
     onApply: handleOnApply,
     onCancel: handleOnCancel,
     selectedRange: dateFilter,
   };
+
+  const getCategoriesByIds = () => {
+    if (selectedServices?.length) {
+      return services
+        .filter(item => selectedServices.includes(item.id))
+        .map(item => item.value)
+        .join(",");
+    }
+    return '';
+  }
+
+  useEffect(() => {
+    setServiceHistoryPayload({ ...serviceHistoryPayload, page: 1, selectedTab: getCategoriesByIds() })
+  }, [selectedServices])
 
   useEffect(() => {
     if (showPatientDetails) {
@@ -382,7 +402,6 @@ const Appointments = () => {
         searchValue: "",
         service_type: "",
       } as IServiceHistoryPayload);
-      setSelectedServices([1, 2, 3]);
       setAppointmentPayload({
         page: 1,
         page_size: PAGE_LIMIT,
@@ -395,15 +414,6 @@ const Appointments = () => {
       setDateFilter([]);
     }
   }, [showPatientDetails]);
-
-  const getServiceLabel = () => {
-    if (selectedServices.includes(1) || selectedServices.length === 0) {
-      return "All Services";
-    } else if (selectedServices.includes(2)) {
-      return "Lab Results";
-    }
-    return "Immunization";
-  };
 
   return (
     <div className="h-[98%] mx-6">
@@ -420,7 +430,7 @@ const Appointments = () => {
                 <BackButton
                   previousPage="Upcoming"
                   currentPage={
-                    selectedAppointment?.patientName + "'s " + "Appointment"
+                    selectedAppointment?.patientName
                   }
                   backLink={PATH_NAME.APPOINTMENTS}
                 />
@@ -467,9 +477,7 @@ const Appointments = () => {
                     }}
                   >
                     <FilterIcon className="mx-3 color-primary" />
-                    <span className="color-primary">
-                      {getServiceLabel()}
-                    </span>
+                    <span className="color-primary">All Services</span>
                     <span
                       className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
                     />
@@ -486,8 +494,8 @@ const Appointments = () => {
                           return (
                             <button type="button"
                               key={option.name}
-                              className="border-b py-1 cursor-pointer"
-                              onClick={() => handleServiceFilter(option)}
+                              className="border-b py-1 cursor-pointer block w-full"
+                              onClick={() => handleServiceHistoryFilter(option)}
                             >
                               <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
                                 <label className="font-tertiary text-lg">
@@ -507,6 +515,7 @@ const Appointments = () => {
                           label="Cancel"
                           outlined
                           onClick={(event) => {
+                            setSelectedServices([])
                             opService.current?.toggle(event);
                             setIsOpen((prev) => !prev);
                           }}

@@ -10,27 +10,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { IInsuranceResponse } from "../../interfaces/User";
 import { ErrorResponse } from "../../interfaces/common";
-import {
-  INewInsurancePayload,
-  IUpdateInsurancePayload,
-} from "../../interfaces/insurance";
-import { handleKeyPress } from "../../services/commonFunctions";
-import {
-  addInsuranceThunk,
-  deleteInsuranceFileThunk,
-  getInsuranceByIdThunk,
-  getPatientInsuranceThunk,
-  selectSelectedPatient,
-  updateInsuranceByIdThunk,
-} from "../../store/slices/PatientSlice";
+import { INewInsurancePayload, IUpdateInsurancePayload, } from "../../interfaces/insurance";
+import { addInsuranceThunk, deleteInsuranceFileThunk, getInsuranceByIdThunk, getPatientInsuranceThunk, selectSelectedPatient, updateInsuranceByIdThunk } from "../../store/slices/PatientSlice";
 import { getInputDataThunk } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  INSURANCE_TYPE,
-  MESSAGE,
-  PATH_NAME,
-  RESPONSE,
-} from "../../utils/AppConstants";
+import { INSURANCE_TYPE, MESSAGE, PATH_NAME, RESPONSE, } from "../../utils/AppConstants";
 import Button from "../Button";
 import BackButton from "../backButton/BackButton";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -40,34 +24,32 @@ import { FileTile } from "../visitHistory/EditVisitHistory";
 import "./Insurance.css";
 
 const EditInsurance = () => {
-  const [insuranceCompanies, setInsuranceCompanies] = useState<string[]>([]);
+
   const selectedPatient = useSelector(selectSelectedPatient);
-  const [selectedInsurance, setSelectedInsurance] = useState(
-    {} as IInsuranceResponse
-  );
+  const insuranceDetails = useSelector(selectSelectedPatient)?.InsuranceDetails;
+  const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
+
+  const dispatch = useDispatch<AppDispatch>();
+
   const { successToast, toast, errorToast } = useToast();
+
+  const navigate = useNavigate();
+
+  const { id } = useParams();
+
+  const [insuranceCompanies, setInsuranceCompanies] = useState<string[]>([]);
+  const [selectedInsurance, setSelectedInsurance] = useState({} as IInsuranceResponse);
   const [showImage, setShowImage] = useState(false);
   const [updatedFile, setUpdatedFile] = useState<File>({} as File);
   const [disabledOptions, setDisabledOptions] = useState<string[]>([]);
-  const insuranceDetails = useSelector(selectSelectedPatient)?.InsuranceDetails;
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm({
-    defaultValues: selectedInsurance,
-  });
+
+  const fileUploadRef = useRef<FileUpload | null>(null);
+
+  const { control, handleSubmit, setValue, reset, watch, formState: { errors }, } = useForm({ defaultValues: selectedInsurance, });
 
   const insuranceCompany = watch("insuranceCompany");
   const insuranceCard = watch("insuranceCard");
-  const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const patientId = useSelector(selectSelectedPatient)?.basicDetails?.id;
-  const { id } = useParams();
-  const fileUploadRef = useRef<FileUpload | null>(null);
+
 
   useEffect(() => {
     dispatch(getInputDataThunk("company")).then((response) => {
@@ -101,14 +83,6 @@ const EditInsurance = () => {
     reset({ ...selectedInsurance });
   }, [selectedInsurance, insuranceCompanies]);
 
-  const vaidateInsurance = (inusuranceType: string) => {
-    setDisabledOptions(
-      disabledOptions.filter(
-        (option) => inusuranceType?.toLowerCase() !== option
-      )
-    );
-  };
-
   useEffect(() => {
     if (insuranceDetails?.length) {
       setDisabledOptions(
@@ -116,15 +90,6 @@ const EditInsurance = () => {
       );
     }
   }, [insuranceDetails]);
-
-  const validateCompanyName = (): boolean => {
-    const isPresent = insuranceCompanies
-      ?.slice(0, insuranceCompanies?.length - 1)
-      ?.some((c) => {
-        return selectedInsurance?.insuranceCompany === c;
-      });
-    return isPresent;
-  };
 
   useEffect(() => {
     if (selectedPatient?.basicDetails?.id) {
@@ -156,6 +121,23 @@ const EditInsurance = () => {
     }
   }, [selectedPatient?.basicDetails?.id, id]);
 
+  const vaidateInsurance = (inusuranceType: string) => {
+    setDisabledOptions(
+      disabledOptions.filter(
+        (option) => inusuranceType?.toLowerCase() !== option
+      )
+    );
+  };
+
+  const validateCompanyName = (): boolean => {
+    const isPresent = insuranceCompanies
+      ?.slice(0, insuranceCompanies?.length - 1)
+      ?.some((c) => {
+        return selectedInsurance?.insuranceCompany === c;
+      });
+    return isPresent;
+  };
+
   const handleFormSubmit = (data: IInsuranceResponse) => {
     const payload: INewInsurancePayload = {
       file: updatedFile && Object.keys(updatedFile).length ? updatedFile : null,
@@ -166,7 +148,7 @@ const EditInsurance = () => {
       providerName:
         data?.insuranceCompany?.toLowerCase() !== "other"
           ? data?.insuranceCompany
-          : data.otherCompany || "",
+          : data.otherCompany ?? "",
     };
     if (selectedInsurance && !Object.keys(selectedInsurance)?.length) {
       dispatch(addInsuranceThunk(payload)).then((response) => {
@@ -204,6 +186,7 @@ const EditInsurance = () => {
       });
     }
   };
+
   const validateFileSize = () => {
     errorToast("File Size Exceeded", "File size should not exceed 1MB");
   };
@@ -234,12 +217,20 @@ const EditInsurance = () => {
     setValue("insuranceCard", "");
   };
 
+  const getImageUrl = () => {
+    if (updatedFile && Object.keys(updatedFile).length) {
+      return URL.createObjectURL(updatedFile);
+    }
+    if (typeof selectedInsurance?.insuranceCard === "string") {
+      return selectedInsurance.insuranceCard;
+    }
+    return "";
+  };
+
+
   return (
     <div className="px-6">
-      <form
-        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => handleKeyPress(event)}
-      >
+      <form>
         <div className="flex flex-row justify-between pb-6">
           <BackButton
             previousPage="Insurance"
@@ -259,17 +250,16 @@ const EditInsurance = () => {
                 type="button"
                 style="link"
               >
-                <i className="pi pi-times me-2" />
-                Cancel
+                <i className="pi pi-times me-2" />Cancel
               </Button>
             </Link>
             <PrimeButton
               className="ml-3 font-primary button-purple border px-4 py-2 h-[40px] rounded-full border-purple shadow-none"
               outlined
-              onClick={() => handleSubmit}
+              onClick={handleSubmit(handleFormSubmit)}
+              type="button"
             >
-              <i className="pi pi-check me-2" />
-              Save
+              <i className="pi pi-check me-2" />Save
             </PrimeButton>
           </div>
         </div>
@@ -357,8 +347,8 @@ const EditInsurance = () => {
           </div>
           <div className="pt-4 lg:w-[50%] sm:w-[100%]">
             <label
+              htmlFor="company"
               className="block input-label pb-1"
-              onClick={() => document.getElementById("company")?.click()}
             >
               Insurance Company*
             </label>
@@ -373,6 +363,7 @@ const EditInsurance = () => {
                 <Dropdown
                   {...field}
                   id="company"
+                  inputId="company"
                   options={insuranceCompanies}
                   placeholder="Select Insurance Company"
                   ariaLabel="Select Insurance Company"
@@ -471,11 +462,11 @@ const EditInsurance = () => {
               )}
             </div>
             <div className="col-span-4">
-              <label className="input-label my-3 block">
+              <label htmlFor="card" className="input-label my-3 block">
                 Upload your insurance ID (Max 1MB)
               </label>
               {insuranceCard ||
-              (selectedInsurance && !!Object.keys(updatedFile).length) ? (
+                (selectedInsurance && !!Object.keys(updatedFile).length) ? (
                 <FileTile
                   handleView={() => {
                     setShowImage(true);
@@ -523,13 +514,7 @@ const EditInsurance = () => {
       <Toast ref={toast} />
       {showImage && (
         <ReportImage
-          image_url={
-            updatedFile && !!Object.keys(updatedFile).length
-              ? URL.createObjectURL(updatedFile)
-              : typeof selectedInsurance?.insuranceCard === "string"
-                ? selectedInsurance?.insuranceCard
-                : ""
-          }
+          image_url={getImageUrl()}
           closeModal={() => setShowImage(false)}
         />
       )}

@@ -7,27 +7,13 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import HeaderContext from "../../context/HeaderContext";
-import {
-  ErrorResponse,
-  IAllTestspayload,
-  ILabTestService,
-} from "../../interfaces/common";
+import { ErrorResponse, IAllTestspayload, ILabTestService } from "../../interfaces/common";
 import { IPagination } from "../../interfaces/immunization";
 import { IUpdatePricingPayload } from "../../interfaces/masterTable";
-import { getRowClasses, handleKeyPress } from "../../services/commonFunctions";
-import {
-  getLabTestsForAdminThunk,
-  selectServiceCategories,
-  updatePricingThunk,
-} from "../../store/slices/masterTableSlice";
+import { getRowClasses } from "../../services/commonFunctions";
+import { getLabTestsForAdminThunk, selectServiceCategories, updatePricingThunk } from "../../store/slices/masterTableSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  HEADER_TITLE,
-  PAGE_LIMIT,
-  PATH_NAME,
-  RESPONSE,
-  TABLE,
-} from "../../utils/AppConstants";
+import { HEADER_TITLE, PAGE_LIMIT, PATH_NAME, RESPONSE, TABLE } from "../../utils/AppConstants";
 import BackButton from "../backButton/BackButton";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -36,13 +22,19 @@ import CustomServiceDropDown from "../serviceFilter/CustomServiceDropdown";
 import useToast from "../useToast/UseToast";
 
 export default function PricingDetails() {
+
   const serviceCategories = useSelector(selectServiceCategories);
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { updateHeaderTitle } = useContext(HeaderContext);
+
+
+  const { toast, successToast, errorToast } = useToast();
+
+
+
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTest, setSelectedTest] = useState({} as ILabTestService);
-  const editService = (value: boolean, service = {} as ILabTestService) => {
-    setSelectedTest(service);
-    setIsEditing(value);
-  };
   const [fetchPayload, setFetchPayload] = useState<IAllTestspayload>({
     tableName: TABLE.LAB_TEST,
     page: 1,
@@ -57,8 +49,8 @@ export default function PricingDetails() {
     total_items: 1,
     total_pages: 1,
   } as IPagination);
-  const { toast, successToast, errorToast } = useToast();
-  const { updateHeaderTitle } = useContext(HeaderContext);
+
+
 
   useEffect(() => {
     updateHeaderTitle(HEADER_TITLE.PRICING);
@@ -68,7 +60,15 @@ export default function PricingDetails() {
     fetchTests();
   }, [fetchPayload]);
 
-  const dispatch = useDispatch<AppDispatch>();
+
+
+  const editService = (value: boolean, service = {} as ILabTestService) => {
+    setSelectedTest(service);
+    setIsEditing(value);
+  };
+
+
+
 
   const updatePricing = (data: ILabTestService) => {
     const payload: IUpdatePricingPayload = {
@@ -77,23 +77,14 @@ export default function PricingDetails() {
       resource_id: data.id,
       tableName: TABLE.LAB_TEST,
     };
+
     dispatch(updatePricingThunk(payload)).then((response) => {
       if (response.meta.requestStatus === RESPONSE.FULFILLED) {
         successToast(
           "Updated successfully",
           "Pricing details have been updated successfully"
         );
-        setLabServices((prevTests) =>
-          prevTests?.map((service) =>
-            data.id === service.id
-              ? {
-                ...service,
-                center_price: Number(data.center_price)?.toFixed(2),
-                home_price: Number(data.home_price)?.toFixed(2),
-              }
-              : service
-          )
-        );
+        handleUpdateSuccess(data)
         setIsEditing(false);
       } else {
         const errorResponse = response.payload as ErrorResponse;
@@ -101,6 +92,20 @@ export default function PricingDetails() {
       }
     });
   };
+
+  const handleUpdateSuccess = (data: ILabTestService) => {
+    setLabServices((prevTests) =>
+      prevTests?.map((service) =>
+        data.id === service.id
+          ? {
+            ...service,
+            center_price: Number(data.center_price)?.toFixed(2),
+            home_price: Number(data.home_price)?.toFixed(2),
+          }
+          : service
+      )
+    );
+  }
 
   const handlePaging = (value: number) => {
     setFetchPayload({ ...fetchPayload, page: value });
@@ -194,6 +199,7 @@ const PricingData = ({
   handlePaging: (value: number) => void;
   pagingDetails: IPagination;
 }) => {
+
   const tableRef = useRef<DataTable<ILabTestService[]>>(null);
 
   const formatCurrency = (value: number) => {
@@ -208,15 +214,20 @@ const PricingData = ({
     tableRef?.current && tableRef.current?.resetScroll();
   };
 
+  const renderSerialNumber = (rowIndex: number) => <>{(pagingDetails.current_page - 1) * PAGE_LIMIT + rowIndex + 1}</>
+
+  const renderPricing = (price: any) => <>{price ? formatCurrency(Number(price)) : "-"}</>
+
+  const renderActionColumn = (rowData: ILabTestService) => <button type="button"
+    className="pi pi-pen-to-square w-full text-center text-purple-800"
+    onClick={() => onEdit(true, rowData)}
+  />
+
   const columns = [
     {
       header: "S.No",
       field: "id",
-      body: (_: ILabTestService, options: { rowIndex: number }) => (
-        <>
-          {(pagingDetails.current_page - 1) * PAGE_LIMIT + options.rowIndex + 1}
-        </>
-      ),
+      body: (_: ILabTestService, options: { rowIndex: number }) => renderSerialNumber(options.rowIndex),
     },
     {
       header: "test name",
@@ -229,16 +240,12 @@ const PricingData = ({
     {
       header: "service center",
       field: "center_price",
-      body: (row: ILabTestService) => (
-        <>{row.center_price ? formatCurrency(Number(row.center_price)) : "-"}</>
-      ),
+      body: (row: ILabTestService) => renderPricing(row.center_price),
     },
     {
       header: "at home",
       field: "atHome",
-      body: (row: ILabTestService) => (
-        <>{row.home_price ? formatCurrency(Number(row.home_price)) : "-"}</>
-      ),
+      body: (row: ILabTestService) => renderPricing(row.home_price),
     },
     {
       header: "code",
@@ -248,12 +255,7 @@ const PricingData = ({
       header: "action",
       field: "",
       headerClassName: "justify-items-center custom-header",
-      body: (rowData: ILabTestService) => (
-        <button type="button"
-          className="pi pi-pen-to-square w-full text-center text-purple-800"
-          onClick={() => onEdit(true, rowData)}
-        />
-      ),
+      body: (rowData: ILabTestService) => renderActionColumn(rowData),
     },
   ];
 
@@ -366,74 +368,72 @@ const EditPricing = ({
     return true;
   };
   return (
-    <>
-      <form
-        className="flex-grow flex-col flex"
-        onSubmit={handleSubmit((data) => {
-          handleUpdatePricing(data);
-        })}
-        onKeyDown={(event) => handleKeyPress(event)}
-      >
-        <div className="flex justify-between w-full">
-          <span onClick={() => editService(false, {} as ILabTestService)}>
-            <BackButton
-              backLink={PATH_NAME.PRICING}
-              currentPage="Edit Pricing Details"
-              previousPage="Pricing Details"
-            />
-          </span>
-          <div className="flex gap-3 font-primary text-purple-900">
-            <Button
-              className="items-center border-none shadow-none px-3 py-2"
-              icon="pi pi-times pe-2"
-              type="button"
-              onClick={() => {
-                editService(false, {} as ILabTestService);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              title="submit"
-              icon="pi pi-check pe-2"
-              type="submit"
-              className="ml-3 submit-button items-center"
-            >
-              Submit
-            </Button>
-          </div>
+    <form
+      className="flex-grow flex-col flex"
+    // onSubmit={handleSubmit((data) => {
+    //   handleUpdatePricing(data);
+    // })}
+    // onKeyDown={(event) => handleKeyPress(event)}
+    >
+      <div className="flex justify-between w-full">
+        <BackButton
+          handleClick={() => editService(false, {} as ILabTestService)}
+          backLink={PATH_NAME.PRICING}
+          currentPage="Edit Pricing Details"
+          previousPage="Pricing Details"
+        />
+        <div className="flex gap-3 font-primary text-purple-900">
+          <Button
+            className="items-center border-none shadow-none px-3 py-2"
+            icon="pi pi-times pe-2"
+            type="button"
+            onClick={() => {
+              editService(false, {} as ILabTestService);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            title="submit"
+            icon="pi pi-check pe-2"
+            type="button"
+            onClick={handleSubmit(handleUpdatePricing)}
+            className="ml-3 submit-button items-center"
+          >
+            Submit
+          </Button>
         </div>
-        <div className="flex-grow bg-white rounded-lg p-6 mt-6">
-          <label className="font-primary capitalize text-xl pb-2 block">
-            Pricing details
-          </label>
-          <div className="grid md:grid-cols-4 gap-3">
-            {inputs.map((input, index) => (
-              <div
-                key={index}
-                className={`${input.styleClasses} col-span-${input.colspan ? input.colspan : "1"} relative`}
-              >
-                <label className="input-label capitalize">{input.label}*</label>
-                <Controller
-                  name={input.name}
-                  control={control}
-                  rules={input.validationRules}
-                  render={({ field }) =>
-                    React.cloneElement(input.element, {
-                      ...field,
-                      disabled: input.disabled,
-                      className: `form-control ${input.styleClasses} border rounded-lg w-full h-[2.5rem]`,
-                    })
-                  }
-                />
-                {errors[input.name] && (
-                  <ErrorMessage message={errors[input.name]?.message} />
-                )}
-              </div>
-            ))}
-          </div>
+      </div>
+      <div className="flex-grow bg-white rounded-lg p-6 mt-6">
+        <p className="font-primary capitalize text-xl pb-2 block">
+          Pricing details
+        </p>
+        <div className="grid md:grid-cols-4 gap-3">
+          {inputs.map((input) => (
+            <div
+              key={input.name}
+              className={`${input.styleClasses} col-span-${input.colspan ? input.colspan : "1"} relative`}
+            >
+              <label className="input-label capitalize">{input.label}*</label>
+              <Controller
+                name={input.name}
+                control={control}
+                rules={input.validationRules}
+                render={({ field }) =>
+                  React.cloneElement(input.element, {
+                    ...field,
+                    disabled: input.disabled,
+                    className: `form-control ${input.styleClasses} border rounded-lg w-full h-[2.5rem] ${input.disabled && 'disabled-input'}`,
+                  })
+                }
+              />
+              {errors[input.name] && (
+                <ErrorMessage message={errors[input.name]?.message} />
+              )}
+            </div>
+          ))}
         </div>
-      </form>
-    </>
+      </div>
+    </form>
   );
 };

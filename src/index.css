@@ -39,20 +39,20 @@
 
 @layer utilities {
   .font-primary {
-    font-family: "Futurahvbt";
+    font-family: "Futurahvbt", sans-serif;
   }
 
   .font-secondary {
-    font-family: "FuturaMdBt";
+    font-family: "FuturaMdBt", sans-serif;
   }
 
   .font-tertiary {
-    font-family: "FuturaBkBt";
+    font-family: "FuturaBkBt", sans-serif;
   }
 }
 
 body {
-  font-family: "FuturaMdBt";
+  font-family: "FuturaMdBt", sans-serif;
   margin: 0;
   display: flex;
   min-width: 320px;
@@ -81,11 +81,11 @@ input {
 
 .input-label {
   @apply text-[#545F71] !font-normal !text-sm capitalize;
-  font-family: FuturaBkBt;
+  font-family: FuturaBkBt, sans-serif;
 }
 
 .font-light {
-  font-family: FuturaLtBt;
+  font-family: FuturaLtBt, sans-serif;
 }
 
 .p-autocomplete-multiple-container .p-autocomplete-token {
@@ -192,7 +192,7 @@ div {
 }
 
 input::placeholder {
-  font-family: "futuraMdBt";
+  font-family: "futuraMdBt", sans-serif;
   @apply text-[#9BA5B7];
 }
 
@@ -226,4 +226,8 @@ input::placeholder {
 
 .custom-row:hover {
   background-color: #f3f4f6 !important;
+}
+
+.disabled-input {
+  @apply bg-gray-100;
 }

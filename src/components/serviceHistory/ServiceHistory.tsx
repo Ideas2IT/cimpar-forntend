@@ -42,6 +42,10 @@ const ServiceHistory = ({
   const [selectedImmunization, setSelectedImmunization] = useState<IImmunization>({} as IImmunization);
   const [expandedRows, setExpandedRows] = useState<DataTableExpandedRows | DataTableValueArray | []>([]);
 
+  const handlePaginator = (value: number) => {
+    handlePageChange(value);
+  }
+
   const downloadDocument = (url: string) => {
     if (url) {
       const link = document.createElement("a");
@@ -166,7 +170,7 @@ const ServiceHistory = ({
   const sidebarHeader = () => {
     return selectedService?.category?.toLowerCase() ===
       SERVICE_CATEGORY.IMMUNIZATION ? (
-      <div>
+      <div className="flex">
         <span className="pe-3">Immunization Details</span>
         <div className={`sidebar-header capitalize ${getStatusColor(selectedImmunization.status)}`}>{selectedImmunization?.status ?? ""}</div>
       </div>
@@ -350,16 +354,14 @@ const ServiceHistory = ({
             body={(rowData: IServiceHistory) => showReportsButton(rowData)}
           />
         </DataTable>
-      </div >
-
-      {serviceData?.pagination?.total_pages > 1 && (
-        <CustomPaginator
-          handlePageChange={handlePageChange}
-          currentPage={serviceData?.pagination?.current_page}
-          totalPages={serviceData?.pagination?.total_pages}
-        />
-      )
-      }
+        {serviceData?.pagination?.total_pages > 1 && (
+          <CustomPaginator
+            handlePageChange={(value) => handlePaginator(value)}
+            currentPage={serviceData?.pagination?.current_page}
+            totalPages={serviceData?.pagination?.total_pages}
+          />
+        )}
+      </div>
 
       {
         !!Object.keys(selectedImmunization).length && (

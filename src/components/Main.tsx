@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
-import "../../node_modules/primeicons/primeicons.css";
-import "../../node_modules/primereact/resources/primereact.min.css";
-import "../../node_modules/primereact/resources/themes/fluent-light/theme.css";
+import "primeicons/primeicons.css";
+import "primereact/resources/primereact.min.css";
+import "primereact/resources/themes/fluent-light/theme.css";
 import Header from "./Header";
 
 const Main = () => {

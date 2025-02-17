@@ -17,8 +17,11 @@ import { ISetPasswordPayload } from "../../interfaces/User";
 import localStorageService from "../../services/localStorageService";
 
 const SetPassword = () => {
-  const { errorToast, toast, successToast } = useToast();
+
   const dispatch = useDispatch<AppDispatch>();
+
+  const { errorToast, toast, successToast } = useToast();
+
   const navigate = useNavigate();
 
   const {
@@ -39,11 +42,13 @@ const SetPassword = () => {
       );
       return;
     }
+
     const payload: ISetPasswordPayload = {
       newPassword: data.newPassword,
       confirmPassword: data.confirmPassword,
       token: id || "",
     };
+    
     dispatch(setPasswordThunk(payload)).then((response) => {
       if (response?.meta?.requestStatus === RESPONSE.FULFILLED) {
         successToast(
@@ -59,6 +64,8 @@ const SetPassword = () => {
       }
     });
   };
+
+
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-300">
       <form onSubmit={handleSubmit((data) => handleSetPassowrd(data))}>
@@ -68,9 +75,9 @@ const SetPassword = () => {
           </div>
           <div className="w-full flex flex-row">
             <CheckMark data-testid="check-mark" />
-            <label className="color-success font-primary px-2">
+            <p className="color-success font-primary px-2">
               Email Verified
-            </label>
+            </p>
           </div>
           <label className="input-label">{MESSAGE.PASSWORD_VERIFIED}</label>
           <div className="font-primary text-2xl py-3">Set Password</div>

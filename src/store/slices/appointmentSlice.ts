@@ -202,12 +202,12 @@ const transformSingleAppointment = (data: any) => {
         )
         : NONE,
       insuranceProvider:
-        appointmentCopy?.insurance?.insurance === YES
+        appointmentCopy?.insurance?.insurance?.toLowerCase() === YES
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
             ?.insurnaceProvider
           : "",
       insuraceNumber:
-        appointmentCopy?.insurance?.insurance === YES
+        appointmentCopy?.insurance?.insurance?.toLowerCase() === YES
           ? transformInsurance(appointmentCopy?.insurance?.coverage_details)
             ?.insuranceNumber
           : NONE,
@@ -311,13 +311,19 @@ export const downloadtransactionsThunk = createAsyncThunk(
       const response = await downloadTransactionsInCsv(payload);
       return response.data;
     } catch (error) {
+      let errorMessage = ''
       if (isAxiosError(error)) {
-        const errorMessage =
+        errorMessage =
           error?.response?.data?.detail ||
           "Failed to load translations csv file";
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,
+        } as ErrorResponse);
+      } else {
+        return rejectWithValue({
+          message: errorMessage,
+          response: 0,
         } as ErrorResponse);
       }
     }

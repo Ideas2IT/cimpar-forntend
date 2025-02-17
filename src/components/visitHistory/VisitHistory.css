@@ -7,10 +7,6 @@
   resize: none;
 }
 
-/* .report-wrapper {
-  @apply p-3 bg-[#EEF1F4] h-[4rem] w-[20rem] rounded-lg m-1 flex items-center justify-between;
-} */
-
 .p-fileupload-buttonbar {
   @apply bg-white ps-0 py-0;
 }

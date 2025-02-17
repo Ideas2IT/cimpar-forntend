@@ -10,9 +10,5 @@
   width: 100%;
 }
 .p-chips-multiple-container {
-  width: 95%;
-}
-
-.p-chips-multiple-container {
-  @apply rounded-lg;
+  @apply rounded-lg w-[95%];
 }

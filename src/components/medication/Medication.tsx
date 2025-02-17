@@ -73,7 +73,7 @@ export const LargeDataField = ({
   return (
     <div className="border-b border-gray-100">
       <div className="font-secondary text-sm text-[#283956] opacity-65 py-2">
-        {label ? label : "-"}
+        {label || "-"}
       </div>
       <div
         title={value}

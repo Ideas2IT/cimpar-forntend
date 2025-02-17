@@ -71,7 +71,7 @@ const MedicalConditionDetails = () => {
       {medicalConditonFields.map((medicalCondition, index) => {
         return (
           <LargeDataField
-            key={index}
+            key={medicalCondition.value + index}
             label={medicalCondition.label}
             value={medicalCondition.value}
           />

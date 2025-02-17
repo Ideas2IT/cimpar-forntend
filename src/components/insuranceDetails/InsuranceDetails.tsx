@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { IInsurance } from "../../interfaces/User";
-import { deleteInsurancePayload } from "../../interfaces/insurance";
+import { IDeleteInsurancePayload } from "../../interfaces/insurance";
 import { getRowClasses } from "../../services/commonFunctions";
 import {
   deleteInsuranceByIdThunk,
@@ -20,50 +20,13 @@ import useToast from "../useToast/UseToast";
 import { ErrorResponse } from "../../interfaces/common";
 
 const InsuranceDetails = () => {
-  const [selectedPolicy] = useState({} as IInsurance);
+
   const dispatch = useDispatch<AppDispatch>();
   const selectedPatient = useSelector(selectSelectedPatient);
+
   const { toast, errorToast } = useToast();
-  const columns = [
-    {
-      field: "insuranceName",
-      header: "INSURANCE COMPANY",
-      body: (rowData: IInsurance) => (
-        <PolicyColumn value={rowData.insuranceCompany} />
-      ),
-    },
-    {
-      field: "policyNumber",
-      header: "POLICY NUMBER",
-      body: (rowData: IInsurance) => (
-        <PolicyColumn value={rowData.policyNumber} />
-      ),
-    },
-    {
-      field: "groupNumber",
-      header: "GROUP NUMBER",
-      body: (rowData: IInsurance) => (
-        <PolicyColumn value={rowData.groupNumber} />
-      ),
-    },
-    {
-      field: "insuranceType",
-      header: "TYPE",
-      body: (rowData: IInsurance) => (
-        <PolicyColumn value={rowData.insuranceType?.toUpperCase()} />
-      ),
-    },
-    {
-      field: "",
-      header: "",
-      body: (rowData: IInsurance) => (
-        <PolicyHandler
-          data={rowData}
-          patinetId={selectedPatient?.basicDetails?.id}
-        />
-      ),
-    },
-  ];
+
+  const [selectedPolicy] = useState({} as IInsurance);
 
   useEffect(() => {
     selectedPatient?.basicDetails?.id &&
@@ -78,6 +41,49 @@ const InsuranceDetails = () => {
         }
       );
   }, [selectedPatient?.basicDetails?.id]);
+
+  const renderPolicyColumn = (columnData: string) => {
+    return <PolicyColumn value={columnData} />
+  }
+
+  const renderActionColumn = (rowData: IInsurance) => {
+    return <PolicyHandler
+      data={rowData}
+      patinetId={selectedPatient?.basicDetails?.id}
+    />
+  }
+
+
+  const columns = [
+    {
+      field: "insuranceName",
+      header: "INSURANCE COMPANY",
+      body: (rowData: IInsurance) => renderPolicyColumn(rowData.insuranceCompany)
+
+    },
+    {
+      field: "policyNumber",
+      header: "POLICY NUMBER",
+      body: (rowData: IInsurance) => renderPolicyColumn(rowData.policyNumber),
+    },
+    {
+      field: "groupNumber",
+      header: "GROUP NUMBER",
+      body: (rowData: IInsurance) => renderPolicyColumn(rowData.groupNumber),
+    },
+    {
+      field: "insuranceType",
+      header: "TYPE",
+      body: (rowData: IInsurance) => renderPolicyColumn(rowData.insuranceType?.toUpperCase()),
+    },
+    {
+      field: "",
+      header: "ACTION",
+      body: (rowData: IInsurance) => renderActionColumn(rowData),
+    },
+  ];
+
+
 
   return (
     <>
@@ -99,7 +105,7 @@ const InsuranceDetails = () => {
         {columns.map((column, index) => {
           return (
             <Column
-              key={index}
+              key={column.header + index}
               field={column.field}
               bodyClassName="py-4"
               header={column.header}
@@ -116,7 +122,7 @@ const InsuranceDetails = () => {
 };
 
 const PolicyColumn = ({ value }: { value: string }) => {
-  return <div className="font-tertiary">{value ? value : "-"}</div>;
+  return <div className="font-tertiary">{value || "-"}</div>;
 };
 
 const PolicyHandler = ({
@@ -132,7 +138,7 @@ const PolicyHandler = ({
 
   const handleDeleteInsurance = () => {
     if (patinetId && data) {
-      const payload: deleteInsurancePayload = {
+      const payload: IDeleteInsurancePayload = {
         patinetId: patinetId,
         insuranceId: data.id,
       };
@@ -177,10 +183,11 @@ const PolicyHandler = ({
         </button>
       </NavLink>
       <button
+        onClick={confirmDelete}
         disabled={isAdmin}
-        className={`${isAdmin && "cursor-not-allowed hidden"}`}
+        className={`${isAdmin && "cursor-not-allowed outline-none hidden"}`}
       >
-        <i className="pi pi-trash  mx-2 text-red-500" onClick={confirmDelete} />
+        <i className="pi pi-trash  mx-2 text-red-500" />
       </button>
       <Toast ref={toast} />
     </div>

@@ -128,7 +128,7 @@ const LocationList = () => {
       } else {
         errorToast('Failed To Fetch Calendars', 'Unable to fetch Microsoft Booking calendars')
       }
-    });
+    })
   }
 
 
@@ -266,7 +266,7 @@ const LocationList = () => {
           const _response = response.payload as ErrorResponse;
           errorToast("Unable To Update location", _response?.message);
         }
-      });
+      })
     }
   };
 
@@ -318,7 +318,7 @@ const LocationList = () => {
           currentPage="Locations"
           previousPage="Masters"
         />
-        <div className="flex justify-items-end gap-3">
+        <div className="flex justify-end gap-3">
           <div className="w-[17rem]">
             <CustomServiceDropDown
               key="cities"
@@ -349,7 +349,7 @@ const LocationList = () => {
               popoverStyle="!w-[17rem]"
             />
           </div>
-          <div className="w-[17rem]">
+          <div className="w-[15rem]">
             <SearchInput
               ref={searchInputRef}
               handleSearch={(value) => handleSearch(value)}

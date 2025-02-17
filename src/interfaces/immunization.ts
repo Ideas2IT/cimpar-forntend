@@ -28,7 +28,7 @@ export interface ImmunizationData {
 export interface IServiceHistoryPayload {
   selectedTab: string;
   searchValue: string;
-  patinetId: string;
+  patientId: string;
   service_type: string;
   page: number;
   page_size: number;

@@ -11,52 +11,38 @@ import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { ErrorResponse } from "../../interfaces/common";
-import {
-  ICreateVisitHistoryPayload,
-  IUpdateVisitHistoryPayload,
-  IVisitHistory,
-} from "../../interfaces/visitHistory";
-import {
-  cleanString,
-  compareDates,
-  handleKeyPress,
-  splitCodeWithPhoneNumber,
-} from "../../services/commonFunctions";
-import {
-  createVistiHistoryThunk,
-  deleteVisitHistoryFileThunk,
-  getVisitHistoryByIdThunk,
-  selectSelectedPatient,
-  updateVisitHistoryByIdThunk,
-} from "../../store/slices/PatientSlice";
+import { ICreateVisitHistoryPayload, IUpdateVisitHistoryPayload, IVisitHistory } from "../../interfaces/visitHistory";
+import { cleanString, compareDates, splitCodeWithPhoneNumber } from "../../services/commonFunctions";
+import { createVistiHistoryThunk, deleteVisitHistoryFileThunk, getVisitHistoryByIdThunk, selectSelectedPatient, updateVisitHistoryByIdThunk } from "../../store/slices/PatientSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  DATE_FORMAT,
-  MESSAGE,
-  PATH_NAME,
-  RESPONSE,
-} from "../../utils/AppConstants";
+import { DATE_FORMAT, MESSAGE, PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import { dateFormatter } from "../../utils/Date";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import useToast from "../useToast/UseToast";
 import "./VisitHistory.css";
-// import CustomModal from "../customModal/CustomModal";
-// import PdfViewer from "../PdfViewer/PdfViewer";
+
 
 const EditVisitHistory = () => {
-  const { toast, successToast, errorToast } = useToast();
-  const uploaderRef = useRef<FileUpload | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [isDisabed, setIsDisabled] = useState(false);
-  // const [showReport, setShowReport] = useState(false);
-  // const [selectedFile, setSelectedFile] = useState<string>({} as string);
-  const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
+
   const selectedpatient = useSelector(selectSelectedPatient);
+  const dispatch = useDispatch<AppDispatch>();
+
   const { id } = useParams();
+
+  const navigate = useNavigate();
+
+
+  const { toast, successToast, errorToast } = useToast();
+
+
+
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
+
+  const uploaderRef = useRef<FileUpload | null>(null);
 
   const {
     control,
@@ -73,15 +59,33 @@ const EditVisitHistory = () => {
     } as IVisitHistory,
   });
 
+  const admissionDate = watch("admissionDate");
+
   useEffect(() => {
     fetchVisitHistory();
   }, [selectedpatient?.basicDetails?.id, id]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  useEffect(() => {
+    if (uploaderRef.current) {
+      uploaderRef.current.setFiles([...uploadedFiles]);
+    }
+  }, [uploadedFiles]);
 
   const fetchVisitHistory = () => {
     if (selectedpatient?.basicDetails?.id && id)
       dispatch(
         getVisitHistoryByIdThunk({
-          patinetId: selectedpatient?.basicDetails?.id,
+          patientId: selectedpatient?.basicDetails?.id,
           visitHistoryId: id,
         })
       ).then((response) => {
@@ -96,22 +100,14 @@ const EditVisitHistory = () => {
       });
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isDirty]);
+
 
   const navigateBackMenu = () => {
     setTimeout(() => {
       navigate(PATH_NAME.PROFILE);
     }, 1000);
   };
-  const admissionDate = watch("admissionDate");
+
 
   const handleFormSubmit = (formData: IVisitHistory) => {
     setIsDisabled(true);
@@ -121,7 +117,7 @@ const EditVisitHistory = () => {
       discharge_date: dateFormatter(formData?.dischargeDate, "yyyy-MM-dd"),
       location: cleanString(formData?.visitLocation) || "",
       patient_id: selectedpatient?.basicDetails?.id || "",
-      phone_number: formData?.hospitalContact || "",
+      phone_number: formData?.hospitalContact ?? "",
       primary_care_team: cleanString(formData?.primaryCareTeam) || "",
       reason: cleanString(formData?.visitReason) || "",
       status: "in-progress",
@@ -202,22 +198,6 @@ const EditVisitHistory = () => {
     }
   };
 
-  useEffect(() => {
-    if (uploaderRef.current) {
-      uploaderRef.current.setFiles([...uploadedFiles]);
-    }
-  }, [uploadedFiles]);
-
-  // const viewReport = (file: File) => {
-  //   setShowReport(true);
-  //   setSelectedFile(URL.createObjectURL(file));
-  // };
-
-  // const viewUrl = (url: string) => {
-  //   setShowReport(true);
-  //   setSelectedFile(url);
-  // };
-
   const handleDeleteRemoteFile = (file: string) => {
     const path = file.split("?")[0];
     const filePath = path.split("/").slice(-2).join("/");
@@ -262,22 +242,6 @@ const EditVisitHistory = () => {
   const goBack = () => {
     navigate(PATH_NAME.PROFILE);
   };
-  // const downloadDocument = () => {
-  //   if (!Object.keys(selectedFile).length) {
-  //     return;
-  //   }
-  //   const url = selectedFile;
-  //   if (url) {
-  //     const downloadUrl = url;
-  //     const link = document.createElement("a");
-  //     link.href = downloadUrl;
-  //     link.download = "document";
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     document.body.removeChild(link);
-  //     URL.revokeObjectURL(downloadUrl);
-  //   }
-  // };
 
   const downloadDocument = (fileUrl: string) => {
     if (!fileUrl) {
@@ -310,8 +274,8 @@ const EditVisitHistory = () => {
   return (
     <div>
       <form
-        onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-        onKeyDown={(event) => handleKeyPress(event)}
+      // onSubmit={handleSubmit((data) => handleFormSubmit(data))}
+      // onKeyDown={(event) => handleKeyPress(event)}
       >
         <div className="flex flex-row justify-between px-6">
           <BackButton
@@ -333,10 +297,11 @@ const EditVisitHistory = () => {
               <i className="pi pi-times me-2"></i>Cancel
             </Button>
             <PrimeButton
-              disabled={isDisabed}
+              disabled={isDisabled}
+              onClick={handleSubmit(handleFormSubmit)}
               className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
               outlined
-              type="submit"
+              type="button"
             >
               <i className="pi pi-check me-2"></i>Save
             </PrimeButton>
@@ -400,7 +365,7 @@ const EditVisitHistory = () => {
                   render={({ field }) => (
                     <InputText
                       {...field}
-                      value={field.value || ""}
+                      value={field.value ?? ""}
                       id="phoneNumber"
                       keyfilter="pint"
                       onChange={(e) => {
@@ -413,7 +378,7 @@ const EditVisitHistory = () => {
                   )}
                 />
               </div>
-              {(errors.hospitalContact || errors.hospitalContact) && (
+              {(errors?.hospitalContact || errors.hospitalContact) && (
                 <span className="text-red-500 text-xs">
                   {errors.hospitalContact.message}
                 </span>
@@ -623,16 +588,15 @@ const EditVisitHistory = () => {
             </div>
           </div>
           <div className="w-[100%]">
-            <label className="input-label pb-2">
+            <p className="input-label pb-2">
               If you have any documents related,Please add them (Max 5MB)
-            </label>
+            </p>
             <div className="grid md:grid-cols-4 md:grid-cols-2 gap-x-4 gap-y-5 py-4 max-w-[100%] overflow-wrap">
               {!!uploadedFiles?.length &&
                 uploadedFiles.map((file, index) => {
                   return (
                     <FileTile
                       key={file.name}
-                      // handleView={() => viewReport(file)}
                       handleView={() =>
                         downloadDocument(URL.createObjectURL(file))
                       }
@@ -676,16 +640,6 @@ const EditVisitHistory = () => {
         </div>
       </form>
       <Toast ref={toast} />
-      {/* {showReport && selectedFile && (
-        <CustomModal
-          handleClose={() => {
-            setShowReport(false);
-          }}
-          styleClass="h-[90%] w-[90%]"
-        >
-          <PdfViewer fileUrl={selectedFile} />
-        </CustomModal>
-      )} */}
     </div>
   );
 };
@@ -703,9 +657,9 @@ export const FileTile = ({
 }) => {
   return (
     <div key={fileName} className="flex flex-row w-[8rem]">
-      <div
+      <button type="button"
         className="cursor-pointer w-[90%] text-[#2D6D80]"
-        onClick={() => handleView(index || 0)}
+        onClick={() => handleView(index ?? 0)}
       >
         <label
           title={fileName}
@@ -713,10 +667,10 @@ export const FileTile = ({
         >
           {fileName}
         </label>
-      </div>
+      </button>
       <div title="Delete" className="font-bold w-[10%] text-end">
-        <i
-          onClick={() => handleRemoveFile(index || 0)}
+        <button type="button"
+          onClick={() => handleRemoveFile(index ?? 0)}
           className="pi pi-trash text-red-500 cursor-pointer"
         />
       </div>

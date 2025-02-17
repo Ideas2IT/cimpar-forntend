@@ -3,17 +3,10 @@ import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { useEffect, useState } from "react";
 import { DATE_FORMAT, RESPONSE } from "../../utils/AppConstants";
-import {
-  OutputTimeSlot,
-  ServiceTimeSlotsDetail,
-  TIME_SLOT_DAYS,
-} from "../../utils/BookingSlotUtils";
+import { OutputTimeSlot, ServiceTimeSlotsDetail, TIME_SLOT_DAYS, } from "../../utils/BookingSlotUtils";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
-import {
-  getBookedSlotsForHomeServiceThunk,
-  getBookedSlotsForServiceCenterThunk,
-} from "../../store/slices/appointmentSlice";
+import { getBookedSlotsForHomeServiceThunk, getBookedSlotsForServiceCenterThunk, } from "../../store/slices/appointmentSlice";
 import { formatUTCDateToUtcString } from "../../utils/Date";
 import TimezoneInfo from "../timezoneinfo/TimeZoneInfo";
 import { ITimeSlot } from "../../interfaces/appointment";

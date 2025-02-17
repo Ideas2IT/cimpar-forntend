@@ -16,25 +16,6 @@ export const dateFormatter = (
   }
 };
 
-// export const dateFormatter = (
-//   value: Date | string | null | undefined,
-//   outputFormat = DEFAULT_DATE_FORMAT
-// ) => {
-//   // try {
-//     if (!value) return "-";
-//     // const date = typeof value === "string" ? new Date(value) : value;
-//     // const year = date.getUTCFullYear();
-//     // const month = date.getUTCMonth();
-//     // const day = date.getUTCDate();
-//     // const hours = date.getUTCHours();
-//     // const minutes = date.getUTCMinutes();
-//     // const utcDate = new Date(year, month, day, hours, minutes, 0);
-//     return format(value, outputFormat);
-//   // } catch (error) {
-//   //   return "";
-//   // }
-// };
-
 export const checkToday = (date: string | Date | null | undefined): boolean => {
   if (!date) {
     return false;
@@ -85,7 +66,8 @@ export const combineDateToUTc = (dateInput: Date, timeInput: string) => {
   return utcDate.toISOString();
 };
 
-export const formatUTCDateToUtcString = (utcDateString: Date) => {
+export const formatUTCDateToUtcString = (utcDateString: Date | null | undefined) => {
+  if (!utcDateString) return "";
   const date = new Date(utcDateString);
   const year = date.getFullYear();
   const month = date.getMonth();
@@ -94,20 +76,24 @@ export const formatUTCDateToUtcString = (utcDateString: Date) => {
 };
 
 export const formatUTCDate = (utcDateString: string): string => {
-  const date = new Date(utcDateString); // Parse the date string
-  const year = date.getUTCFullYear();
-  const month = date.toLocaleString("en-US", {
-    month: "short",
-    timeZone: "UTC",
-  }); // Get UTC month
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const hours = String(date.getUTCHours()).padStart(2, "0");
-  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  try {
+    const date = new Date(utcDateString); // Parse the date string
+    const year = date.getUTCFullYear();
+    const month = date.toLocaleString("en-US", {
+      month: "short",
+      timeZone: "UTC",
+    }); // Get UTC month
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
 
-  return `${year} ${month}, ${day}:${hours}${minutes}`;
+    return `${year} ${month}, ${day}:${hours}${minutes}`;
+  } catch (erroe) {
+    return "";
+  }
 };
 
 export const formatUTCToLocalTime = (utcDateString: string): string => {
-  const date = new Date(utcDateString); // Parse the UTC date string
-  return format(date, "hh:mm a"); // Format only time in 12-hour format
+  const date = new Date(utcDateString);
+  return format(date, "hh:mm a");
 };

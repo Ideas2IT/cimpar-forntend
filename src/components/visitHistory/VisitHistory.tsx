@@ -4,27 +4,12 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
-import {
-  DATE_FORMAT,
-  MESSAGE,
-  PAGE_LIMIT,
-  PATH_NAME,
-  RESPONSE,
-  ROLE,
-} from "../../utils/AppConstants";
+import { DATE_FORMAT, MESSAGE, PAGE_LIMIT, PATH_NAME, RESPONSE, ROLE } from "../../utils/AppConstants";
 import { useDispatch, useSelector } from "react-redux";
-// import { selectedRole } from "../../store/slices/commonSlice";
 import { getRowClasses } from "../../services/commonFunctions";
-import {
-  deleteVisitHistoryByIdThunk,
-  getVisitHistoryByPatientIdThunk,
-  selectSelectedPatient,
-} from "../../store/slices/PatientSlice";
+import { deleteVisitHistoryByIdThunk, getVisitHistoryByPatientIdThunk, selectSelectedPatient } from "../../store/slices/PatientSlice";
 import { AppDispatch } from "../../store/store";
-import {
-  IDeleteVisitHistoryPayload,
-  IVisitHistory,
-} from "../../interfaces/visitHistory";
+import { IDeleteVisitHistoryPayload, IVisitHistory } from "../../interfaces/visitHistory";
 import { dateFormatter } from "../../utils/Date";
 import useToast from "../useToast/UseToast";
 import { Toast } from "primereact/toast";
@@ -32,15 +17,16 @@ import { selectRole } from "../../store/slices/loginSlice";
 import { IGetEncounterPaylaod } from "../../interfaces/patient";
 import CustomPaginator from "../customPagenator/CustomPaginator";
 import { ErrorResponse } from "../../interfaces/common";
-// import CustomModal from "../customModal/CustomModal";
-// import PdfViewer from "../PdfViewer/PdfViewer";
 
 const VisitHistory = () => {
+
   const selectedPatinet = useSelector(selectSelectedPatient);
-  const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
-  // const [selectedReport, setSelectedReport] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
+
   const { toast, errorToast, successToast } = useToast();
+
+
+  const [selectedHistory, setSelectedHistory] = useState({} as IVisitHistory);
   const [encounterPayload, setEncounterPayload] = useState({
     count: PAGE_LIMIT,
     page: 1,
@@ -77,7 +63,7 @@ const VisitHistory = () => {
   const handleDeleteEncounter = (id: string) => {
     if (selectedPatinet?.basicDetails?.id && id) {
       const payload: IDeleteVisitHistoryPayload = {
-        patinetId: selectedPatinet.basicDetails.id,
+        patientId: selectedPatinet.basicDetails.id,
         visitHistoryId: id,
       };
       dispatch(deleteVisitHistoryByIdThunk(payload)).then((response) => {
@@ -93,50 +79,40 @@ const VisitHistory = () => {
       });
     }
   };
+
+  const renderTableCell = (dataValue: string) => <TableCell value={dataValue} />
+  const renderMediaColumn = (row: IVisitHistory) => <MediaColumn handleView={viewRecord} data={row} handleDelete={handleDeleteEncounter} />
+
   const columnList = [
     {
       id: 1,
       field: "vistLocation",
       header: "VISIT LOCATION",
-      body: (row: IVisitHistory) => <TableCell value={row.visitLocation} />,
+      body: (row: IVisitHistory) => renderTableCell(row.visitLocation),
     },
     {
       id: 2,
       field: "admissionDate",
       header: "ADMISSION DATE",
-      body: (row: IVisitHistory) => (
-        <TableCell
-          value={dateFormatter(row.admissionDate, DATE_FORMAT.DD_MMM_YYYY)}
-        />
-      ),
+      body: (row: IVisitHistory) => renderTableCell(dateFormatter(row.admissionDate, DATE_FORMAT.DD_MMM_YYYY)),
     },
     {
       id: 3,
       field: "dischargeDate",
       header: "DISCHARGE DATE",
-      body: (row: IVisitHistory) => (
-        <TableCell
-          value={dateFormatter(row.dischargeDate, DATE_FORMAT.DD_MMM_YYYY)}
-        />
-      ),
+      body: (row: IVisitHistory) => renderTableCell(dateFormatter(row.dischargeDate, DATE_FORMAT.DD_MMM_YYYY)),
     },
     {
       id: 4,
       field: "visitReason",
       header: "VISIT REASON",
-      body: (row: IVisitHistory) => <TableCell value={row.visitReason} />,
+      body: (row: IVisitHistory) => renderTableCell(row.visitReason),
     },
     {
       id: 5,
       field: "",
       header: "",
-      body: (row: IVisitHistory) => (
-        <MediaColumn
-          handleView={viewRecord}
-          data={row}
-          handleDelete={handleDeleteEncounter}
-        />
-      ),
+      body: (row: IVisitHistory) => renderMediaColumn(row),
     },
   ];
 
@@ -190,61 +166,42 @@ const VisitHistory = () => {
     },
   ];
 
-  const TableCell = ({ value }: { value: string }) => {
-    return (
-      <div className="font-tertiary text-[16px]">{value ? value : "-"}</div>
-    );
-  };
-
   const viewRecord = (record: IVisitHistory) => {
     setSelectedHistory(record);
   };
 
-  const DetailedHistory = () => {
+  const detailedHistory = () => {
     return (
       <div className="grid grid-cols-2 gap-4">
-        {historyField.map((field, index) => {
+        {historyField.map((field) => {
           return (
-            <div key={index} className={`${field.full ? "col-span-2" : ""}`}>
-              <FiledDetails label={field.field} value={field?.value || ""} />
+            <div key={field.field} className={`${field.full ? "col-span-2" : ""}`}>
+              <FiledDetails label={field.field} value={field?.value ?? ""} />
             </div>
           );
         })}
         {!!selectedHistory?.files?.length && (
           <div className="col-span-2">
-            <label className="text-lg pb-4 font-primary block">
+            <p className="text-lg pb-4 font-primary block">
               Related Documents
-            </label>
+            </p>
             {selectedHistory?.files?.map((report, index) => {
-              {
-                return (
-                  <Button
-                    style="outline"
-                    className="font-primary bg-white text-lg m-1"
-                    onClick={() => downloadDocument(report)}
-                  // onClick={() => setSelectedReport(report)}
-                  >
-                    <>
-                      <i className="pi pi-eye px-2" />
-                      {`Medical Report${index + 1}.pdf`}
-                    </>
-                  </Button>
-                );
-              }
+              return (
+                <Button
+                  key={report + index}
+                  style="outline"
+                  className="font-primary bg-white text-lg m-1"
+                  onClick={() => downloadDocument(report)}
+                >
+                  <>
+                    <i className="pi pi-eye px-2" />
+                    {`Medical Report${index + 1}.pdf`}
+                  </>
+                </Button>
+              );
             })}
           </div>
         )}
-        {/* {selectedReport && (
-          <CustomModal
-            closeButton={true}
-            handleClose={() => {
-              setSelectedReport("");
-            }}
-            styleClass="h-full w-[90%]"
-          >
-            <PdfViewer fileUrl={selectedReport} />
-          </CustomModal>
-        )} */}
       </div>
     );
   };
@@ -287,7 +244,7 @@ const VisitHistory = () => {
         visible={!!Object.keys(selectedHistory).length}
         position="right"
       >
-        <DetailedHistory />
+        {detailedHistory()}
       </Sidebar>
       {selectedPatinet?.visitHistory?.pagination?.total_pages > 1 && (
         <CustomPaginator
@@ -320,17 +277,17 @@ const MediaColumn = ({
         <i className="pi pi-eye" />
       </button>
       <button
+        onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}/${data.id}`)}
         className={`items-center p-0 m-0 ${role === ROLE.ADMIN && "hidden"}`}
         disabled={role === ROLE.ADMIN}
       >
         <i
           className={`pi pi-pen-to-square px-3 ${role === ROLE.ADMIN && "hidden"}`}
-          onClick={() => navigate(`${PATH_NAME.EDIT_VISIT_HISTORY}/${data.id}`)}
+
         />
       </button>
-      <button className={`${role === ROLE.ADMIN && "hidden"}`}>
+      <button onClick={() => handleDelete(data?.id || "")} className={`${role === ROLE.ADMIN && "hidden"}`}>
         <i
-          onClick={() => handleDelete(data?.id || "")}
           className={`pi pi-trash text-red-500 me-2 ${role === ROLE.ADMIN && "hidden"}`}
         />
       </button>
@@ -350,9 +307,15 @@ export const FiledDetails = ({
       {label}
     </div>
     <label className="font-primary max-h-[100%] text-ellpisis">
-      {value ? value : "-"}
+      {value || "-"}
     </label>
   </div>
 );
+
+const TableCell = ({ value }: { value: string }) => {
+  return (
+    <div className="font-tertiary text-[16px]">{value || "-"}</div>
+  );
+};
 
 export default VisitHistory;

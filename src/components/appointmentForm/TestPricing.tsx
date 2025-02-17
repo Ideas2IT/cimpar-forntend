@@ -10,7 +10,7 @@ import { AppDispatch } from "../../store/store";
 import { LAB_SERVICES, RESPONSE, SERVICE_MENU, TABLE, } from "../../utils/AppConstants";
 import CustomModal from "../customModal/CustomModal"
 
-type IPricingTableProps = {
+interface IPricingTableProps {
   tableHeader: string;
   selectedTab?: string;
   values?: ILabService[];

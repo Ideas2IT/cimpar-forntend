@@ -54,6 +54,7 @@ const EditLocation = ({
     );
   };
 
+
   const itemTemplate = (item: IBooking) => {
     return (
       <span
@@ -66,6 +67,11 @@ const EditLocation = ({
       </span>
     );
   };
+
+  const statusValueTemplate = (value: string) => <span className="capitalize">{value}</span>
+  const statusItemTemplate = (value: string) => <span className="capitalize">{value}</span>
+
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="py-6">
@@ -337,12 +343,8 @@ const EditLocation = ({
               <Dropdown
                 {...field}
                 inputId="status"
-                itemTemplate={(item) => (
-                  <span className="capitalize">{item}</span>
-                )}
-                valueTemplate={(value) => (
-                  <span className="capitalize">{value}</span>
-                )}
+                itemTemplate={statusItemTemplate}
+                valueTemplate={statusValueTemplate}
                 panelClassName="capitalize"
                 className="input-field w-full test-dropdown"
                 options={["active", "inactive"]}

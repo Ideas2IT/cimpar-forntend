@@ -37,6 +37,6 @@ export interface IUpdateMedicationPayload {
   statement_id: string;
 }
 
-export interface thunkResponse{
-  payload:IMedicine[];
- }
+export interface IThunkResponse {
+  payload: IMedicine[];
+}

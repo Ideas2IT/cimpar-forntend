@@ -1,40 +1,35 @@
+import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import { Button as PrimeButton } from "primereact/button";
+import { RadioButton } from "primereact/radiobutton";
+import { Toast } from "primereact/toast";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { ErrorResponse } from "../../interfaces/common";
+import { ICreateMedication, IMedicationFormValues, IMedicine, IUpdateMedicationPayload } from "../../interfaces/medication";
+import { getMedicationByQueryThunk, selectMedications, } from "../../store/slices/masterTableSlice";
+import { addMedicationDetailsThunk, getPatientMedicationThunk, selectSelectedPatient, updateMedicationByPatientIdThunk } from "../../store/slices/PatientSlice";
+import { AppDispatch } from "../../store/store";
+import { PATH_NAME, RESPONSE } from "../../utils/AppConstants";
 import BackButton from "../backButton/BackButton";
 import Button from "../Button";
-import { Button as PrimeButton } from "primereact/button";
-import { Controller, useForm } from "react-hook-form";
-import { RadioButton } from "primereact/radiobutton";
-import "./Medication.css";
-import ErrorMessage from "../errorMessage/ErrorMessage";
-import { PATH_NAME, RESPONSE } from "../../utils/AppConstants";
-import useToast from "../useToast/UseToast";
-import { Toast } from "primereact/toast";
 import { CustomAutoComplete } from "../customAutocomplete/CustomAutocomplete";
-import { handleKeyPress } from "../../services/commonFunctions";
-import { AutoCompleteCompleteEvent } from "primereact/autocomplete";
-import {
-  getMedicationByQueryThunk,
-  selectMedications,
-} from "../../store/slices/masterTableSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store/store";
-import {
-  addMedicationDetailsThunk,
-  getPatientMedicationThunk,
-  selectSelectedPatient,
-  updateMedicationByPatientIdThunk,
-} from "../../store/slices/PatientSlice";
-import {
-  ICreateMedication,
-  IMedicationFormValues,
-  IMedicine,
-  IUpdateMedicationPayload,
-} from "../../interfaces/medication";
-import { useEffect, useRef } from "react";
-import { ErrorResponse } from "../../interfaces/common";
+import ErrorMessage from "../errorMessage/ErrorMessage";
+import useToast from "../useToast/UseToast";
+import "./Medication.css";
 const EditMedicationDetails = () => {
-  const selectedPatinet = useSelector(selectSelectedPatient);
-  const initialRef = useRef(true);
+
+  const selectedPatient = useSelector(selectSelectedPatient);
+  const dispatch = useDispatch<AppDispatch>();
+  const filteredMedications = useSelector(selectMedications);
+
+  const { successToast, errorToast, toast } = useToast();
+
+  const navigate = useNavigate();
+
+
+
   const {
     control,
     handleSubmit,
@@ -46,36 +41,34 @@ const EditMedicationDetails = () => {
   } = useForm({
     defaultValues: {} as IMedicationFormValues,
   });
-  useEffect(() => {
-    const medicationDetails: IMedicationFormValues = {
-      currentMedication:
-        selectedPatinet?.medicationDetails?.currentTakingMedication,
-      hasMedicalHistory:
-        !!selectedPatinet?.medicationDetails?.medicationTakenBefore,
-      isOnMedicine:
-        !!selectedPatinet?.medicationDetails?.currentTakingMedication,
-      medicationTakenBefore:
-        selectedPatinet?.medicationDetails?.medicationTakenBefore,
-    };
-    reset({ ...medicationDetails });
-  }, [selectedPatinet.medicationDetails]);
+
+  const hasMedicalHistory = watch("hasMedicalHistory");
+  const isOnMedication = watch("isOnMedicine");
 
   useEffect(() => {
-    if (initialRef?.current) {
-      initialRef.current = false;
-      return;
+    if (Object.keys(selectedPatient)?.length) {
+      const medicationDetails: IMedicationFormValues = {
+        currentMedication:
+          selectedPatient?.medicationDetails?.currentTakingMedication,
+        hasMedicalHistory:
+          !!selectedPatient?.medicationDetails?.medicationTakenBefore,
+        isOnMedicine:
+          !!selectedPatient?.medicationDetails?.currentTakingMedication,
+        medicationTakenBefore:
+          selectedPatient?.medicationDetails?.medicationTakenBefore,
+      };
+      reset({ ...medicationDetails });
     }
-    dispatch(getPatientMedicationThunk(selectedPatinet?.basicDetails?.id));
-  }, [selectedPatinet?.basicDetails?.id]);
+  }, [selectedPatient.medicationDetails]);
 
-  const dispatch = useDispatch<AppDispatch>();
-  const filteredMedications = useSelector(selectMedications);
+  useEffect(() => {
+    selectedPatient?.basicDetails?.id && dispatch(getPatientMedicationThunk(selectedPatient?.basicDetails?.id));
+  }, [selectedPatient?.basicDetails?.id]);
 
-  const { successToast, errorToast, toast } = useToast();
-  const navigate = useNavigate();
+
   const handleFormSubmit = (data: IMedicationFormValues) => {
     const payload: IUpdateMedicationPayload = {
-      patient_id: selectedPatinet?.basicDetails?.id || "",
+      patient_id: selectedPatient?.basicDetails?.id || "",
       request: data?.medicationTakenBefore || [],
       statement: data?.currentMedication || [],
       request_approved:
@@ -84,8 +77,8 @@ const EditMedicationDetails = () => {
           : data.hasMedicalHistory,
       statement_approved:
         data?.currentMedication?.length == 0 ? false : data?.isOnMedicine,
-      request_id: selectedPatinet?.medicationDetails?.requestId || "",
-      statement_id: selectedPatinet?.medicationDetails?.statementId || "",
+      request_id: selectedPatient?.medicationDetails?.requestId || "",
+      statement_id: selectedPatient?.medicationDetails?.statementId || "",
     };
     if (payload?.statement_id || payload?.request_id) {
       dispatch(updateMedicationByPatientIdThunk(payload)).then(({ meta }) => {
@@ -104,7 +97,7 @@ const EditMedicationDetails = () => {
         statement: data?.currentMedication,
         request_approved: data?.hasMedicalHistory,
         statement_approved: data?.isOnMedicine,
-        patient_id: selectedPatinet?.basicDetails?.id || "",
+        patient_id: selectedPatient?.basicDetails?.id || "",
       };
       payload.patient_id &&
         dispatch(addMedicationDetailsThunk(payload)).then((response) => {
@@ -133,9 +126,6 @@ const EditMedicationDetails = () => {
     }, 300);
   };
 
-  const hasMedicalHistory = watch("hasMedicalHistory");
-  const isOnMedication = watch("isOnMedicine");
-
   const validateCurrentMedication = (
     IMedicationFormValues: IMedicine[] | undefined | null
   ) => {
@@ -152,218 +142,214 @@ const EditMedicationDetails = () => {
     }
   };
   return (
-    <>
-      <div className="px-6 h-[100%]">
-        <form
-          onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-          onKeyDown={(event) => handleKeyPress(event)}
-        >
-          <div className="flex flex-row justify-between pb-6">
-            <BackButton
-              previousPage="Medication"
-              currentPage="Edit Medication"
-              backLink={PATH_NAME.PROFILE}
-            />
-            <div>
-              <div className="flex py-2 justify-between items-center">
-                <Link to={PATH_NAME.PROFILE}>
-                  <Button
-                    className="ml-3 font-primary text-purple-800"
-                    variant="primary"
-                    type="reset"
-                    style="link"
+
+    <div className="px-6 h-[100%]">
+      <form>
+        <div className="flex flex-row justify-between pb-6">
+          <BackButton
+            previousPage="Medication"
+            currentPage="Edit Medication"
+            backLink={PATH_NAME.PROFILE}
+          />
+          <div>
+            <div className="flex py-2 justify-between items-center">
+              <Link to={PATH_NAME.PROFILE}>
+                <Button
+                  className="ml-3 font-primary text-purple-800"
+                  variant="primary"
+                  type="reset"
+                  style="link"
+                >
+                  <i className="p" />
+                  <i className="pi pi-times me-2" />Cancel
+                </Button>
+              </Link>
+              <PrimeButton
+                onClick={handleSubmit(handleFormSubmit)}
+                className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
+                outlined
+                type="button"
+              >
+                <i className="pi pi-check me-2" />
+                {selectedPatient?.medicationDetails?.medicationTakenBefore
+                  ?.length
+                  ? "Save"
+                  : "Add"}
+              </PrimeButton>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white !h-[calc(100vh-200px)] p-6 rounded-xl overflow-auto">
+          <div>
+            <p>
+              Are you currently taking any medication?*
+            </p>
+            <Controller
+              name="isOnMedicine"
+              control={control}
+              rules={{
+                validate: (value) =>
+                  validateBoolean(value, `On Medication field is required`),
+              }}
+              render={({ field }) => (
+                <div className="font-primary text-xl flex items-center py-4">
+                  <RadioButton
+                    className="me-2"
+                    value="Primary"
+                    inputId="yesButton"
+                    inputRef={field.ref}
+                    onChange={() => setValue("isOnMedicine", true)}
+                    checked={field.value}
+                  />
+                  <label
+                    htmlFor="yesButton"
+                    className={`${field.value && "active"} pe-4 text-[16px] cursor-pointer`}
                   >
-                    <i className="p" />
-                    <i className="pi pi-times me-2" />
-                    Cancel
-                  </Button>
-                </Link>
-                <PrimeButton
-                  onClick={() => handleSubmit}
-                  className="ml-3 font-primary text-purple-800 border px-4 py-2 rounded-full border-purple-700 shadow-none"
-                  outlined
-                  type="submit"
-                >
-                  <i className="pi pi-check me-2" />
-                  {selectedPatinet?.medicationDetails?.medicationTakenBefore
-                    ?.length
-                    ? "Save"
-                    : "Add"}
-                </PrimeButton>
-              </div>
-            </div>
+                    Yes
+                  </label>
+                  <RadioButton
+                    {...field}
+                    className="me-2"
+                    inputRef={field.ref}
+                    inputId="noButton"
+                    value="Secondary"
+                    onChange={() => setValue("isOnMedicine", false)}
+                    checked={field.value === false}
+                  />
+                  <label
+                    htmlFor="noButton"
+                    className={`${field.value === false && "active"} pe-4 text-[16px] cursor-pointer`}
+                  >
+                    No
+                  </label>
+                </div>
+              )}
+            />
+            {errors.isOnMedicine && (
+              <ErrorMessage message={errors.isOnMedicine.message} />
+            )}
           </div>
-          <div className="bg-white !h-[calc(100vh-200px)] p-6 rounded-xl overflow-auto">
-            <div>
-              <label className="">
-                Are you currently taking any medication?*
-              </label>
-              <Controller
-                name="isOnMedicine"
-                control={control}
-                rules={{
-                  validate: (value) =>
-                    validateBoolean(value, `On Medication field is required`),
-                }}
-                render={({ field }) => (
-                  <div className="font-primary text-xl flex items-center py-4">
-                    <RadioButton
-                      className="me-2"
-                      value="Primary"
-                      inputRef={field.ref}
-                      onChange={() => setValue("isOnMedicine", true)}
-                      checked={field.value}
-                    />
-                    <label
-                      className={`${field.value && "active"} pe-4 text-[16px] cursor-pointer`}
-                      onClick={() => {
-                        setValue("isOnMedicine", true);
-                      }}
-                    >
-                      Yes
-                    </label>
-                    <RadioButton
-                      className="me-2"
-                      inputRef={field.ref}
+          {isOnMedication && (
+
+            <label
+              className="mb-1 pt-4 block input-label"
+              htmlFor="currentMedication"
+            >
+              Medication Names*
+              <div className="rounded-lg">
+                <Controller
+                  name="currentMedication"
+                  control={control}
+                  rules={{
+                    validate: validateCurrentMedication,
+                  }}
+                  render={({ field }) => (
+                    <CustomAutoComplete
                       {...field}
-                      value="Secondary"
-                      onChange={() => setValue("isOnMedicine", false)}
-                      checked={field.value === false}
-                    />
-                    <label
-                      className={`${field.value === false && "active"} pe-4 text-[16px] cursor-pointer`}
-                      onClick={() => setValue("isOnMedicine", false)}
-                    >
-                      No
-                    </label>
-                  </div>
-                )}
-              />
-              {errors.isOnMedicine && (
-                <ErrorMessage message={errors.isOnMedicine.message} />
-              )}
-            </div>
-            {isOnMedication && (
-              <>
-                <label
-                  className="mb-1 pt-4 block input-label"
-                  htmlFor="currentMedication"
-                >
-                  Medication Names*
-                  <div className="rounded-lg">
-                    <Controller
-                      name="currentMedication"
-                      control={control}
-                      rules={{
-                        validate: validateCurrentMedication,
+                      key="medication"
+                      handleSearch={searchMedications}
+                      selectedItems={field.value}
+                      handleSelection={(medicines) => {
+                        setValue("currentMedication", medicines);
+                        trigger("currentMedication");
                       }}
-                      render={({ field }) => (
-                        <CustomAutoComplete
-                          {...field}
-                          key="medication"
-                          handleSearch={searchMedications}
-                          selectedItems={field.value}
-                          handleSelection={(medicines) => {
-                            setValue("currentMedication", medicines);
-                            trigger("currentMedication");
-                          }}
-                          items={filteredMedications}
-                          inputId="currentMedication"
-                        />
-                      )}
+                      items={filteredMedications}
+                      inputId="currentMedication"
                     />
-                    {errors.currentMedication && (
-                      <ErrorMessage
-                        message={errors.currentMedication.message}
-                      />
-                    )}
-                  </div>
-                </label>
-              </>
-            )}
-            <div className="mt-4">
-              <label className="pb-3 block">
-                Have you been on medication before?*
-              </label>
-              <Controller
-                name="hasMedicalHistory"
-                control={control}
-                rules={{
-                  validate: (value) =>
-                    validateBoolean(value, `On Medication field is required`),
-                }}
-                render={({ field }) => (
-                  <div className="flex font-primary text-xl items-center">
-                    <RadioButton
-                      checked={field.value}
-                      onChange={() => setValue("hasMedicalHistory", true)}
-                    />
-                    <label
-                      className={`${field.value && "active"} me-4 text-[16px] cursor-pointer ms-3`}
-                      onClick={() => setValue("hasMedicalHistory", true)}
-                    >
-                      Yes
-                    </label>
-                    <RadioButton
-                      onChange={() => setValue("hasMedicalHistory", false)}
-                      checked={!field.value}
-                    />
-                    <label
-                      className={`${!field.value && "active"} me-4 text-[16px] cursor-pointer ms-3`}
-                      onClick={() => setValue("hasMedicalHistory", false)}
-                    >
-                      No
-                    </label>
-                  </div>
+                  )}
+                />
+                {errors.currentMedication && (
+                  <ErrorMessage
+                    message={errors.currentMedication.message}
+                  />
                 )}
-              />
-              {errors.hasMedicalHistory && (
-                <ErrorMessage message={errors.hasMedicalHistory.message} />
+              </div>
+            </label>
+
+          )}
+          <div className="mt-4">
+            <p className="pb-3 block">
+              Have you been on medication before?*
+            </p>
+            <Controller
+              name="hasMedicalHistory"
+              control={control}
+              rules={{
+                validate: (value) =>
+                  validateBoolean(value, `On Medication field is required`),
+              }}
+              render={({ field }) => (
+                <div className="flex font-primary text-xl items-center">
+                  <RadioButton
+                    inputId="yesButtonBefore"
+                    checked={field.value}
+                    onChange={() => setValue("hasMedicalHistory", true)}
+                  />
+                  <label
+                    htmlFor="yesButtonBefore"
+                    className={`${field.value && "active"} me-4 text-[16px] cursor-pointer ms-3`}
+                  >
+                    Yes
+                  </label>
+                  <RadioButton
+                    inputId="noButtonBefore"
+                    onChange={() => setValue("hasMedicalHistory", false)}
+                    checked={!field.value}
+                  />
+                  <label
+                    htmlFor="noButtonBefore"
+                    className={`${!field.value && "active"} me-4 text-[16px] cursor-pointer ms-3`}
+                  >
+                    No
+                  </label>
+                </div>
               )}
-            </div>
-            {hasMedicalHistory && (
-              <>
-                <label
-                  className="pt-4 mb-1 block input-label"
-                  htmlFor="beforeMedication"
-                >
-                  Medication Names*
-                  <div className="rounded-lg">
-                    <Controller
-                      name="medicationTakenBefore"
-                      control={control}
-                      rules={{
-                        validate: validateBeforeMedication,
-                      }}
-                      render={({ field }) => (
-                        <CustomAutoComplete
-                          key="medicationtakenBefore"
-                          {...field}
-                          handleSearch={searchMedications}
-                          selectedItems={field.value}
-                          handleSelection={(medicines) => {
-                            setValue("medicationTakenBefore", medicines);
-                            trigger("medicationTakenBefore");
-                          }}
-                          items={filteredMedications}
-                          inputId="beforeMedication"
-                        />
-                      )}
-                    />
-                    {errors.medicationTakenBefore && (
-                      <ErrorMessage
-                        message={errors.medicationTakenBefore.message}
-                      />
-                    )}
-                  </div>
-                </label>
-              </>
+            />
+            {errors.hasMedicalHistory && (
+              <ErrorMessage message={errors.hasMedicalHistory.message} />
             )}
           </div>
-        </form>
-        <Toast ref={toast} onHide={() => navigate(PATH_NAME.PROFILE)} />
-      </div>
-    </>
+          {hasMedicalHistory && (
+            <label
+              className="pt-4 mb-1 block input-label"
+              htmlFor="beforeMedication"
+            >
+              Medication Names*
+              <div className="rounded-lg">
+                <Controller
+                  name="medicationTakenBefore"
+                  control={control}
+                  rules={{
+                    validate: validateBeforeMedication,
+                  }}
+                  render={({ field }) => (
+                    <CustomAutoComplete
+                      key="medicationtakenBefore"
+                      {...field}
+                      handleSearch={searchMedications}
+                      selectedItems={field.value}
+                      handleSelection={(medicines) => {
+                        setValue("medicationTakenBefore", medicines);
+                        trigger("medicationTakenBefore");
+                      }}
+                      items={filteredMedications}
+                      inputId="beforeMedication"
+                    />
+                  )}
+                />
+                {errors.medicationTakenBefore && (
+                  <ErrorMessage
+                    message={errors.medicationTakenBefore.message}
+                  />
+                )}
+              </div>
+            </label>
+
+          )}
+        </div>
+      </form>
+      <Toast ref={toast} onHide={() => navigate(PATH_NAME.PROFILE)} />
+    </div>
   );
 };
 export default EditMedicationDetails;

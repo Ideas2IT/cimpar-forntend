@@ -12,13 +12,7 @@ import Tab from "../interfaces/Tab";
 import { selectSelectedPatient } from "../store/slices/PatientSlice";
 import { getServiceHistoryThunk } from "../store/slices/serviceHistorySlice";
 import { AppDispatch } from "../store/store";
-import {
-  LAB_SERVICES,
-  MESSAGE,
-  PAGE_LIMIT,
-  RESPONSE,
-  TABS,
-} from "../utils/AppConstants";
+import { LAB_SERVICES, MESSAGE, PAGE_LIMIT, RESPONSE, TABS } from "../utils/AppConstants";
 import { IItem } from "./appointmentForm/AppointmentForm";
 import SearchInput, { SearchInputHandle } from "./SearchInput";
 import ServiceHistory from "./serviceHistory/ServiceHistory";
@@ -42,9 +36,34 @@ export interface LabTestResult {
 }
 
 const LabTestResults = () => {
+
   const patient = useSelector(selectSelectedPatient);
+
   const dispatch = useDispatch<AppDispatch>();
+
   const { errorToast, toast } = useToast();
+
+  const [hideTabs, setHideTabs] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Service History");
+  const [isOpen, setIsOpen] = useState(false);
+  const op = useRef<OverlayPanel>(null);
+  const [selectedServices, setSelectedServices] = useState<number[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
+
+  const searchInputRef = useRef<SearchInputHandle>(null);
+
+  useEffect(() => {
+    callResource();
+  }, [selectedTab, searchValue, patient?.basicDetails?.id, pageNumber, selectedServices,]);
+
+  const services = [
+    { id: 1, name: "Clinical Laboratory", value: "Clinical Laboratory" },
+    { id: 2, name: "Home Care", value: "Home Care" },
+    { id: 3, name: "Imaging", value: "Imaging" },
+    { id: 4, name: "Immunization", value: "Immunization" },
+  ];
+
   const handlePageChange = (val: number) => {
     setPageNumber(val);
   };
@@ -69,8 +88,8 @@ const LabTestResults = () => {
       ),
     },
     {
-      key: "imaging",
-      value: "Imaging",
+      key: "home care",
+      value: "Home Care",
       content: (
         <div className="py-1 ps-3 h-full">
           <TestResult handlePageChange={handlePageChange} />
@@ -78,8 +97,8 @@ const LabTestResults = () => {
       ),
     },
     {
-      key: "home care",
-      value: "Home Care",
+      key: "imaging",
+      value: "Imaging",
       content: (
         <div className="py-1 ps-3 h-full">
           <TestResult handlePageChange={handlePageChange} />
@@ -96,21 +115,8 @@ const LabTestResults = () => {
       ),
     },
   ];
-  const services = [
-    { id: 1, name: "Clinical Laboratory", value: "Clinical Laboratory" },
-    { id: 3, name: "Imaging", value: "Imaging" },
-    { id: 4, name: "Home Care", value: "Home_care" },
-    { id: 2, name: "Immunization", value: "Immunization" },
-  ];
 
-  const [hideTabs, setHideTabs] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("Service History");
-  const [isOpen, setIsOpen] = useState(false);
-  const op = useRef<OverlayPanel>(null);
-  const [selectedServices, setSelectedServices] = useState<number[]>([]);
-  const [searchValue, setSearchValue] = useState("");
-  const searchInputRef = useRef<SearchInputHandle>(null);
-  const [pageNumber, setPageNumber] = useState(1);
+
 
   const handleSearch = (value: string) => {
     setSearchValue(value);
@@ -136,7 +142,7 @@ const LabTestResults = () => {
       case TABS.IMAGING:
         return TABS.IMAGING;
       case TABS.HOME_CARE:
-        return "Home_care";
+        return "Home Care";
       default:
         return "";
     }
@@ -149,7 +155,7 @@ const LabTestResults = () => {
     if (selectedTab === TABS.SERVICE_HISTORY) {
       const payload: IServiceHistoryPayload = {
         selectedTab: selectedTab,
-        patinetId: patient?.basicDetails?.id,
+        patientId: patient?.basicDetails?.id,
         searchValue: searchValue,
         page: pageNumber,
         page_size: PAGE_LIMIT,
@@ -166,7 +172,7 @@ const LabTestResults = () => {
     } else {
       const payload: IServiceHistoryPayload = {
         selectedTab: selectedTab,
-        patinetId: patient?.basicDetails?.id,
+        patientId: patient?.basicDetails?.id,
         searchValue: searchValue,
         page: pageNumber,
         page_size: PAGE_LIMIT,
@@ -180,15 +186,6 @@ const LabTestResults = () => {
     }
   };
 
-  useEffect(() => {
-    callResource();
-  }, [
-    selectedTab,
-    searchValue,
-    patient?.basicDetails?.id,
-    pageNumber,
-    selectedServices,
-  ]);
 
   const handleServiceFilter = (newService: IItem) => {
     setPageNumber(1);
@@ -205,7 +202,7 @@ const LabTestResults = () => {
     switch (selectedTab) {
       case TABS.SERVICE_HISTORY:
         return "Search For Service";
-      case TABS.LAB_RESULT:
+      case TABS.CLINICAL_LABORATORY:
       case TABS.IMAGING:
       case TABS.HOME_CARE:
         return "Search For Test";
@@ -231,7 +228,7 @@ const LabTestResults = () => {
           </span>
         </div>
         <div className="flex items-center">
-          <div
+          <button type="button"
             className={`${selectedTab === "Service History" ? "rounded-full px-2  relative flex mx-2 border border-[#2D6D80] w-[20rem] h-[2.5rem] items-center bg-white cursor-pointer" : "hidden"}`}
             onClick={(event) => {
               op.current?.toggle(event);
@@ -243,7 +240,7 @@ const LabTestResults = () => {
             <span
               className={`text-end color-primary absolute right-3 ${isOpen ? "pi pi-angle-up" : "pi pi-angle-down"}`}
             />
-          </div>
+          </button>
           <OverlayPanel
             ref={op}
             unstyled
@@ -255,11 +252,11 @@ const LabTestResults = () => {
             }}
           >
             <div className="w-[20rem] min-h-[12rem] p-4 pb-1">
-              {services.map((option, index) => {
+              {services.map((option) => {
                 return (
-                  <div
-                    key={index}
-                    className="border-b py-1 cursor-pointer"
+                  <button type="button"
+                    key={option.name}
+                    className="border-b block w-full py-1 cursor-pointer"
                     onClick={() => handleServiceFilter(option)}
                   >
                     <div className="h-[2.5rem] font-tertiary py-1 text-lg flex justify-between items-center">
@@ -271,7 +268,7 @@ const LabTestResults = () => {
                         checked={selectedServices.includes(option.id)}
                       />
                     </div>
-                  </div>
+                  </button>
                 );
               })}
               <div className="flex justify-end mt-3">
@@ -284,6 +281,7 @@ const LabTestResults = () => {
                       op.current?.toggle(event);
                     }, 0);
                     setIsOpen(false);
+                    setPageNumber(1)
                     setSelectedServices([]);
                   }}
                 />
@@ -315,7 +313,7 @@ const LabTestResults = () => {
         />
       </div>
       <Toast ref={toast} />
-    </div>
+    </div >
   );
 };
 

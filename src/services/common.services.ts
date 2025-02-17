@@ -55,7 +55,7 @@ http.interceptors.request.use(
   },
   (error) => {
     store.dispatch(hideSpinner());
-    return Promise.reject(error);
+    return Promise.reject(error as Error);
   }
 );
 
@@ -75,7 +75,7 @@ http.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const refresh_token = localStorage.getItem(REFRESH_TOKEN) || "";
+        const refresh_token = localStorage.getItem(REFRESH_TOKEN) ?? "";
         const payload: IRotateTokenPayload = {
           client_id: CLIENT_ID,
           grant_type: REFRESH_TOKEN,
@@ -95,7 +95,7 @@ http.interceptors.response.use(
         store.dispatch(signOut());
       }
     }
-    return Promise.reject(error);
+    return Promise.reject(error as Error);
   }
 );
 

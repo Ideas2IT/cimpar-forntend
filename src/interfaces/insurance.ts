@@ -11,7 +11,7 @@ export interface IUpdateInsurancePayload extends INewInsurancePayload {
   insurance_id: string;
 }
 
-export interface deleteInsurancePayload {
+export interface IDeleteInsurancePayload {
   insuranceId: string;
   patinetId: string;
 }

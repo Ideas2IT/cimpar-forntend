@@ -55,7 +55,7 @@ export const UrlTile = ({ link }: { link: IMasterUrl }) => {
       <button type="button"
         onClick={() => setIsOpenModal(true)}
         title={link.description}
-        className="flex w-full items-center gap-2 cursor-pointer"
+        className="w-[15rem]  text-start flex rounded-lg items-center gap-2 cursor-pointer"
       >
         <div className="flex group items-center text-purple-900 gap-2 bg-purple-100 h-[8rem] w-[15rem] rounded-lg p-4">
           <i className="pi pi-external-link" />

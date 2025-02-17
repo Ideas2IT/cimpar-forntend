@@ -6,7 +6,7 @@ import { IPagination } from "../../interfaces/immunization";
 import {
   INewInsurancePayload,
   IUpdateInsurancePayload,
-  deleteInsurancePayload,
+  IDeleteInsurancePayload,
 } from "../../interfaces/insurance";
 import {
   ICreateMedication,
@@ -474,7 +474,7 @@ export const addInsuranceThunk = createAsyncThunk(
 
 export const deleteInsuranceByIdThunk = createAsyncThunk(
   "insurance/delete",
-  async (payload: deleteInsurancePayload, { rejectWithValue }) => {
+  async (payload: IDeleteInsurancePayload, { rejectWithValue }) => {
     try {
       const userResponse = await deleteInsurance(payload);
       return { patinet: userResponse.data, insurance: payload.insuranceId };
@@ -522,7 +522,7 @@ export const updateInsuranceByIdThunk = createAsyncThunk(
 
 export const getInsuranceByIdThunk = createAsyncThunk(
   "insurance/get_by_id",
-  async (payload: deleteInsurancePayload, { rejectWithValue }) => {
+  async (payload: IDeleteInsurancePayload, { rejectWithValue }) => {
     try {
       const response = await getInsuranceById(payload);
       const _response = transformSingleInsurance(response.data.coverage);

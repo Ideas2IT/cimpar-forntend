@@ -186,7 +186,6 @@ export type TAppointmentStatus =
   | "failed"
   | "Succeeded"
   | "pending"
-  | "failed"
   | "paid";
 
 export interface IAzureBookingData {

@@ -41,7 +41,7 @@ export interface IUpdateVisitHistoryPayload extends ICreateVisitHistoryPayload {
 }
 
 export interface IDeleteVisitHistoryPayload {
-  patinetId: string;
+  patientId: string;
   visitHistoryId: string;
 }
 

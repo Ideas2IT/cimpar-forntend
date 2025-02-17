@@ -509,7 +509,7 @@ export const updateLocationThunk = createAsyncThunk(
   async (payload: ILocation, { rejectWithValue }) => {
     try {
       const response = await updateLocation(payload);
-      return response;
+      return response.data;
     } catch (error) {
       if (isAxiosError(error)) {
         let errorMessage = "";
@@ -529,6 +529,11 @@ export const updateLocationThunk = createAsyncThunk(
         return rejectWithValue({
           message: errorMessage,
           response: error?.message,
+        } as ErrorResponse);
+      } else {
+        return rejectWithValue({
+          message: 'Something went wrong',
+          response: 0,
         } as ErrorResponse);
       }
     }

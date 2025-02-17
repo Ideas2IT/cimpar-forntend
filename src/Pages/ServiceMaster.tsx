@@ -90,7 +90,7 @@ const ServiceMaster = () => {
         <div className="flex">
           <BackButton
             backLink={PATH_NAME.MASTER_TABLES}
-            currentPage="Servie Master"
+            currentPage="Service Master"
             previousPage="Masters"
           />
         </div>

@@ -50,7 +50,7 @@ const TransportationForm = () => {
     watch,
     formState: { errors },
   } = useForm({
-    defaultValues: selectedUrl,
+    defaultValues: {} as IMasterUrl,
   });
 
   const navigate = useNavigate();
@@ -66,12 +66,17 @@ const TransportationForm = () => {
         setSelectedUrl(_response);
       } else {
         errorToast("Failed to load", "Failed to Load data");
+        setSelectedUrl({} as IMasterUrl);
       }
     });
   }, [selectedCategory]);
 
   useEffect(() => {
-    reset({ ...selectedUrl });
+    if (selectedUrl) {
+      reset({ ...selectedUrl });
+    } else {
+      reset({});
+    }
   }, [selectedUrl]);
 
   const handleFormSubmit = (data: IMasterUrl) => {
@@ -140,7 +145,7 @@ const TransportationForm = () => {
                   className="input-field w-full"
                   itemTemplate={(item) => itemTemplate(item)}
                   valueTemplate={(selectedCategory) => valueTemplate(selectedCategory)}
-                  options={["Vaccination", "Transportation"]}
+                  options={["Transportation"]}
                 />
               )}
             />

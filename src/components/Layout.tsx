@@ -5,24 +5,10 @@ import { useLocation } from "react-router-dom";
 import HeaderContext from ".././context/HeaderContext";
 import localStorageService from "../services/localStorageService";
 import { getPatientDetailsThunk } from "../store/slices/PatientSlice";
-import {
-  getUserProfileThunk,
-  selectProfileName,
-  selectUserProfile,
-} from "../store/slices/UserSlice";
-import {
-  getServicesTitleThunk,
-  selectIsEmailVerified,
-  selectRole,
-} from "../store/slices/loginSlice";
+import { getUserProfileThunk, selectProfileName, selectUserProfile } from "../store/slices/UserSlice";
+import { getServicesTitleThunk, selectIsEmailVerified, selectRole, } from "../store/slices/loginSlice";
 import { AppDispatch } from "../store/store";
-import {
-  HEADER_TITLE,
-  PATH_NAME,
-  RESPONSE,
-  ROLE,
-  SYMBOL,
-} from "../utils/AppConstants";
+import { HEADER_TITLE, PATH_NAME, RESPONSE, ROLE, SYMBOL, } from "../utils/AppConstants";
 import Main from "./Main";
 import Sidebar from "./Sidebar";
 import LoginForm from "./loginForm/LoginForm";
@@ -31,14 +17,19 @@ import useToast from "./useToast/UseToast";
 import { getServiceCategoriesThunk } from "../store/slices/masterTableSlice";
 
 const Layout = () => {
-  const user = useSelector(selectProfileName);
-  const [username, setUsername] = useState("");
-  const dispatch = useDispatch<AppDispatch>();
-  const { toast, errorToast } = useToast();
+
   const isLoggedIn = useSelector(selectIsEmailVerified);
+  const user = useSelector(selectProfileName);
   const role = useSelector(selectRole);
   const profileId = useSelector(selectUserProfile)?.id;
+
+  const dispatch = useDispatch<AppDispatch>();
+
   const location = useLocation();
+
+  const { toast, errorToast } = useToast();
+
+  const [username, setUsername] = useState("");
 
   const getHeaderTitle = useMemo(() => {
     const path = location.pathname;
@@ -79,12 +70,6 @@ const Layout = () => {
     }
   }, [user]);
 
-  const updateHeaderTitle = (newValue: string) => {
-    if (newValue) {
-      setUsername(newValue);
-    }
-  };
-
   useEffect(() => {
     if (profileId && role === ROLE.PATIENT) {
       dispatch(getPatientDetailsThunk(profileId)).then((response) => {
@@ -115,17 +100,31 @@ const Layout = () => {
       }
     }
   }, []);
+
+  const updateHeaderTitle = (newValue: string) => {
+    if (newValue) {
+      setUsername(newValue);
+    }
+  };
+
+  const headerContextValue = useMemo(
+    () => ({ username, updateHeaderTitle }),
+    [username]
+  );
+
   return (
     <>
       {!isLoggedIn ? (
-        location.pathname === "set-password/:id" ? (
-          <SetPassword />
-        ) : (
-          <LoginForm />
-        )
+        <>
+          {location.pathname === "set-password/:id" ? (
+            <SetPassword />
+          ) : (
+            <LoginForm />
+          )}
+        </>
       ) : (
         <div className="flex h-full overflow-auto">
-          <HeaderContext.Provider value={{ username, updateHeaderTitle }}>
+          <HeaderContext.Provider value={headerContextValue}>
             <Sidebar />
             <Main />
           </HeaderContext.Provider>

@@ -8,10 +8,27 @@ import {
 import { API_URL } from "../utils/aapiURL";
 import http from "./common.services";
 
+// const getServiceHistory = (payload: IServiceHistoryPayload) => {
+//   const stringifyPayload = Object.entries(payload)
+//     .filter(
+//       ([key, value]) => value !== null && value !== undefined && value !== ""
+//     )
+//     .reduce(
+//       (acc, [key, value]) => {
+//         acc[key === "searchValue" ? "search_name" : key] = value.toString();
+//         return acc;
+//       },
+//       {} as Record<string, string>
+//     );
+//   const params = new URLSearchParams(stringifyPayload);
+//   return http.get(`${API_URL.serviceHistory}/${payload.patinetId}?${params}`);
+// };
+
 const getServiceHistory = (payload: IServiceHistoryPayload) => {
   const stringifyPayload = Object.entries(payload)
     .filter(
-      ([key, value]) => value !== null && value !== undefined && value !== ""
+      ([key, value]) =>
+        key !== "selectedTab" && key !== 'patientId' && value !== null && value !== undefined && value !== ""
     )
     .reduce(
       (acc, [key, value]) => {
@@ -20,8 +37,9 @@ const getServiceHistory = (payload: IServiceHistoryPayload) => {
       },
       {} as Record<string, string>
     );
+
   const params = new URLSearchParams(stringifyPayload);
-  return http.get(`${API_URL.serviceHistory}/${payload.patinetId}?${params}`);
+  return http.get(`${API_URL.serviceHistory}/${payload.patientId}?${params}`);
 };
 
 const getLabTests = (payload: ITestResultPayload) => {

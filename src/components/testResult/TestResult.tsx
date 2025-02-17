@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Eye from "../../assets/icons/eye.svg?react";
 import { IDetailedAppointment, IGetAppointmentByIdPayload, ISidebarAppointment } from "../../interfaces/appointment";
 import { ErrorResponse } from "../../interfaces/common";
-import { IGetTestByIdPayload, ILabTest, IServiceHistory, ITestResult } from "../../interfaces/immunization";
+import { IGetTestByIdPayload, ILabTest } from "../../interfaces/immunization";
 import { appointmentStatus, getStatusColors } from "../../services/commonFunctions";
 import { getAppointmentByIdThunk } from "../../store/slices/appointmentSlice";
 import { selectSelectedPatient } from "../../store/slices/PatientSlice";
@@ -186,14 +186,14 @@ const TestResult = ({ handlePageChange, }: { handlePageChange: (value: number) =
 
   const isRowExpandable = (rowData: ILabTest) => rowData?.results?.length > 0;
 
-  const toggleRow = (event: React.MouseEvent, rowData: any) => {
+  const toggleRow = (event: React.MouseEvent, rowData: ILabTest) => {
     event.stopPropagation();
     if (!isRowExpandable(rowData)) return;
 
     setExpandedRows((prevExpanded: any) => {
-      const isExpanded = prevExpanded?.some((r: any) => r.id === rowData.id);
+      const isExpanded = prevExpanded?.some((r: any) => r.orderId === rowData.orderId);
       return isExpanded
-        ? prevExpanded.filter((r: any) => r.id !== rowData.id)
+        ? prevExpanded.filter((r: any) => r.orderId !== rowData.orderId)
         : [...(prevExpanded || []), rowData];
     });
   };

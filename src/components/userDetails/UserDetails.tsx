@@ -119,13 +119,13 @@ export const PatientDetails = ({
   return (
     <div className="border-b border-gray-100">
       <div className="font-secondary text-sm text-[#283956] opacity-65 py-2 max-w-[100%] text-ellipsis overflow-hidden">
-        {label ? label : "-"}
+        {label || "-"}
       </div>
       <div
         title={value}
         className="font-primary pb-2 text-[#283956] truncate max-w-[90%] capitalize"
       >
-        {value ? value : "-"}
+        {value || "-"}
       </div>
     </div>
   );

@@ -102,6 +102,16 @@ const ServiceList = () => {
     });
   };
 
+  const updateTestItem = (prevItems: ILabTestService[], data: ILabTestService) => {
+    return prevItems.map((item) =>
+      item.id === data.id ? { ...item, ...data } : item
+    );
+  };
+
+  const removeTestItem = (prevItems: ILabTestService[], data: ILabTestService) => {
+    return prevItems.filter((item) => item.id !== data.id);
+  };
+
   const handleSubmit = (data: ILabTestService) => {
     if (data?.id) {
       const payload: IUpdateMasterRecordPayload = {
@@ -124,13 +134,9 @@ const ServiceList = () => {
           );
           setIsOpenModal(false);
           if (selectedTest.service_type === data.service_type) {
-            setTests((prevItems) =>
-              prevItems.map((item) => item.id === data.id ? { ...item, ...data } : item)
-            );
+            setTests((tests) => updateTestItem(tests, data));
           } else {
-            setTests((prevItems) =>
-              prevItems.filter((item) => item.id !== data.id)
-            );
+            setTests((tests) => removeTestItem(tests, data));
           }
         } else {
           const errorResponse = response.payload as ErrorResponse;
@@ -214,6 +220,19 @@ const ServiceList = () => {
     </>
   }
 
+
+  const renderAction = (rowData: ILabTestService) =>
+    <div className="font-primary text-purple-800 text-center w-full">
+      <button
+        className="cursor-pointer pi pi-pen-to-square text-xl shadow-none"
+        onClick={() => {
+          showModal();
+          setSelectedTest(rowData);
+        }}
+      />
+    </div>
+
+
   const columns = [
     {
       field: "serial",
@@ -245,17 +264,7 @@ const ServiceList = () => {
       headerClassName:
         "custom-header font-primary justify-center justify-items-center",
       header: "ACTION",
-      body: (row: ILabTestService) => (
-        <div className="font-primary text-purple-800 text-center w-full">
-          <button
-            className="cursor-pointer pi pi-pen-to-square text-xl shadow-none"
-            onClick={() => {
-              showModal();
-              setSelectedTest(row);
-            }}
-          />
-        </div>
-      ),
+      body: (row: ILabTestService) => renderAction(row),
     },
   ];
 
@@ -375,6 +384,7 @@ export const AddMasterModal = ({
     handleSubmit,
     setValue,
     reset,
+    trigger,
     formState: { errors },
   } = useForm({
     defaultValues: {} as ILabTestService,
@@ -459,7 +469,7 @@ export const AddMasterModal = ({
                   {...field}
                   disabled={selectedItem && !!Object.keys(selectedItem)?.length}
                   placeholder="Code"
-                  className="w-full cimpar-input"
+                  className={`w-full cimpar-input ${selectedItem && !!Object.keys(selectedItem)?.length && "disabled-input"}`}
                 />
               )}
             />
@@ -529,7 +539,6 @@ export const AddMasterModal = ({
               name="home_price"
               rules={{
                 validate: (value) => validatePrice(value, "At Home Price"),
-                required: "Home Price is required",
               }}
               control={control}
               defaultValue={selectedItem?.home_price}
@@ -539,11 +548,13 @@ export const AddMasterModal = ({
                   placeholder="Enter Price"
                   keyfilter="pnum"
                   disabled={selectedItem && !!Object.keys(selectedItem)?.length}
-                  onChange={(e) =>
-                    setValue("home_price", String(e?.target?.value))
+                  onChange={(e) => {
+                    setValue("home_price", String(e?.target?.value));
+                    trigger("home_price")
+                  }
                   }
                   id="athome"
-                  className="cimpar-input"
+                  className={`cimpar-input ${selectedItem && !!Object.keys(selectedItem)?.length && "disabled-input"}`}
                 />
               )}
             />
@@ -563,7 +574,6 @@ export const AddMasterModal = ({
               rules={{
                 validate: (value) =>
                   validatePrice(value, "Service Center Price"),
-                required: "Service Center Price  is required",
               }}
               defaultValue={selectedItem?.center_price}
               render={({ field }) => (
@@ -573,10 +583,11 @@ export const AddMasterModal = ({
                   disabled={selectedItem && !!Object.keys(selectedItem)?.length}
                   onChange={(e) => {
                     setValue("center_price", e.target?.value);
+                    trigger("center_price");
                   }}
                   id="atCenter"
                   placeholder="Enter Price"
-                  className="cimpar-input"
+                  className={`cimpar-input ${selectedItem && !!Object.keys(selectedItem)?.length && "disabled-input"}`}
                 />
               )}
             />
